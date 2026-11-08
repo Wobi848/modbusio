@@ -14,7 +14,7 @@ export default {
     await page.click(".explore-form [data-act=explore]");
     await page.waitForSelector(".row.registers[data-address='103']");
     assert.match(await page.textContent(".strips"), /8 addresses with data, 112 without/);
-    assert.match(await page.textContent(".strips"), /at most \d+ registers per request/);
+    assert.match(await page.textContent(".strips"), /refused larger blocks: reading at most \d+ registers per request/);
     await page.click(".row.registers[data-address='1']");
     await page.click("[data-act=add-to-profile]");
     await page.fill("#add-point-name", "Set frequency");

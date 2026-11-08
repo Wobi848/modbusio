@@ -130,7 +130,7 @@ export default {
     quiet: "{port} ist ruhig: Kein anderer Master ist aktiv.",
     settings_found: "Geräte antworten mit {settings}.",
     word_order: "Die Werte lesen sich nur in Wortreihenfolge {order} plausibel.",
-    block_limit: "Das Gerät nimmt höchstens {count} Register pro Anfrage; gelesen wird in kleineren Blöcken.",
+    block_limit: "Das Gerät lehnte grössere Blöcke ab: gelesen werden höchstens {count} Register pro Anfrage.",
     no_holes: "Das Gerät lehnt Lesen über Adressen ab, die es nicht hat; gelesen werden nur die Datenpunkte.",
     single_writes: "Das Gerät will Funktion 06 für einzelne Register; geschrieben wird so.",
   },
