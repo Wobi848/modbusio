@@ -24,7 +24,7 @@ network or line and write to no device. Another session may be working in the fo
    - logged in `writes.jsonl`, refused or not; *Changed by you* and the leaving check derived from
      the log, not kept apart
    - input checked at the server: finite numbers, the point's min and max, the type's range, a
-     raw write only with `confirm_raw`; broadcast (unit 0) never written
+     raw write only with `confirm_raw`; broadcast (unit 0) never written (`write::BROADCAST`)
    - the `Host`/`Origin` guard covers the route
 2. **Protocol.** Requests within the spec's limits (`Request::check`), answers matched to their
    request (transaction ID on TCP, unit and CRC on RTU), the 3.5-character gap before a request on

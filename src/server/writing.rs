@@ -128,6 +128,9 @@ pub async fn write(
 ) -> Result<Json<Value>, ApiError> {
     require_unlocked(&state)?;
     let (device, target) = state.device(&request.key)?;
+    if target.unit == 0 {
+        return Err(ApiError::bad_request(write::BROADCAST));
+    }
     let (point, order) = point_to_write(&state, &request)?;
     if point.scale_register.is_some() {
         return Err(ApiError::conflict(format!(

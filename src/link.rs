@@ -37,6 +37,8 @@ pub enum LinkError {
     Closed,
     /// The connection could not be opened.
     Open(String),
+    /// modbusio did not send the request, for this reason.
+    NotSent(String),
     Io(String),
 }
 
@@ -68,6 +70,7 @@ impl LinkError {
             LinkError::OtherUnit(_) => "other_unit".into(),
             LinkError::Closed => "closed".into(),
             LinkError::Open(_) => "open".into(),
+            LinkError::NotSent(_) => "not_sent".into(),
             LinkError::Io(_) => "io".into(),
         }
     }
@@ -90,6 +93,7 @@ impl fmt::Display for LinkError {
             ),
             LinkError::Closed => f.write_str("the device closed the connection"),
             LinkError::Open(reason) => write!(f, "cannot open the connection: {reason}"),
+            LinkError::NotSent(reason) => write!(f, "not sent: {reason}"),
             LinkError::Io(reason) => write!(f, "connection failed: {reason}"),
         }
     }
