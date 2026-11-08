@@ -1,0 +1,5 @@
+.gradle/
+build/
+local.properties
+# built by the Gradle task cargoBuild
+app/src/main/jniLibs/

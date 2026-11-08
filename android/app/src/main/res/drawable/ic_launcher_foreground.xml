@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- web/icon.svg (64 units) without its square, scaled into the 66 dp an adaptive icon always shows -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="1.25" android:scaleY="1.25" android:translateX="14" android:translateY="14">
+        <path android:strokeWidth="4" android:strokeLineCap="round" android:strokeColor="#ffffff"
+            android:pathData="M14,22 L50,22 M14,32 L50,32 M14,42 L50,42" />
+        <path android:fillColor="#7f9bff"
+            android:pathData="M17.5,22a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0 M35.5,32a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0 M23.5,42a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0" />
+    </group>
+</vector>

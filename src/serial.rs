@@ -42,6 +42,7 @@ pub fn ports() -> Result<Vec<PortChoice>, String> {
     Ok(Vec::new())
 }
 
+#[cfg(not(target_os = "android"))]
 fn sort(choices: &mut [PortChoice]) {
     choices.sort_by(|a, b| b.usb.cmp(&a.usb).then_with(|| a.name.cmp(&b.name)));
 }
@@ -94,7 +95,7 @@ fn open_error_text(port: &str, error: &tokio_serial::Error) -> String {
     format!("cannot open {port}: {text}")
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(target_os = "android")))]
 mod tests {
     use super::*;
 

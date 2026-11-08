@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="running">modbusio is running</string>
+    <string name="running_text">Recordings continue in the background. Tap to open.</string>
+    <string name="channel">modbusio running</string>
+    <string name="stop">Stop</string>
+    <string name="starting">modbusio is starting …</string>
+    <string name="failed">modbusio does not start. See modbusio.log in the app data.</string>
+    <string name="saved">Saved in Downloads: %1$s</string>
+    <string name="save_failed">Could not save: %1$s</string>
+    <string name="leave_title">Leave modbusio?</string>
+    <string name="leave_text">modbusio keeps running in the background, so recordings go on. Stop ends it.</string>
+    <string name="leave">Leave</string>
+    <string name="stay">Stay</string>
+    <plurals name="leave_held">
+        <item quantity="one">You changed one value that is not put back: it stays so in the plant until you put it back under Changed by you.</item>
+        <item quantity="other">You changed %1$d values that are not put back: they stay so in the plant until you put them back under Changed by you.</item>
+    </plurals>
+</resources>

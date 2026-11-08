@@ -83,6 +83,25 @@ window.addEventListener("hashchange", () => {
   if (area !== state.area) go(area);
 });
 
+/**
+ * The Android app's back key (android/…/MainActivity.kt): one step back in the page, or the
+ * answer that there is none, with the values still written so the app can say so.
+ */
+window.modbusioBack = () => {
+  let stepped = true;
+  if (state.importing) state.importing = null;
+  else if (state.menu) state.menu = null;
+  else if (state.asking) state.asking = null;
+  else if (state.selectedPoint || state.deviceDetailOpen) {
+    state.selectedPoint = null;
+    state.deviceDetailOpen = false;
+  } else if (state.area === "workspace" && state.selected) state.selected = null;
+  else if (state.area !== "workspace") go("workspace");
+  else stepped = false;
+  if (stepped) render();
+  return JSON.stringify({ stepped, held: state.journal.standing });
+};
+
 window.addEventListener("beforeunload", (event) => {
   // values written and not put back: leaving should be a decision
   if (state.journal.standing) event.preventDefault();
