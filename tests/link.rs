@@ -5,7 +5,7 @@ mod common;
 
 use std::time::Duration;
 
-use modbusio::endpoint::{Endpoint, Parity, SerialSettings};
+use modbusio::endpoint::Endpoint;
 use modbusio::link::LinkError;
 use modbusio::protocol::{Area, Exception, Request, Response};
 use modbusio::values::{DataType, WordOrder, decode};
@@ -154,6 +154,7 @@ async fn a_device_taking_one_connection_refuses_a_second() {
 #[cfg(unix)]
 #[tokio::test]
 async fn rtu_on_a_serial_line_reads_and_stays_silent_for_missing_units() {
+    use modbusio::endpoint::{Parity, SerialSettings};
     let port = common::trunk();
     let links = common::links();
     let settings = SerialSettings {
