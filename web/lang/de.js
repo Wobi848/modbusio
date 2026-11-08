@@ -162,10 +162,11 @@ export default {
     foreignPage: "Nur Seiten dieses modbusio dürfen es nutzen",
     noUnit: "$1 hat keine Unit-ID nach einem /",
     notAddress: "$1 ist keine IP-Adresse mit optionalem Port",
+    broadcast: "Unit 0 ist der Broadcast: Jedes Gerät auf der Leitung würde den Wert übernehmen",
   },
   codes: {
     timeout: "keine Antwort", damaged: "beschädigte Antwort", crc: "CRC-Fehler", malformed: "Antwort passt nicht",
-    other_unit: "andere Unit antwortete", closed: "Verbindung geschlossen", open: "keine Verbindung", io: "Verbindung fehlgeschlagen",
+    other_unit: "andere Unit antwortete", not_sent: "nicht gesendet", closed: "Verbindung geschlossen", open: "keine Verbindung", io: "Verbindung fehlgeschlagen",
     exception_01: "Funktion dem Gerät unbekannt", exception_02: "keine Daten an dieser Adresse", exception_03: "Wert oder Anzahl abgelehnt",
     exception_04: "Gerätefehler", exception_06: "Gerät beschäftigt", exception_0a: "Gateway ohne Weg", exception_0b: "Gerät hinter Gateway still",
   },

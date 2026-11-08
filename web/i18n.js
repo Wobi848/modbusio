@@ -38,6 +38,7 @@ const ERROR_PATTERNS = [
   [/^only pages served by this modbusio may use it$/, "foreignPage"],
   [/^(.+) has no unit ID after a \/$/, "noUnit"],
   [/^(.+) is not an IP address with an optional port$/, "notAddress"],
+  [/^unit 0 is the broadcast: .*$/, "broadcast"],
 ];
 
 function stored() {

@@ -137,7 +137,7 @@ without one. `value` is a number (decimal point or comma), a state text, or on/o
 read first: without it nothing is written. → the log entry `{id, time, device, point, area,
 address, before, written, after, text, before_text, restores, error}`; a device that refused has
 `error` set (status 200, it is logged). `400` for a value the point does not take, `409` for a
-point not writable.
+point not writable, `400` for unit 0, the broadcast.
 
 `GET /api/journal` → `{entries: [entry, standing, kept_other, original], standing}`. `standing`
 marks writes not put back yet; `original` is what restoring writes.

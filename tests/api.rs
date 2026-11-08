@@ -232,6 +232,42 @@ async fn a_raw_write_needs_its_own_confirmation() {
 }
 
 #[tokio::test]
+async fn nothing_is_written_to_unit_0_the_broadcast() {
+    let app = app();
+    let address = common::meter(false).await;
+    let key = format!("tcp:{address}/0");
+    call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(json!({ "key": key })),
+    )
+    .await;
+    call(
+        &app,
+        "POST",
+        "/api/session",
+        Some(json!({ "unlocked": true })),
+    )
+    .await;
+    let raw = json!({ "area": "holding_register", "address": 100, "type": "u16" });
+    let (status, answer) = call(
+        &app,
+        "POST",
+        "/api/write",
+        Some(json!({ "key": key, "raw": raw, "value": "60", "confirm_raw": true })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{answer}");
+    assert!(
+        answer["error"]
+            .as_str()
+            .expect("error")
+            .contains("broadcast")
+    );
+}
+
+#[tokio::test]
 async fn the_explorer_finds_the_addresses_and_the_limit() {
     let app = app();
     let key = drive_on_site(&app).await;

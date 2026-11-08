@@ -63,6 +63,10 @@ impl Entry {
     }
 }
 
+/// Why nothing is written to unit 0.
+pub const BROADCAST: &str =
+    "unit 0 is the broadcast: every device on the line would take the write";
+
 /// What one write did on the device.
 #[derive(Debug, PartialEq)]
 pub struct Outcome {
@@ -82,6 +86,14 @@ pub async fn write(
     limits: &mut Limits,
     timeout: Duration,
 ) -> Outcome {
+    if target.unit == 0 {
+        // unit 0 is the broadcast: every device on the line would take the write, none answers
+        return Outcome {
+            before: None,
+            after: None,
+            error: Some(LinkError::NotSent(BROADCAST.into())),
+        };
+    }
     let count = values.len() as u16;
     let before = match access::read(links, target, area, address, count, timeout).await {
         Ok(before) => before,
@@ -270,6 +282,27 @@ mod tests {
         journal.entries.push(failed);
         journal.entries.push(entry(2, 2500, 2500, None));
         assert!(journal.changed().is_empty());
+    }
+
+    #[tokio::test]
+    async fn nothing_is_sent_to_unit_0() {
+        let links = Links::default();
+        let target = Target {
+            endpoint: "tcp:127.0.0.1:9".parse().expect("endpoint"),
+            unit: 0,
+        };
+        let outcome = write(
+            &links,
+            &target,
+            Area::HoldingRegister,
+            0,
+            &[1],
+            &mut Limits::default(),
+            Duration::from_millis(10),
+        )
+        .await;
+        assert_eq!(outcome.error, Some(LinkError::NotSent(BROADCAST.into())));
+        assert_eq!(outcome.before, None);
     }
 
     #[test]

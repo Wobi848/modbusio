@@ -120,7 +120,7 @@ export default {
   errors: {},
   codes: {
     timeout: "no answer", damaged: "damaged answer", crc: "CRC error", malformed: "answer does not fit",
-    other_unit: "another unit answered", closed: "connection closed", open: "cannot connect", io: "connection failed",
+    other_unit: "another unit answered", not_sent: "not sent", closed: "connection closed", open: "cannot connect", io: "connection failed",
     exception_01: "function unknown to the device", exception_02: "no data at this address", exception_03: "value or count refused",
     exception_04: "device fault", exception_06: "device busy", exception_0a: "gateway has no path", exception_0b: "device behind gateway silent",
   },
