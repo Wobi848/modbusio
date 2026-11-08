@@ -1,0 +1,40 @@
+import { assert, driveWithProfile, noSidewaysScroll, open } from "./helpers.mjs";
+
+export default {
+  name: "settings and layout: sites, German, dark, phone width without sideways scrolling",
+  async setup(api) {
+    await driveWithProfile(api);
+  },
+  async run({ page, base, api }) {
+    await open(page, base, { area: "settings" });
+    await page.fill("#new-site", "School");
+    await page.click("[data-act=new-site]");
+    await page.waitForSelector(".site-now:has-text('School')");
+    assert.equal((await api("site")).devices.length, 0);
+    await page.click(".site-line:has-text('Site') [data-act=site-open]");
+    await page.waitForSelector(".site-now:has-text('Site')");
+    await page.selectOption("#language", "de");
+    await page.waitForSelector("h1:has-text('Einstellungen')");
+    await page.selectOption("#theme", "dark");
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
+    for (const width of [390, 1000, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const area of ["workspace", "explorer", "profiles", "watch", "recording", "changed", "settings"]) {
+        await page.goto(`${base}/#/${area}`);
+        await page.waitForSelector("h1", { state: "attached" });
+        await noSidewaysScroll(page);
+      }
+    }
+    // on a phone the details slide over the list, with the way back
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${base}/#/workspace`);
+    // the tree is not shown on a phone: the device list stands in for it
+    await page.click(".row.mdevices:has-text('Drive')");
+    await page.click("#next");
+    await page.click(".row.mpoints:has-text('Set frequency')");
+    assert.ok(await page.isVisible(".detail.open .big-value"));
+    await page.click(".detail.open .back");
+    await page.click(".phone-back");
+    await page.waitForSelector(".row.mdevices:has-text('Drive')");
+  },
+};
