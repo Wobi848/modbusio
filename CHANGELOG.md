@@ -23,3 +23,4 @@ First version.
   `restore`.
 - Interface in English and German.
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.
+- Android app with the same interface, Modbus TCP only.

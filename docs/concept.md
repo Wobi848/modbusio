@@ -299,9 +299,9 @@ Firefox and WebKit, in a network namespace.
 **State 2026-11-08:** M0 done (own framing against tokio-modbus over TCP, RTU over TCP and a
 pseudo-terminal), M1 done (the command line), M2 done (web interface with every function of
 section 3.2, English and German, tests in Rust, `node --test` and the browsers in Chromium,
-Firefox and WebKit). Open: M3 (a field test on a real line and a real TCP site, the first
-release), M4 (Android), French, Italian and Spanish as drafts (section 4). The check for a new
-version (section 11) is built.
+Firefox and WebKit). M4 built: the Android app (TCP), not yet tried on a phone. The check for a
+new version (section 11) is built. Open: M3 (a field test on a real line and a real TCP site, the
+first release), French, Italian and Spanish as drafts (section 4).
 
 ## 13. Skills and project rules
 

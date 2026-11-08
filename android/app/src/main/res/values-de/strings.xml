@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="running">modbusio läuft</string>
+    <string name="running_text">Aufzeichnungen laufen im Hintergrund weiter. Tippen zum Öffnen.</string>
+    <string name="channel">modbusio läuft</string>
+    <string name="stop">Beenden</string>
+    <string name="starting">modbusio startet …</string>
+    <string name="failed">modbusio startet nicht. Siehe modbusio.log in den App-Daten.</string>
+    <string name="saved">In Downloads gespeichert: %1$s</string>
+    <string name="save_failed">Speichern fehlgeschlagen: %1$s</string>
+    <string name="leave_title">modbusio verlassen?</string>
+    <string name="leave_text">modbusio läuft im Hintergrund weiter, Aufzeichnungen laufen weiter. Beenden schliesst es ganz.</string>
+    <string name="leave">Verlassen</string>
+    <string name="stay">Bleiben</string>
+    <plurals name="leave_held">
+        <item quantity="one">Du hast einen Wert geändert und nicht zurückgeschrieben: Er bleibt so in der Anlage, bis du ihn unter «Von dir geändert» zurückschreibst.</item>
+        <item quantity="other">Du hast %1$d Werte geändert und nicht zurückgeschrieben: Sie bleiben so in der Anlage, bis du sie unter «Von dir geändert» zurückschreibst.</item>
+    </plurals>
+</resources>

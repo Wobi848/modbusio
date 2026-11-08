@@ -8,8 +8,9 @@ why when something fails. bacnetio's sibling for Modbus; see [docs/concept.md](d
 
 ## Download
 
-[Releases](https://github.com/Wobi848/modbusio/releases/latest): `modbusio-windows-x86_64.exe` and
-`modbusio-linux-x86_64`. Nothing to install: start the program, and the browser opens.
+[Releases](https://github.com/Wobi848/modbusio/releases/latest): `modbusio-windows-x86_64.exe`,
+`modbusio-linux-x86_64` and `modbusio-android.apk`. Nothing to install: start the program, and the
+browser opens. On Android, allow installing from this source.
 
 ## Usage
 
@@ -107,6 +108,11 @@ node tests/ui/run.mjs             # the interface in a browser (tests/ui/README.
 
 The interface lives in `web/` (plain HTML, CSS and JavaScript modules, no build step); the JSON
 API it uses is described in [docs/api.md](docs/api.md).
+
+## Android
+
+The app in [android/](android/README.md) runs the same program with the same interface on a phone,
+Modbus TCP only (Android gives a program no serial port).
 
 ## Protocol
 
