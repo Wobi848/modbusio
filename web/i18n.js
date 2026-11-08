@@ -3,9 +3,13 @@
 
 import de from "./lang/de.js";
 import en from "./lang/en.js";
+import es from "./lang/es.js";
+import fr from "./lang/fr.js";
+import it from "./lang/it.js";
 
-export const LANGUAGE_FILES = { en, de };
-/** Languages in the menu. */
+export const LANGUAGE_FILES = { en, de, fr, it, es };
+/** Languages in the menu. French, Italian and Spanish wait for a review by someone from the trade;
+ * reviewers open them with ?lang=fr, ?lang=it or ?lang=es. */
 export const LANGUAGES = [["en", "English"], ["de", "Deutsch"]];
 const STORAGE_KEY = "modbusio.language";
 
@@ -49,6 +53,18 @@ function stored() {
   }
 }
 
+/** A language opened for review with ?lang=, kept like a choice from the menu. */
+function previewed() {
+  const code = new URLSearchParams(globalThis.location?.search ?? "").get("lang");
+  if (!LANGUAGE_FILES[code]) return null;
+  try {
+    localStorage.setItem(STORAGE_KEY, code);
+  } catch {
+    // the review then lasts only until the page is reloaded without ?lang=
+  }
+  return code;
+}
+
 /** The first of the system's languages that is in the menu. */
 function systemLanguage() {
   const tags = globalThis.navigator?.languages ?? [globalThis.navigator?.language];
@@ -58,7 +74,7 @@ function systemLanguage() {
 
 const resolve = (choice) => (LANGUAGE_FILES[choice] ? choice : systemLanguage() ?? "en");
 
-let choice = stored() ?? "auto";
+let choice = previewed() ?? stored() ?? "auto";
 let language = resolve(choice);
 if (globalThis.document) document.documentElement.lang = language;
 

@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 
 globalThis.document = { documentElement: {} };
-const { LANGUAGE_FILES, codeText, errorText, noteText, setLanguage, t } = await import("../../web/i18n.js");
+const { LANGUAGE_FILES, LANGUAGES, codeText, errorText, noteText, setLanguage, t } = await import("../../web/i18n.js");
 const { searchRequest } = await import("../../web/actions.js");
 const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../web/workspace.js");
 const { parseStates, statesText } = await import("../../web/profiles.js");
@@ -43,13 +43,21 @@ test("every note the server sends has a German text with its values", () => {
   const diagnosis = readFileSync(new URL("../../src/diagnosis.rs", import.meta.url), "utf8");
   const variants = [...diagnosis.matchAll(/^ {4}([A-Z]\w+)(?: \{|,)/gm)].map((match) => match[1].replace(/[A-Z]/g, (letter, at) => (at ? "_" : "") + letter.toLowerCase()));
   assert.ok(variants.length > 10);
-  for (const code of variants) assert.ok(code in LANGUAGE_FILES.de.notes, `de: note ${code} is missing`);
+  for (const [language, file] of Object.entries(LANGUAGE_FILES).filter(([code]) => code !== "en")) {
+    for (const code of variants) assert.ok(code in file.notes, `${language}: note ${code} is missing`);
+    for (const key of Object.keys(LANGUAGE_FILES.de.errors)) assert.ok(key in file.errors, `${language}: error ${key} is missing`);
+  }
   setLanguage("de");
   assert.equal(noteText({ code: "gateway", address: "10.0.0.9:502", text: "x" }), "10.0.0.9:502 ist ein Gateway: die Units dahinter suchen.");
   assert.equal(errorText("12x is not a number"), "12x ist keine Zahl");
   assert.equal(codeText("exception_02"), "keine Daten an dieser Adresse");
   setLanguage("en");
   assert.equal(noteText({ code: "gateway", text: "the server's text" }), "the server's text");
+});
+
+test("French, Italian and Spanish are drafts: loaded, not in the menu", () => {
+  assert.deepEqual(LANGUAGES.map(([code]) => code), ["en", "de"]);
+  for (const code of ["fr", "it", "es"]) assert.ok(LANGUAGE_FILES[code], `${code} is not loaded`);
 });
 
 test("the search request is built from the dialog and refused where a field is wrong", () => {

@@ -61,7 +61,8 @@ true when the commands, paths or rules they name change.
 
 ## Languages
 - New texts need every existing language; a test fails otherwise.
-- A new language enters the menu only after review by someone from the trade.
+- A new language enters the menu only after review by someone from the trade; until then it opens
+  with `?lang=` (French, Italian and Spanish).
 
 ## Real plants
 - Never write to a real Modbus device unasked, not even to test. Tests run against the simulators
