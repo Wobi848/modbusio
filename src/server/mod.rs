@@ -42,6 +42,7 @@ struct Assets;
 pub fn router(state: Shared) -> Router {
     Router::new()
         .route("/api/info", get(info))
+        .route("/api/update", get(update))
         .route("/api/adapters", get(scanning::adapters))
         .route("/api/serial-ports", get(scanning::serial_ports))
         .route("/api/scan", get(scanning::state))
@@ -188,6 +189,23 @@ async fn info(
         "data_dir": state.data_dir.as_ref().map(|dir| dir.display().to_string()),
         "problems": *state.load_problems.lock().expect("problems lock"),
     }))
+}
+
+/// The newest release on GitHub and whether it is newer than this one; asked only by the page,
+/// at most once a day and only while the user lets it. Copied from bacnetio.
+async fn update() -> Result<Json<serde_json::Value>, ApiError> {
+    let current = env!("CARGO_PKG_VERSION");
+    let latest = crate::update::latest_release()
+        .await
+        .map_err(|error| ApiError::device(format!("{error:#}")))?;
+    let newer = latest
+        .as_ref()
+        .is_some_and(|release| crate::update::is_newer(&release.version, current));
+    Ok(Json(json!({
+        "current": current,
+        "latest": latest.map(|release| json!({ "version": release.version, "url": release.url })),
+        "newer": newer,
+    })))
 }
 
 async fn static_file(uri: Uri) -> Response {

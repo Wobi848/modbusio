@@ -123,6 +123,8 @@ let port = Number(process.env.MODBUSIO_TEST_PORT) || 18500;
 for (const test of tests.filter((candidate) => candidate.name.includes(filter) || candidate.file.includes(filter))) {
   const server = await startServer(port++);
   const context = await browser.newContext({ viewport: { width: 1500, height: 900 }, acceptDownloads: true, locale: "en-US" });
+  // the look for a new version would go to GitHub: tests stay offline, with nothing newer
+  await context.route("**/api/update", (route) => route.fulfill({ json: { current: "0.1.0", latest: null, newer: false } }));
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => {

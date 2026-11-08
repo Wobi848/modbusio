@@ -172,3 +172,9 @@ the first.
 `GET /api/devices.csv`: the site's devices. `GET /api/points.csv?key=`, `GET /api/points.xlsx?key=`:
 a device's points, read now. `GET /api/site.xlsx`: the device list and a sheet per device with a
 profile, each read now.
+
+## New versions
+
+`GET /api/update` → `{current, latest: {version, url} | null, newer}`: the newest release on GitHub,
+read from the redirect of `…/releases/latest`; `502` without an answer. The page asks at most once a
+day and only while *Look for new versions* is on; without that, modbusio never goes online.

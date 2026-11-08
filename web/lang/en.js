@@ -111,6 +111,7 @@ export default {
     "set.writing": "Writing", "set.unlocked": "Writing is unlocked for this session.", "set.locked": "Writing is locked. It is unlocked when you first write a value.",
     "set.lock": "Lock writing", "set.about": "About", "set.version": "Version", "set.dataDir": "Data folder", "set.noDataDir": "none: nothing is kept",
     "set.keys": "Keys", "set.keysText": "1–6 the areas, 7 the settings, / searches the points, Enter checks a value, Escape closes.",
+    "update.title": "New versions", "update.new": "New version {version}", "update.switch": "Look for new versions once a day", "update.privacy": "GitHub then sees this computer's internet address, nothing else; modbusio never downloads or installs anything. Without internet nothing is shown.", "update.off": "not looked for", "update.checking": "looking …", "update.failed": "no answer (no internet?)", "update.current": "this is the newest",
     "cap.title": "Capture for Wireshark", "cap.lead": "modbusio's own traffic as a pcapng file. Modbus TCP opens in Wireshark as it is.",
     "cap.rtuHint": "RTU frames use the user link type 147: in Wireshark under Preferences → Protocols → DLT_USER, map User 0 (147) to mbrtu.",
     "cap.start": "Start capture", "cap.stop": "Stop capture ({n} frames)", "cap.download": "Save capture ({n} frames)",

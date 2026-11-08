@@ -22,3 +22,4 @@ First version.
 - Command line: `interfaces`, `ports`, `scan`, `listen`, `read`, `explore`, `write`, `changed`,
   `restore`.
 - Interface in English and German.
+- A note in the sidebar when a newer release is out, looked for once a day; can be switched off.

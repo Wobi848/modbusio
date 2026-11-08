@@ -16,9 +16,13 @@ if-addrs = "0.15.0"
 mime_guess = "2"
 rust-embed = "8"
 rust_xlsxwriter = "0.102.0"
+# the check for a new release (update.rs): ring as in bacnetio, so no system TLS on any platform
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.54.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "io-util"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
+webpki-roots = "1"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
 tokio-serial = "5"

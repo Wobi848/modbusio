@@ -9,6 +9,7 @@ import { AREAS, areaOfHash, attempt, go, recall, registerFrame, render, selected
 import "./workspace.js";
 import "./explorer.js";
 import "./pages.js";
+import { checkForUpdate } from "./update.js";
 
 state.areas = AREAS;
 registerFrame({
@@ -138,6 +139,7 @@ async function start() {
   render();
   if (scan && !scan.finished) attempt(pollScan);
   setInterval(tick, 1000);
+  checkForUpdate();
 }
 
 start();

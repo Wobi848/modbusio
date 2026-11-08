@@ -5,6 +5,7 @@ import { h } from "./html.js";
 import { askHtml } from "./asking.js";
 import { LANGUAGES, codeText, currentLocale, languageChoice, localNumber, t } from "./i18n.js";
 import { chartHtml } from "./chart.js";
+import { updateCheckOn } from "./update.js";
 import { deviceName, readingText, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
 
@@ -102,6 +103,16 @@ function sitesCard(state) {
       <button type="button" class="quiet" data-act="import-site">${t("set.importSite")}</button></div></section>`;
 }
 
+/** What the look for a new version found, in words. */
+function updateText(state) {
+  if (!updateCheckOn()) return t("update.off");
+  const update = state.update;
+  if (!update || update.checking) return t("update.checking");
+  if (update.error) return t("update.failed");
+  if (update.newer) return `<a href="${h(update.url)}" target="_blank" rel="noopener">${t("update.new", { version: h(update.version) })}</a>`;
+  return t("update.current");
+}
+
 function viewSettings(state) {
   const languages = [["auto", t("set.system")], ...LANGUAGES].map(([code, name]) => `<option value="${code}"${languageChoice() === code ? " selected" : ""}>${h(name)}</option>`).join("");
   let theme = "auto";
@@ -129,7 +140,10 @@ function viewSettings(state) {
         <div class="actions">${state.unlocked ? `<button type="button" class="tonal" data-act="lock">${t("set.lock")}</button>` : ""}</div></section>
       <section class="card"><h2>${t("cap.title")}</h2><p>${t("cap.lead")}</p><p class="hint">${t("cap.rtuHint")}</p><div class="actions">${captureButtons}</div></section>
       <section class="card"><h2>${t("set.about")}</h2><dl class="facts"><dt>${t("set.version")}</dt><dd class="mono">${h(state.info?.version ?? "")}</dd>
+        <dt>${t("update.title")}</dt><dd>${updateText(state)}</dd>
         <dt>${t("set.dataDir")}</dt><dd class="mono cut">${h(state.info?.data_dir ?? t("set.noDataDir"))}</dd></dl>${problems}
+        <label class="check"><input type="checkbox" id="update-check"${updateCheckOn() ? " checked" : ""}> ${t("update.switch")}</label>
+        <p class="hint">${t("update.privacy")}</p>
         <h3>${t("set.keys")}</h3><p class="hint">${t("set.keysText")}</p></section>
     </div></div>`,
   };
