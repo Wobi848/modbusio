@@ -9,6 +9,8 @@ const MEMORY_KEY = "modbusio.memory";
 export const state = {
   area: "workspace",
   info: null,
+  /** What the last look for a new version found (update.js). */
+  update: null,
   site: { id: "", name: "", devices: [] },
   sites: [],
   profiles: [],

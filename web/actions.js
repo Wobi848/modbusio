@@ -6,6 +6,7 @@ import { setLanguage, t } from "./i18n.js";
 import { attempt, go, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
 import { refreshSession } from "./session.js";
+import { setUpdateCheck } from "./update.js";
 
 export async function loadSite() {
   const [site, sites, profiles] = await Promise.all([api.site(), api.sites(), api.profiles()]);
@@ -343,6 +344,7 @@ export async function onChange(element) {
     return;
   }
   if (element.id === "language") { setLanguage(element.value); render(); return; }
+  if (element.id === "update-check") { setUpdateCheck(element.checked); return; }
   if (element.id === "theme") {
     try {
       localStorage.setItem("modbusio.theme", element.value);

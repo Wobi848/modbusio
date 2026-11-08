@@ -300,8 +300,8 @@ Firefox and WebKit, in a network namespace.
 pseudo-terminal), M1 done (the command line), M2 done (web interface with every function of
 section 3.2, English and German, tests in Rust, `node --test` and the browsers in Chromium,
 Firefox and WebKit). Open: M3 (a field test on a real line and a real TCP site, the first
-release), M4 (Android), the check for a new version (section 11), French, Italian and Spanish as
-drafts (section 4).
+release), M4 (Android), French, Italian and Spanish as drafts (section 4). The check for a new
+version (section 11) is built.
 
 ## 13. Skills and project rules
 

@@ -35,6 +35,7 @@ const query = (key) => `key=${encodeURIComponent(key)}`;
 
 export const api = {
   info: () => call("GET", "/api/info"),
+  update: () => call("GET", "/api/update"),
   adapters: () => call("GET", "/api/adapters"),
   serialPorts: () => call("GET", "/api/serial-ports"),
   scan: () => call("GET", "/api/scan"),

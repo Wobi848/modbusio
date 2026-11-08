@@ -25,6 +25,7 @@ pub mod serial;
 pub mod server;
 pub mod site;
 pub mod storage;
+pub mod update;
 pub mod values;
 pub mod workbook;
 pub mod write;

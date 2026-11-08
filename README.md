@@ -89,6 +89,13 @@ To try it without a plant, start the simulators on loopback addresses:
 - `cargo run --example simulated_rtu` (Linux) the same three devices on a pseudo-terminal; it prints
   the terminal's name (`/dev/pts/7`), which modbusio opens like a USB RS-485 adapter.
 
+### New versions
+
+Once a day modbusio asks GitHub whether a newer release is out and, if so, shows a link to it in
+the sidebar. GitHub sees the computer's internet address, nothing else; modbusio never downloads or
+installs anything. *Settings → About* switches the check off, and then modbusio does not go online
+at all. Without internet, as on most plants, nothing is shown.
+
 ## Build
 
 ```sh

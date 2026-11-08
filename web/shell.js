@@ -53,6 +53,7 @@ export function sideHtml(state) {
   const areas = state.areas.map((area, index) => tab(state, area, index + 1)).join("");
   const settingsCurrent = state.area === "settings" ? ' aria-current="page"' : "";
   return `<a class="brand" href="#/workspace"><img src="icon.svg" alt=""><span class="brand-name">modbusio</span></a>
+    ${state.update?.newer ? `<a class="update-note" href="${h(state.update.url)}" target="_blank" rel="noopener">${t("update.new", { version: h(state.update.version) })}</a>` : ""}
     <div class="head-more open" id="head-more">
     <div class="side-card"><section class="side-part site-group" aria-label="${t("side.site")}"><span class="cap">${t("side.site")}</span>
       <div class="menu-host site-host"><button type="button" id="site-switch" class="quiet site-switch" data-act="site-menu" aria-haspopup="listbox" aria-expanded="${state.menu === "sites"}" title="${h(state.site.name)}"><span class="site-now">${h(state.site.name)}</span>${CHEVRON}</button>${siteMenu(state)}</div>
