@@ -88,7 +88,7 @@ impl fmt::Display for Note {
             Note::WordOrder { order } => write!(f, "The values read plausibly only in word order {order}."),
             Note::BlockLimit { count } => write!(
                 f,
-                "The device takes at most {count} registers per request; reading in smaller blocks."
+                "The device refused larger blocks: reading at most {count} registers per request."
             ),
             Note::NoHoles => f.write_str(
                 "The device refuses reading across addresses it does not have; only the points are read.",

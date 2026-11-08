@@ -34,6 +34,11 @@
 .profile-head .form-field input { width: 180px; }
 .form-field.inline { display: inline-flex; align-items: center; gap: 8px; }
 label.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+/* a group's name over the whole row, its count at the end */
+.rows .row.group { grid-template-columns: minmax(0, 1fr) auto; }
+/* fields in the details, one under the other, with room between them */
+.detail > .form-field, .detail > label.check { margin-top: 10px; }
+.detail > .form-field + .actions { margin-top: 12px; }
 
 .ask.add-device, .ask.add-point { margin: 8px 12px; }
 
