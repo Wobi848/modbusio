@@ -25,6 +25,19 @@ export default {
         await noSidewaysScroll(page);
       }
     }
+    // the drafts are longer than English: nothing may push the page sideways either
+    for (const language of ["fr", "it", "es"]) {
+      for (const width of [390, 1000]) {
+        await page.setViewportSize({ width, height: 844 });
+        for (const area of ["workspace", "explorer", "changed", "settings"]) {
+          await page.goto(`${base}/?lang=${language}#/${area}`);
+          await page.waitForSelector("h1", { state: "attached" });
+          assert.equal(await page.evaluate(() => document.documentElement.lang), language);
+          await noSidewaysScroll(page);
+        }
+      }
+    }
+    await page.goto(`${base}/?lang=de#/workspace`);
     // on a phone the details slide over the list, with the way back
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${base}/#/workspace`);

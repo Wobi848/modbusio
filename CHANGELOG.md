@@ -21,6 +21,6 @@ First version.
 - Watch list, recording with charts, CSV and Excel exports, capture for Wireshark, several sites.
 - Command line: `interfaces`, `ports`, `scan`, `listen`, `read`, `explore`, `write`, `changed`,
   `restore`.
-- Interface in English and German.
+- Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.
 - Android app with the same interface, Modbus TCP only.

@@ -5,7 +5,8 @@ description: "Add or change words the modbusio interface shows, in every languag
 
 # Texts in every language
 
-One file per language in `web/lang/`: `en.js`, `de.js`, with the same keys. `tests/web/ui.test.js`
+One file per language in `web/lang/`: `en.js`, `de.js`, and the drafts `fr.js`, `it.js`, `es.js`,
+with the same keys. `tests/web/ui.test.js`
 fails when a key is missing in a language, a key used in `web/` does not exist, the placeholders
 differ, or a note of `src/diagnosis.rs` has no German text.
 
@@ -22,7 +23,9 @@ differ, or a note of `src/diagnosis.rs` has no German text.
    - an error code of a reading (`timeout`, `exception_02` …): under `codes`
 4. Modbus words stay as the trade uses them: Holding-Register, Input-Register, Coil, Unit-ID,
    Gateway. German in Swiss spelling (ss).
-5. Run `node --test tests/web/*.test.js` and the layout test in German
+5. French, Italian and Spanish are drafts until someone from the trade reviewed them; they stay out
+   of the menu (`LANGUAGES` in `web/i18n.js`) and open with `?lang=fr|it|es`.
+6. Run `node --test tests/web/*.test.js` and the layout test in German
    (`node tests/ui/run.mjs settings`).
 
 Never build sentences from pieces; give the whole sentence a key with placeholders, and a
