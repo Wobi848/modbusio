@@ -1,0 +1,38 @@
+/* The print view (print.js): on screen a page as it will be printed, without modbusio around it;
+   on paper black on white, A4 portrait, the column heads on every page. */
+
+body.printing .side, body.printing .nextbar, body.printing .status { display: none; }
+body.printing { display: block; }
+body.printing .content { height: 100%; }
+body.printing .content > .work { overflow: auto; display: block; }
+.print-scroll { overflow-x: auto; }
+
+.print-page { max-width: 1000px; margin: 0 auto; padding: 24px 16px 40px; background: var(--surface); }
+.print-page h1 { margin: 16px 0 8px; font-size: 22px; }
+.print-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.print-facts { display: grid; grid-template-columns: max-content 1fr; gap: 2px 16px; margin: 0 0 16px; }
+.print-facts dt { color: var(--muted); }
+.print-facts dd { margin: 0; }
+.print-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.print-table th, .print-table td { text-align: left; vertical-align: top; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.print-table thead th { border-bottom: 1px solid var(--line-strong); }
+.print-table .print-group th { padding-top: 12px; font-size: 13px; border-bottom: 1px solid var(--line-strong); }
+.print-table td .chip { height: auto; padding: 0 4px; margin-right: 2px; }
+.print-table td:first-child, .print-table td:nth-child(4) { white-space: nowrap; }
+
+@page { size: A4 portrait; margin: 14mm 12mm; }
+
+@media print {
+  :root { color-scheme: light; --surface: #fff; --bg: #fff; --text: #000; --muted: #444; --line: #bbb; --line-strong: #000; }
+  html, body { height: auto; display: block; background: #fff; color: #000; }
+  body.printing .content, body.printing .content > .work { display: block; overflow: visible; }
+  .print-acts, .toast, .dialog-host { display: none !important; }
+  .print-page { max-width: none; padding: 0; }
+  .print-page h1 { margin-top: 0; }
+  .print-scroll { overflow: visible; }
+  .print-table thead { display: table-header-group; }
+  .print-table tr { break-inside: avoid; }
+  .print-table .print-group { break-after: avoid; }
+  /* states in words with a frame: black and white shows them without colour */
+  .print-table td .chip { background: none; color: #000; border: 1px solid #000; }
+}

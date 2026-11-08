@@ -1,0 +1,133 @@
+/* Layout per window width: phone and narrow windows on top, from 1000 px the sidebar */
+
+/* ---------------------------------------------------------------- Narrow windows and phone */
+
+@media (max-width: 999px) {
+  .side { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 6px 8px; padding: 8px 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .side .brand-name { display: none; }
+  .side .head-toggle { display: flex; min-width: 0; justify-content: flex-start; gap: 8px; padding: 0 10px; }
+  .side .head-toggle .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
+  .side .head-toggle .state { flex: none; color: var(--muted); font-weight: 500; }
+  .side .head-toggle .caret { margin-left: auto; color: var(--muted); }
+  .side .head-more { display: none; }
+  .side .head-more.open { display: contents; }
+  .side .site-search { grid-column: 1 / -1; }
+  .side .side-card { grid-column: 1 / -1; }
+  /* one line to swipe; the fade at the end says more tabs follow */
+  .side .tabs { grid-column: 1 / -1; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; mask-image: linear-gradient(to right, #000 85%, transparent); }
+  .side .tabs::-webkit-scrollbar { display: none; }
+  .side .tabs a { flex: none; padding: 0 8px; border-radius: 0; border-bottom: 2px solid transparent; box-shadow: none; background: none; }
+  .side .tabs a[aria-current="page"] { border-bottom-color: var(--brand); background: none; }
+  .side .tabs .n { margin-left: 0; }
+  .side .settings-link { grid-row: 1; grid-column: 3; }
+  .side .settings-link.help-link { grid-column: 4; }
+  .side .settings-link .side-label { display: none; }
+  .nav-i { display: none; }
+  .side .update-note { grid-column: 1 / -1; }
+  .side .settings-link .nav-i { display: block; color: inherit; }
+  .pagehead h1, .pagehead p.lead { display: none; }
+  .pagehead { flex-basis: 100%; }
+  .nextbar { padding: 8px 12px; }
+  .nextbar:not(:has(#next, .head-tool.stays)) { display: none; }
+  #next { flex: 1; justify-content: center; }
+  /* the page head keeps only the next step; its tool button moves to the toolbar (PageHead) */
+  .next-acts { flex: 1; }
+  .next-acts .head-tool:not(.stays) { display: none; }
+  button, select, input, a.button, a.quiet { height: 36px; }
+  .toolbar input[type=search] { flex: 1 1 100%; width: auto; }
+  .toolbar .end { margin-left: 0; }
+  /* list over the whole width with the way back; the groups in the table stand in for the tree */
+  .listwrap { border-right: 0; }
+  /* the way back and the search share a row, so the points start higher */
+  .phone-back { display: inline-flex; flex: none; }
+  .toolbar .phone-back + input[type=search] { flex: 1 1 0; min-width: 0; }
+  .detail.open { inset: 0; width: auto; }
+  .row.head { display: none; }
+  /* without the head above them the groups stick at the top, or they cover the first row */
+  .rows .row.group[data-group] { top: 0; }
+  .row.points { scroll-margin-top: 38px; }
+  .row.devices { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; }
+  .row.devices .objects .label { display: inline; }
+  .row.devices > :nth-child(3), .row.devices > :nth-child(4), .row.devices > :nth-child(5) { grid-column: 1 / -1; text-align: left; font-size: 12.5px; color: var(--muted); }
+  /* watch and record beside the value, the state chips below: one line for an ordinary point */
+  .row.points { grid-template-columns: minmax(0, 1fr) auto auto; padding-block: 4px; }
+  .row.points > .type, .row.points > .desc, .row.points > .id { display: none; }
+  .row.points > .chips { display: contents; }
+  .row.points > .chips > .chip { grid-column: 1 / -1; justify-self: start; }
+  .row.points > .chips > .quicks { grid-row: 1; grid-column: 3; }
+  /* the point on a line of its own, so time, what and result share the second line */
+  .row.log { grid-template-columns: auto minmax(0, 1fr) auto; padding-block: 4px; }
+  .row.log > .name { grid-column: 1 / -1; order: -1; }
+  .row.log > .reason { grid-column: 1 / -1; text-align: left; white-space: normal; }
+  /* the point on a line of its own, value, priority and release below it */
+  .row.held { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .row.held > .name { grid-column: 1 / -1; }
+  .row.held > .val { text-align: left; }
+  .row.held > .chips { justify-content: flex-start; }
+  .row.problem { grid-template-columns: minmax(0, 1fr) auto; padding-block: 6px; row-gap: 2px; }
+  /* the device above, so the value stays beside its point */
+  .row.problem > :first-child { grid-column: 1 / -1; }
+  .row.problem > .chips { grid-column: 1 / -1; justify-content: flex-start; }
+  .row.problem > .chips:empty, .row.problem > span:empty { display: none; }
+  .menu.dialog { position: fixed; left: 12px; right: 12px; top: 60px; min-width: 0; }
+  .facts { grid-template-columns: 110px minmax(0, 1fr); }
+}
+
+/* ---------------------------------------------------------------- Details */
+
+/* without room for three columns the details slide over the table, with the way back */
+@media (max-width: 1199px) {
+  .detail { display: none; }
+  .detail.open { display: block; position: fixed; top: 0; right: 0; bottom: 0; width: min(440px, 100vw); z-index: 30; box-shadow: var(--shadow); }
+  .detail .back { display: inline-flex; margin-bottom: 8px; }
+  .drawer-only { display: inline-flex; }
+  .resize[data-panel=detail] { display: none; }
+}
+
+/* ---------------------------------------------------------------- Sidebar (wide windows) */
+
+@media (min-width: 1000px) {
+  /* the widths follow the window; a width the user dragged comes in as a variable (panels.js) */
+  body { grid-template-rows: minmax(0, 1fr); grid-template-columns: var(--side-width, 232px) minmax(0, 1fr); }
+  .workspace { grid-template-columns: var(--tree-width, clamp(200px, 16vw, 300px)) minmax(0, 1fr); }
+  .tree { display: block; }
+  .resize { display: block; }
+  /* The sidebar is dark in both themes: so it separates from the content at first sight.
+     The colours apply to everything inside, also to the menus opening from it. */
+  .side {
+    color-scheme: dark;
+    color: #e9eef6;
+    --surface: #0a1120; --bg: #0f182b; --sunken: #18233a; --line: #222e45; --line-strong: #56668a;
+    --text: #e8edf5; --muted: #a3aec2;
+    --accent: #8ea8ff; --accent-strong: #b0c2ff; --accent-ink: #0a1230; --accent-soft: #1e2c55;
+    --brand: #8ea8ff; --ok: #8fdb52; --ok-soft: #1f3313; --warn: #f0a548; --warn-soft: #33240f; --err: #ff8378; --err-soft: #3b1815;
+    position: relative; z-index: 30;
+    display: flex; flex-direction: column; gap: 16px; padding: 12px;
+    background: var(--surface); border-right: 1px solid var(--line);
+  }
+  /* the dark sidebar's accent follows the chosen accent colour */
+  :root[data-accent="crimson"] .side { --accent: #ff6f8d; --accent-strong: #ff9bb0; --accent-ink: #2a0712; --accent-soft: #3b1622; --brand: #ff6f8d; }
+  :root[data-accent="violet"] .side { --accent: #a98bfa; --accent-strong: #c4b5fd; --accent-ink: #1a0b3d; --accent-soft: #2a1d4d; --brand: #a98bfa; }
+  :root[data-accent="teal"] .side { --accent: #2dd4bf; --accent-strong: #5eead4; --accent-ink: #042f2c; --accent-soft: #10302d; --brand: #2dd4bf; }
+  /* the sidebar follows the background, darker than the content in every choice */
+  :root[data-background="grey"] .side, :root[data-background="graphite"] .side { --surface: #0c0d0f; --bg: #131416; --sunken: #1b1d20; --line: #26282c; --line-strong: #5f636b; --text: #ececee; --muted: #adb0b8; color: #ececee; }
+  :root[data-background="black"] .side { --surface: #000000; --bg: #0b0b0d; --sunken: #141416; --line: #232327; --line-strong: #5a5a63; --text: #f0f0f2; --muted: #a9a9b2; color: #f0f0f2; }
+  :root[data-background="warm"] .side { --surface: #1a1610; --bg: #211c15; --sunken: #2a241b; --line: #3a3226; --line-strong: #7a6d5a; --text: #f1ece4; --muted: #b9ae9d; color: #f1ece4; }
+  .side .tabs { flex: 1; min-height: 0; flex-direction: column; overflow-y: auto; }
+  .side .tabs a { height: 38px; color: var(--text); font-weight: 500; }
+  /* the page you are on: a bar, a light ground and the icon in the accent, seen at once but not
+     filled, so the page's next step stays the one filled thing (SidebarNav, concept-hierarchy.md) */
+  .side .tabs a[aria-current="page"], .side .tabs a[aria-current="page"]:hover { color: var(--text); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--brand); font-weight: 650; }
+  .side .tabs a[aria-current="page"] .nav-i { color: var(--accent); }
+  .side .settings-link { width: 100%; justify-content: flex-start; }
+  .side .settings-link[aria-current="page"], .side .settings-link[aria-current="page"]:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .side .settings-link[aria-current="page"] .nav-i { color: var(--accent); }
+  .side .menu { left: calc(100% + 8px); top: 0; }
+  /* the site list opens under its field, as wide as it */
+  .side .menu.site-choices { left: 0; top: calc(100% + 4px); }
+}
+
+/* from 1200 px the details stand beside the list instead of covering it */
+@media (min-width: 1200px) {
+  .workspace { grid-template-columns: var(--tree-width, clamp(200px, 16vw, 300px)) minmax(0, 1fr) var(--detail-width, clamp(300px, 24vw, 420px)); }
+}

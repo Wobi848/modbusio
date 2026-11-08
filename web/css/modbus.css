@@ -1,0 +1,73 @@
+/* modbusio's own rows and parts, on top of the styles taken from bacnetio. Colours only from
+   tokens.css. */
+
+.row.mdevices { grid-template-columns: minmax(160px, 2fr) minmax(120px, 1.4fr) 56px minmax(120px, 1.2fr) minmax(100px, 1fr); }
+.row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) minmax(90px, auto); min-height: 34px; }
+.row.mpoints .value { font-weight: 650; text-align: right; }
+.row.mpoints.err .value { font-weight: 500; }
+.row.registers { grid-template-columns: 90px 64px 64px 56px 48px minmax(90px, 1fr) minmax(90px, 1fr); min-height: 30px; }
+.row.registers.missing { grid-template-columns: 90px minmax(0, 1fr); color: var(--muted); }
+.row.registers .num { text-align: right; }
+.row.mprofiles { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 70px 110px; }
+.row.mprofile-points { grid-template-columns: minmax(140px, 2fr) minmax(80px, 1fr) 90px 64px 70px 60px 80px; min-height: 32px; }
+.row.mimport { grid-template-columns: minmax(140px, 2fr) 70px 80px 60px 50px minmax(90px, 1fr); min-height: 28px; }
+.row.mwatch { grid-template-columns: minmax(140px, 1.5fr) minmax(120px, 1.2fr) minmax(120px, 1fr) auto; }
+.row.mwatch .value { font-weight: 650; text-align: right; }
+.row.mrecord { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 80px auto; }
+.row.mlog { grid-template-columns: 56px 150px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(120px, auto); }
+.row .num { font-variant-numeric: tabular-nums; }
+.dim { color: var(--muted); opacity: .7; }
+
+.big-value { margin: 4px 0 12px; font-size: 32px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
+.big-value.err { font-size: 16px; color: var(--err); }
+
+.split { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1000px) {
+  .split { grid-template-columns: minmax(0, 1fr) var(--detail-width, clamp(300px, 26vw, 440px)); }
+  .split.single { grid-template-columns: minmax(0, 1fr); }
+}
+.split > .detail { overflow-y: auto; }
+
+.explore-form, .profile-head { flex-wrap: wrap; align-items: end; gap: 8px 12px; }
+.explore-form .form-field input { width: 90px; }
+.explore-form .form-field select { max-width: 260px; }
+.profile-head .form-field input { width: 180px; }
+.form-field.inline { display: inline-flex; align-items: center; gap: 8px; }
+label.check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.ask.add-device, .ask.add-point { margin: 8px 12px; }
+
+.charts { display: grid; gap: 12px; padding: 12px; }
+.chart figcaption { margin-bottom: 4px; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.chart svg { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.chart .axis { fill: var(--muted); font-size: 11px; font-family: var(--mono); }
+.legend .swatch { display: inline-block; width: 12px; height: 3px; border-radius: 2px; }
+
+.modal-box.import-box { width: min(1000px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; }
+.import-settings, .import-columns { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 12px; margin: 8px 0; }
+.import-rows { max-height: 320px; margin: 8px 0; border: 1px solid var(--line); border-radius: 8px; }
+
+ul.plain { margin: 6px 0; padding-left: 18px; }
+.sites .site-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0; }
+.sites .site-line .cut { flex: 1 1 160px; }
+
+@media (max-width: 999px) {
+  .row.mdevices { grid-template-columns: minmax(0, 1fr) auto; }
+  .row.mdevices > :nth-child(n + 3) { display: none; }
+  .row.mpoints { grid-template-columns: minmax(0, 1fr) auto; }
+  .row.mpoints > :nth-child(2), .row.mpoints > :nth-child(4) { display: none; }
+  .row.registers { grid-template-columns: 80px 60px minmax(0, 1fr); }
+  .row.registers > :nth-child(n + 4):not(:nth-child(6)) { display: none; }
+  .row.mprofile-points { grid-template-columns: minmax(0, 1fr) 90px; }
+  .row.mprofile-points > :nth-child(n + 4), .row.mprofile-points > :nth-child(2) { display: none; }
+  .row.mlog { grid-template-columns: minmax(0, 1fr) auto; }
+  .row.mlog > :nth-child(1), .row.mlog > :nth-child(2) { display: none; }
+  .row.mwatch, .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .row.mwatch > :nth-child(2), .row.mrecord > :nth-child(3) { display: none; }
+  .row.mimport { grid-template-columns: minmax(0, 1fr) 80px minmax(80px, auto); }
+  .row.mimport > :nth-child(2), .row.mimport > :nth-child(4), .row.mimport > :nth-child(5) { display: none; }
+}
+.narrow-only { display: none; }
+@media (max-width: 999px) { .narrow-only { display: inline-flex; } }
+.search-settings .seg { flex-wrap: wrap; max-width: 100%; }
+.row.mlog { grid-template-columns: 56px 170px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(120px, auto); }

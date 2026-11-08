@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>modbusio</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<!-- order counts: later rules override earlier ones -->
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/bars.css">
+<link rel="stylesheet" href="css/list.css">
+<link rel="stylesheet" href="css/pages.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/print.css">
+<link rel="stylesheet" href="css/modbus.css">
+<script src="theme.js"></script>
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<aside class="side" id="side"></aside>
+<div class="content">
+  <div class="nextbar" id="nextbar"></div>
+  <main class="work" id="work"></main>
+  <footer class="bar status" id="status" aria-live="polite"></footer>
+</div>
+<div id="dialog" class="dialog-host"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

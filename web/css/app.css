@@ -1,0 +1,142 @@
+/* A tool over the whole window height: sidebar, page head and status bar stay, only the work area
+   scrolls. 14 px text, 32 px controls. Buttons in tiers as in mbusio (concept section 3.1):
+   filled = the one next step, tonal = beside the main path, quiet = rare. */
+
+* { box-sizing: border-box; }
+
+/* hidden always applies, even if a class sets display */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  font: 14px/1.5 Inter, "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p { margin: 0; }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.sub { color: var(--muted); font-size: 13px; font-weight: 400; }
+.hint { color: var(--muted); font-size: 12.5px; }
+a { color: var(--accent); }
+
+/* ---------------------------------------------------------------- Controls */
+
+button, select, input, a.button, a.quiet {
+  font: inherit;
+  height: 32px;
+  border-radius: 8px;
+  color: inherit;
+}
+
+button, a.quiet, a.button {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0 12px;
+  transition: background .12s var(--ease), filter .12s var(--ease);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+button:not(.quiet, .tonal, .plain, .icon, .chip):hover, a.button:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+button.tonal { background: var(--accent-soft); color: var(--accent); }
+/* Three kinds of button: the page's next step filled in the accent; tools neutral, the accent only
+   under the mouse; toggles in their segmented rows (list.css). All keep border, background and a word. */
+button.quiet, a.quiet { background: var(--surface); border-color: var(--line-strong); color: var(--text); }
+button.quiet:hover, a.quiet:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+button.quiet[aria-expanded="true"] { border-color: var(--accent); background: var(--accent-soft); }
+button.tonal:hover { background: var(--accent-soft); border-color: var(--accent-strong); color: var(--accent-strong); }
+button.plain { background: transparent; border-color: transparent; color: var(--text); font-weight: 500; }
+button.plain:hover { background: var(--sunken); }
+button.icon { width: 32px; padding: 0; justify-content: center; background: var(--surface); border-color: var(--line-strong); color: var(--text); }
+button:disabled { opacity: .45; cursor: default; }
+
+select, input {
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  /* colour explicitly: otherwise Windows takes a system colour in the dark theme */
+  color: var(--text);
+}
+option { background: var(--surface); color: var(--text); }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+kbd {
+  font: 10.5px var(--mono);
+  padding: 0 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  color: var(--muted);
+}
+
+/* state: dot and word, never just colour */
+.state { display: inline-flex; align-items: center; gap: 6px; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); flex: none; }
+.dot.on { background: var(--ok); }
+.dot.warn { background: var(--warn); }
+.dot.err { background: var(--err); }
+.dot.busy { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .35; } }
+
+.chip { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 6px; font-size: 12px; font-weight: 600; background: var(--sunken); color: var(--muted); white-space: nowrap; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.err { background: var(--err-soft); color: var(--err); }
+.chip.accent { background: var(--accent-soft); color: var(--accent); }
+button.chip { height: 22px; border: 0; cursor: pointer; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 50;
+  max-width: min(720px, calc(100vw - 32px));
+  padding: 8px 12px; border-radius: 8px; background: var(--text); color: var(--bg); box-shadow: var(--shadow);
+}
+.toast.error { background: var(--err); color: var(--err-ink); }
+
+/* The head of the sidebar (SidebarHead): one card, the site as a select field, below it the
+   network and the state beside the search settings; then the search on its own */
+.side-card { container-type: inline-size; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.side-card .side-part { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 10px 12px; }
+.side-card .cap { color: var(--muted); font-size: 11.5px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.side-card .site-host { display: flex; margin: 2px 0 4px; }
+.side-card .site-switch { flex: 1; min-width: 0; justify-content: space-between; gap: 8px; padding: 0 10px; font-size: 15px; font-weight: 700; text-align: left; }
+.side-card .site-switch .site-now { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.side-card .site-switch .chevron { flex: none; width: 16px; height: 16px; color: var(--muted); }
+.side-card .side-meta { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+.side-card .side-detail { display: grid; gap: 2px; min-width: 0; color: var(--muted); font-size: 12.5px; }
+.side-card .side-detail .mono { overflow-wrap: anywhere; }
+/* the way off the trunk wraps below its line in a narrow sidebar, beside it where there is room */
+.side-card .side-trunk { display: grid; justify-items: start; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+/* the state wraps rather than being cut off: it says what to do */
+.side-card .state { min-width: 0; line-height: 1.25; }
+/* the search settings: a framed icon, the word joins it where the card has room */
+.side-card .side-tool { width: 32px; padding: 0; justify-content: center; }
+.side-card .side-tool .nav-i { display: block; width: 18px; height: 18px; color: inherit; }
+.side-card .side-tool-label { display: none; }
+@container (min-width: 280px) {
+  .side-card .side-trunk { grid-template-columns: minmax(0, 1fr) auto; align-items: center; justify-items: stretch; }
+  .side-card .side-tool { width: auto; padding: 0 10px; }
+  .side-card .side-tool-label { display: inline; }
+}
+/* Menu: items 32 px, a sunken hover, the chosen site light and bold; all sites below a hairline */
+.menu.site-choices { display: grid; gap: 2px; min-width: 100%; max-width: 340px; padding: 6px; border-radius: 10px; }
+.menu.site-choices button { height: 32px; justify-content: flex-start; min-width: 0; padding: 0 10px; border-color: transparent; border-radius: 6px; background: none; font-weight: 500; }
+.menu.site-choices button:hover { background: var(--sunken); }
+.menu.site-choices button[aria-checked="true"] { background: var(--accent-soft); font-weight: 700; }
+.menu.site-choices .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu.site-choices hr { width: 100%; margin: 4px 0; border: 0; border-top: 1px solid var(--line); }
+
+/* A newer release is out: a link to its page, below the site */
+/* filled green, apart from the blue of the chosen area: it has to catch the eye */
+.update-note { display: block; padding: 8px 10px; border: 1px solid var(--ok); border-radius: 10px; background: var(--ok); color: var(--surface); font-weight: 700; text-decoration: none; }
+.update-note:hover { filter: brightness(1.1); }
+.update-status .mono { display: block; overflow-wrap: anywhere; }

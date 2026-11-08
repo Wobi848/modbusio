@@ -1,0 +1,69 @@
+/* Bars: sidebar content, page head, status bar, menus */
+
+.bar { display: flex; align-items: center; gap: 10px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--line); }
+
+/* ---------------------------------------------------------------- Sidebar parts */
+
+.brand { display: inline-flex; align-items: center; gap: 9px; padding: 2px 2px 4px; font-weight: 750; font-size: 16px; letter-spacing: -.01em; text-decoration: none; color: var(--text); }
+.brand img { width: 24px; height: 24px; }
+/* the folded head is for narrow screens (layout.css); the sidebar shows everything */
+.head-toggle { display: none; }
+.head-more { display: contents; }
+.side .site-search { position: relative; display: block; }
+.side #site-search { width: 100%; padding-right: 30px; }
+/* the key that jumps here, as on the keyboard */
+.side .site-search kbd { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); padding: 0 6px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--muted); font: 600 11px/18px var(--mono); pointer-events: none; }
+.side .site-search:focus-within kbd, .side #site-search:not(:placeholder-shown) + kbd { display: none; }
+
+.tabs { display: flex; gap: 2px; }
+.tabs a {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 36px; padding: 0 10px;
+  color: var(--muted); font-weight: 600; text-decoration: none;
+  transition: background .12s var(--ease);
+  border-radius: 8px;
+}
+.tabs a:hover { color: var(--text); background: var(--sunken); }
+.tabs a[aria-current="page"] { color: var(--text); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--brand); }
+.tabs a.off { opacity: .5; }
+.tabs .n { margin-left: auto; min-width: 20px; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; padding: 0 6px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); }
+.tabs .n.warn { background: var(--warn-soft); color: var(--warn); }
+.tabs .n:empty { display: none; }
+.nav-i { flex: none; width: 18px; height: 18px; color: var(--muted); }
+.tabs a[aria-current="page"] .nav-i { color: var(--accent); }
+
+/* ---------------------------------------------------------------- Page head */
+
+.content { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.content > .work { flex: 1; }
+.nextbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 16px 20px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.pagehead { flex: 1 1 320px; min-width: 0; }
+.pagehead h1 { font-size: 22px; line-height: 1.25; font-weight: 700; letter-spacing: -.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pagehead p { margin-top: 2px; color: var(--muted); }
+.next-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+#next { flex: 0 1 auto; max-width: 100%; height: auto; min-height: 36px; padding: 5px 16px; white-space: normal; text-align: left; }
+
+/* ---------------------------------------------------------------- Status bar */
+
+.status { min-height: 32px; padding: 0 20px; gap: 12px; border-top: 1px solid var(--line); border-bottom: 0; font-size: 12px; color: var(--muted); overflow: hidden; white-space: nowrap; }
+.status .state { color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.status button[data-act="stop-running"] { min-height: 24px; padding: 0 10px; flex: none; }
+/* on a narrow screen the adapter gives way first, so what is running stays readable */
+.status > .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; flex-shrink: 100; }
+.status .chips { display: flex; gap: 6px; margin-left: auto; flex: none; }
+
+/* ---------------------------------------------------------------- Menus */
+
+.menu-host { position: relative; display: inline-flex; align-items: center; }
+.menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 40;
+  min-width: 300px; max-height: 80vh; overflow: auto;
+  padding: 12px;
+  background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: var(--shadow);
+  color: var(--text);
+}
+.menu.end { left: auto; right: 0; }
+.menu.dialog { display: grid; gap: 8px; min-width: 360px; }
+.menu .row { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 8px; min-height: 0; padding: 0; border: 0; }
+.menu .row.end { display: flex; justify-content: flex-end; gap: 8px; }
+.menu h3 { font-size: 13px; }
