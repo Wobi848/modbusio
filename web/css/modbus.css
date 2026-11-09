@@ -1,7 +1,7 @@
 /* modbusio's own rows and parts, on top of the styles taken from bacnetio. Colours only from
    tokens.css. */
 
-.row.mdevices { grid-template-columns: minmax(160px, 2fr) minmax(120px, 1.4fr) 56px minmax(120px, 1.2fr) minmax(100px, 1fr); }
+.row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 48px minmax(100px, 1.2fr) minmax(0, 1fr); }
 .row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) minmax(90px, auto); min-height: 34px; }
 .row.mpoints .value { font-weight: 650; text-align: right; }
 .row.mpoints.err .value { font-weight: 500; }
@@ -11,12 +11,18 @@
 .row.mprofiles { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 70px 110px; }
 .row.mprofile-points { grid-template-columns: minmax(140px, 2fr) minmax(80px, 1fr) 90px 64px 70px 60px 80px; min-height: 32px; }
 .row.mimport { grid-template-columns: minmax(140px, 2fr) 70px 80px 60px 50px minmax(90px, 1fr); min-height: 28px; }
-.row.mwatch { grid-template-columns: minmax(140px, 1.5fr) minmax(120px, 1.2fr) minmax(120px, 1fr) auto; }
+/* Columns never sized by their content: the head row is a grid of its own, and an empty head cell
+   over a column of buttons would make its columns narrower than the rows'. */
+.row.mwatch { grid-template-columns: minmax(140px, 1.5fr) minmax(120px, 1.2fr) minmax(120px, 1fr) 8rem; }
+.row.mwatch > button, .row.mrecord > button { justify-self: end; }
 .row.mwatch .value { font-weight: 650; text-align: right; }
-.row.mrecord { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 80px auto; }
-.row.mlog { grid-template-columns: 56px 150px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(120px, auto); }
+.row.mrecord { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 80px 8rem; }
+.row.mlog { grid-template-columns: 56px 170px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(0, 18rem); }
+.row.mlog > .chips { justify-content: flex-end; }
 .row .num { font-variant-numeric: tabular-nums; }
 .dim { color: var(--muted); opacity: .7; }
+/* a value with its name breaks only before or after, never inside */
+.whole { white-space: nowrap; }
 
 .big-value { margin: 4px 0 12px; font-size: 32px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
 .big-value.err { font-size: 16px; color: var(--err); }
@@ -63,10 +69,13 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
   .row.mpoints > :nth-child(2), .row.mpoints > :nth-child(4) { display: none; }
   .row.registers { grid-template-columns: 80px 60px minmax(0, 1fr); }
   .row.registers > :nth-child(n + 4):not(:nth-child(6)) { display: none; }
+  .row.mprofiles { grid-template-columns: minmax(0, 1fr) auto; }
+  .row.mprofiles > :nth-child(2), .row.mprofiles > :nth-child(3) { display: none; }
   .row.mprofile-points { grid-template-columns: minmax(0, 1fr) 90px; }
   .row.mprofile-points > :nth-child(n + 4), .row.mprofile-points > :nth-child(2) { display: none; }
   .row.mlog { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mlog > :nth-child(1), .row.mlog > :nth-child(2) { display: none; }
+  .row.mlog > .chips { grid-column: 1 / -1; padding-bottom: 6px; }
   .row.mwatch, .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
   .row.mwatch > :nth-child(2), .row.mrecord > :nth-child(3) { display: none; }
   .row.mimport { grid-template-columns: minmax(0, 1fr) 80px minmax(80px, auto); }
@@ -74,5 +83,7 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 }
 .narrow-only { display: none; }
 @media (max-width: 999px) { .narrow-only { display: inline-flex; } }
-.search-settings .seg { flex-wrap: wrap; max-width: 100%; }
-.row.mlog { grid-template-columns: 56px 170px minmax(160px, 2fr) minmax(140px, 1.4fr) minmax(120px, auto); }
+/* the ways to search side by side in equal parts; a long name breaks inside its own part instead of
+   pushing a part into a second row (two parts on Android, three elsewhere) */
+.search-settings .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
+.search-settings .seg button { height: auto; min-height: 30px; padding: 4px 6px; white-space: normal; line-height: 1.2; justify-content: center; text-align: center; }

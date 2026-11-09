@@ -65,8 +65,20 @@ export async function chooseDevice(page, text) {
   await page.click(`.tree .node:has-text("${text}")`);
 }
 
-/** The page has no sideways scrolling. */
+/** The page has no sideways scrolling, and no part of a row is cut off at the right edge. */
 export async function noSidewaysScroll(page) {
   const wide = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   assert.ok(wide <= 1, `the page scrolls sideways by ${wide} px`);
+  const cut = await page.evaluate(() => [...document.querySelectorAll(".row > *")]
+    .filter((cell) => cell.getClientRects().length && cell.getBoundingClientRect().right > document.documentElement.clientWidth + 1)
+    .map((cell) => cell.textContent.trim()));
+  assert.deepEqual(cut, [], "parts of rows reach past the right edge");
+}
+
+/** Each column head stands over its values: the head row's grid has the same columns as the rows. */
+export async function headsOverValues(page, rowClass) {
+  const grids = await page.evaluate((name) => [...document.querySelectorAll(`.row.${name}:not(.group)`)]
+    .map((row) => getComputedStyle(row).gridTemplateColumns), rowClass);
+  assert.ok(grids.length >= 2, `a head and rows of .${rowClass}`);
+  for (const grid of grids.slice(1)) assert.equal(grid, grids[0], `the columns of .${rowClass} differ from its head`);
 }

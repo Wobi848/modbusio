@@ -1,4 +1,4 @@
-import { assert, chooseDevice, driveWithProfile, open } from "./helpers.mjs";
+import { assert, chooseDevice, driveWithProfile, headsOverValues, open } from "./helpers.mjs";
 
 export default {
   name: "watch list and recording: points across devices, charts and samples",
@@ -15,11 +15,13 @@ export default {
     await page.waitForSelector(".row.mpoints:has-text('watched')");
     await page.keyboard.press("4");
     await page.waitForSelector(".row.mwatch:has-text('24.98 Hz')");
+    await headsOverValues(page, "mwatch");
     await page.keyboard.press("5");
     await page.selectOption("#record-interval", "5");
     await page.click("#next");
     await page.waitForSelector(".status .chip:has-text('Recording')");
     await page.waitForFunction(() => document.querySelector(".chart path[d^='M']"), null, { timeout: 15000 });
+    await headsOverValues(page, "mrecord");
     const recording = await api("recording");
     assert.ok(recording.series[0].samples.length >= 1);
     await page.click("[data-act=record-stop]");
