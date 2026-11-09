@@ -260,6 +260,19 @@ Taken over from bacnetio (its section 5), the reasons are the same:
   implementation independent of modbusio's. Serial ports through `tokio-serial` as in bacnetio.
 - **Layers:** server (HTTP) → logic (find, read, profiles, write, diagnosis) → transport (TCP,
   serial). The logic knows no HTTP, the server knows no Modbus.
+- **Connections (`link.rs`, `links.rs`):** one per line, shared by everything.
+  - A TCP connection is closed after 10 seconds without a request (`IDLE_CLOSE`): many devices
+    take one or a few connections, and the plant's own master must get in again after a search.
+    A serial port stays open; *Listen* closes it.
+  - A read that finds the connection closed by the device is sent once more on a new one. A
+    write never: the device may have taken the first.
+  - What arrived of a TCP answer stays with the connection when the wait runs out, so a late
+    answer is skipped by its transaction number instead of shifting every answer after it. A port
+    answering something that is no Modbus TCP closes the connection (code `io`).
+  - Two-wire adapters without direction control give back what they send. The echo is taken off
+    before the answer, also when it arrives in pieces. The answer to 05, 06 and 08 repeats the
+    request: whether a line echoes is learnt from the reads before (every write reads first), and
+    where it is not known yet, the request coming back once with nothing after it is the answer.
 
 ## 10. Android
 

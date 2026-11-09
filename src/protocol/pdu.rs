@@ -147,6 +147,19 @@ impl Request {
         }
     }
 
+    /// The request changes nothing in the device: sending it twice does no harm.
+    pub fn only_reads(&self) -> bool {
+        matches!(self, Request::Read { .. } | Request::Identify { .. })
+    }
+
+    /// The normal answer repeats the request byte for byte (spec 6.5, 6.6, 6.8).
+    pub fn answer_repeats_it(&self) -> bool {
+        matches!(
+            self,
+            Request::WriteCoil { .. } | Request::WriteRegister { .. } | Request::Echo { .. }
+        )
+    }
+
     pub fn encode(&self) -> Vec<u8> {
         let mut pdu = vec![self.function()];
         match self {

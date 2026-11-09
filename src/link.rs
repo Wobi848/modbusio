@@ -121,7 +121,12 @@ fn io_error(error: io::Error) -> LinkError {
 }
 
 enum Io {
-    Tcp(TcpStream),
+    Tcp {
+        stream: TcpStream,
+        /// Bytes that arrived and are no whole frame yet. A wait that runs out in the middle of
+        /// an answer leaves its start here, so the next answer is still found.
+        received: Vec<u8>,
+    },
     Rtu(Box<dyn ByteStream>),
 }
 
@@ -132,9 +137,13 @@ pub struct Link {
     capture: Arc<Capture>,
     /// The silence that has to pass on a serial line before the next request.
     gap: Duration,
+    opened: Instant,
     last_activity: Instant,
     /// Local and remote address of a TCP connection, for the capture.
     addresses: Option<(SocketAddr, SocketAddr)>,
+    /// Whether the adapter of a serial line gives back what it sends, as two-wire adapters
+    /// without direction control do. Learnt from answers that cannot be taken for the request.
+    echoes: Option<bool>,
 }
 
 impl Link {
@@ -149,7 +158,10 @@ impl Link {
                 let _ = stream.set_nodelay(true);
                 let addresses = stream.local_addr().ok().map(|local| (local, *address));
                 let io = if matches!(endpoint, Endpoint::Tcp(_)) {
-                    Io::Tcp(stream)
+                    Io::Tcp {
+                        stream,
+                        received: Vec::new(),
+                    }
                 } else {
                     Io::Rtu(Box::new(stream))
                 };
@@ -168,9 +180,21 @@ impl Link {
             transaction: 0,
             capture,
             gap,
+            opened: Instant::now(),
             last_activity: Instant::now(),
             addresses,
+            echoes: None,
         })
+    }
+
+    /// When this connection was opened; tells it from a later one to the same line.
+    pub fn opened(&self) -> Instant {
+        self.opened
+    }
+
+    /// When the last request ended.
+    pub fn last_activity(&self) -> Instant {
+        self.last_activity
     }
 
     pub async fn exchange(
@@ -183,7 +207,7 @@ impl Link {
         let pdu = request.encode();
         let deadline = Instant::now() + timeout;
         let result = match self.io {
-            Io::Tcp(_) => self.exchange_tcp(unit, &pdu, request, deadline).await,
+            Io::Tcp { .. } => self.exchange_tcp(unit, &pdu, request, deadline).await,
             Io::Rtu(_) => self.exchange_rtu(unit, &pdu, request, deadline).await,
         };
         self.last_activity = Instant::now();
@@ -206,25 +230,27 @@ impl Link {
         let transaction = self.transaction;
         let frame = tcp::frame(transaction, unit, pdu);
         self.record(Direction::Sent, &frame);
-        let Io::Tcp(stream) = &mut self.io else {
+        let Io::Tcp { stream, received } = &mut self.io else {
             unreachable!("exchange_tcp on a TCP link")
         };
         stream.write_all(&frame).await.map_err(io_error)?;
         loop {
-            let mut header = [0u8; tcp::HEADER];
-            read_exact(stream, &mut header, deadline).await?;
-            let parsed = tcp::parse_header(&header).map_err(LinkError::Malformed)?;
-            let mut answer = vec![0u8; parsed.pdu_length];
-            read_exact(stream, &mut answer, deadline).await?;
-            let mut whole = header.to_vec();
-            whole.extend_from_slice(&answer);
-            self.capture
-                .record(&self.endpoint, self.addresses, Direction::Received, &whole);
-            // a late answer to an earlier request that timed out: skip it
-            if parsed.transaction != transaction {
-                continue;
+            // what answers is no Modbus TCP: nothing more can be read from this connection
+            let taken = tcp::take_frame(received).map_err(|reason| {
+                LinkError::Io(format!("the answer is not Modbus TCP: {reason}"))
+            })?;
+            if let Some((header, answer)) = taken {
+                self.capture
+                    .record(&self.endpoint, self.addresses, Direction::Received, &answer);
+                // a late answer to an earlier request that timed out: skip it
+                if header.transaction != transaction {
+                    continue;
+                }
+                return Ok(pdu::decode_response(request, &answer[tcp::HEADER..])?);
             }
-            return Ok(pdu::decode_response(request, &answer)?);
+            if !read_more(stream, received, deadline).await? {
+                return Err(LinkError::Timeout);
+            }
         }
     }
 
@@ -248,12 +274,28 @@ impl Link {
         stream.flush().await.map_err(io_error)?;
         let mut buffer: Vec<u8> = Vec::new();
         let mut skipped = 0;
+        // The answer to a single write is the request once more. On a line known to give nothing
+        // back it is the answer; anywhere else the bytes that follow tell.
+        let may_echo = !(request.answer_repeats_it() && self.echoes == Some(false));
+        let mut echo_taken = false;
+        let mut waited_out = false;
         loop {
-            // adapters that hear their own sending give the request back first
-            if buffer.len() >= frame.len() && buffer.starts_with(&frame) {
-                buffer.drain(..frame.len());
+            let mut undecided = false;
+            if may_echo && !echo_taken {
+                if buffer.starts_with(&frame) {
+                    buffer.drain(..frame.len());
+                    echo_taken = true;
+                } else {
+                    // the start of the echo, or of an answer that begins like the request
+                    undecided = !waited_out && frame.starts_with(&buffer);
+                }
             }
-            match rtu::parse_answer(&buffer) {
+            let received = if undecided {
+                rtu::Received::Incomplete
+            } else {
+                rtu::parse_answer(&buffer)
+            };
+            match received {
                 rtu::Received::Incomplete => {}
                 rtu::Received::Frame {
                     unit: answered,
@@ -267,6 +309,9 @@ impl Link {
                     );
                     if answered != unit {
                         return Err(LinkError::OtherUnit(answered));
+                    }
+                    if may_echo {
+                        self.echoes = Some(echo_taken);
                     }
                     return Ok(pdu::decode_response(request, &buffer[1..length - 2])?);
                 }
@@ -286,20 +331,28 @@ impl Link {
                     continue;
                 }
             }
-            let mut chunk = [0u8; 512];
-            match timeout_at(deadline, stream.read(&mut chunk)).await {
-                Err(_) => {
-                    let bytes = skipped + buffer.len();
-                    return Err(if bytes > 0 {
-                        LinkError::Damaged { bytes }
-                    } else {
-                        LinkError::Timeout
-                    });
+            if waited_out {
+                let nothing_followed = echo_taken && buffer.is_empty() && skipped == 0;
+                if nothing_followed && self.echoes != Some(true) {
+                    // no adapter is known to echo here: what looked like one was the answer
+                    if let Ok(response) = pdu::decode_response(request, pdu) {
+                        self.capture.record(
+                            &self.endpoint,
+                            self.addresses,
+                            Direction::Received,
+                            &frame,
+                        );
+                        return Ok(response);
+                    }
                 }
-                Ok(Ok(0)) => return Err(LinkError::Closed),
-                Ok(Ok(read)) => buffer.extend_from_slice(&chunk[..read]),
-                Ok(Err(error)) => return Err(io_error(error)),
+                let bytes = skipped + buffer.len();
+                return Err(if bytes > 0 {
+                    LinkError::Damaged { bytes }
+                } else {
+                    LinkError::Timeout
+                });
             }
+            waited_out = !read_more(stream, &mut buffer, deadline).await?;
         }
     }
 }
@@ -317,15 +370,22 @@ async fn connect(address: SocketAddr, connect_timeout: Duration) -> Result<TcpSt
     }
 }
 
-async fn read_exact(
-    stream: &mut TcpStream,
-    buffer: &mut [u8],
+/// Waits for more bytes and adds them to `received`; `false` when none came before `deadline`.
+/// Unlike reading an exact number of bytes, this loses nothing when the wait runs out.
+async fn read_more(
+    stream: &mut (impl AsyncRead + Unpin),
+    received: &mut Vec<u8>,
     deadline: Instant,
-) -> Result<(), LinkError> {
-    match timeout_at(deadline, stream.read_exact(buffer)).await {
-        Err(_) => Err(LinkError::Timeout),
+) -> Result<bool, LinkError> {
+    let mut chunk = [0u8; 512];
+    match timeout_at(deadline, stream.read(&mut chunk)).await {
+        Err(_) => Ok(false),
+        Ok(Ok(0)) => Err(LinkError::Closed),
+        Ok(Ok(read)) => {
+            received.extend_from_slice(&chunk[..read]);
+            Ok(true)
+        }
         Ok(Err(error)) => Err(io_error(error)),
-        Ok(Ok(_)) => Ok(()),
     }
 }
 

@@ -38,6 +38,20 @@ pub fn parse_header(bytes: &[u8; HEADER]) -> Result<Header, String> {
     })
 }
 
+/// Takes the first whole frame off `received`: its header and all its bytes. `Ok(None)` while
+/// bytes are missing; an error when the bytes are no Modbus TCP, so no frame can be found in them.
+pub fn take_frame(received: &mut Vec<u8>) -> Result<Option<(Header, Vec<u8>)>, String> {
+    let Some(start) = received.first_chunk::<HEADER>() else {
+        return Ok(None);
+    };
+    let header = parse_header(start)?;
+    let length = HEADER + header.pdu_length;
+    if received.len() < length {
+        return Ok(None);
+    }
+    Ok(Some((header, received.drain(..length).collect())))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,6 +69,22 @@ mod tests {
                 pdu_length: 5
             })
         );
+    }
+
+    #[test]
+    fn frames_are_taken_one_by_one_as_their_bytes_arrive() {
+        let first = frame(1, 17, &[0x03, 2, 0, 9]);
+        let second = frame(2, 17, &[0x83, 2]);
+        let mut received = first[..9].to_vec();
+        assert_eq!(take_frame(&mut received), Ok(None));
+        received.extend_from_slice(&first[9..]);
+        received.extend_from_slice(&second);
+        let (header, bytes) = take_frame(&mut received).expect("Modbus").expect("whole");
+        assert_eq!((header.transaction, bytes), (1, first));
+        let (header, bytes) = take_frame(&mut received).expect("Modbus").expect("whole");
+        assert_eq!((header.transaction, bytes), (2, second));
+        assert_eq!(take_frame(&mut received), Ok(None));
+        assert!(take_frame(&mut b"HTTP/1.1 400".to_vec()).is_err());
     }
 
     #[test]
