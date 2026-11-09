@@ -10,6 +10,8 @@ import { setUpdateCheck } from "./update.js";
 
 export async function loadSite() {
   const [site, sites, profiles] = await Promise.all([api.site(), api.sites(), api.profiles()]);
+  // another site's name replaces one typed for the site before
+  if (site.id !== state.site?.id) state.siteNameDraft = null;
   state.site = site;
   state.sites = sites;
   state.profiles = profiles;
@@ -276,15 +278,16 @@ export const actions = {
     render();
   },
   "rename-site": async () => {
-    const site = await attempt(() => api.renameSite(document.getElementById("site-name").value));
-    if (site) state.site = site;
+    const site = await attempt(() => api.renameSite(state.siteNameDraft ?? state.site.name));
+    if (site) { state.site = site; state.siteNameDraft = null; }
     state.sites = (await attempt(api.sites)) ?? state.sites;
     render();
   },
   "new-site": async () => {
-    const name = document.getElementById("new-site").value.trim();
+    const name = (state.newSiteName ?? "").trim();
     if (!name) { toast(t("set.needName"), true); return; }
     if (await attempt(() => api.newSite(name)) === null) return;
+    state.newSiteName = "";
     state.selected = null;
     state.readings = {};
     await attempt(loadSite);
@@ -336,6 +339,9 @@ export function onField(element) {
   if (element.id === "write-value" && state.asking) { state.asking.value = element.value; return false; }
   if (element.id === "add-key") { state.addKey = element.value; return false; }
   if (element.id === "add-name") { state.addName = element.value; return false; }
+  // kept as typed, so a redraw (the page starting, a live value) does not lose them
+  if (element.id === "site-name") { state.siteNameDraft = element.value; return false; }
+  if (element.id === "new-site") { state.newSiteName = element.value; return false; }
   return profileActions.onField(element);
 }
 

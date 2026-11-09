@@ -7,7 +7,14 @@ export default {
   },
   async run({ page, base, api }) {
     await open(page, base, { area: "settings" });
+    // what is typed survives a redraw, as when the page finishes starting or a live value comes in
+    const redraw = () => page.evaluate(async () => (await import("/store.js")).render());
+    await page.fill("#site-name", "Site A");
     await page.fill("#new-site", "School");
+    await redraw();
+    assert.equal(await page.inputValue("#site-name"), "Site A");
+    assert.equal(await page.inputValue("#new-site"), "School");
+    await page.fill("#site-name", "Site");
     await page.click("[data-act=new-site]");
     await page.waitForSelector(".site-now:has-text('School')");
     assert.equal((await api("site")).devices.length, 0);
