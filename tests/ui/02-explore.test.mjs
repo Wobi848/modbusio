@@ -7,6 +7,8 @@ export default {
     await api("devices/add", "POST", { key: `tcp:127.0.0.3:${SIM_PORT}/2`, name: "Drive" });
   },
   async run({ page, base }) {
+    const errors = [];
+    page.on("pageerror", (error) => errors.push(error.message));
     await open(page, base);
     await chooseDevice(page, "Drive");
     assert.equal(await page.textContent("#next"), "Explore registers");
@@ -27,8 +29,32 @@ export default {
     await page.click("[data-act=save-point]");
     await page.waitForSelector(".toast:has-text('Set frequency added')");
     await page.keyboard.press("1");
+    assert.match(await page.textContent(".pagehead .lead"), /profile Drive, 1 point\b/);
+    // a second point into the same profile: the workspace counts it at once
+    await page.keyboard.press("2");
+    await page.click(".row.registers[data-address='100']");
+    await page.click("[data-act=add-to-profile]");
+    await page.fill("#add-point-name", "Output frequency");
+    await page.click("[data-act=save-point]");
+    await page.waitForSelector(".toast:has-text('Output frequency added')");
+    await page.keyboard.press("1");
+    assert.match(await page.textContent(".pagehead .lead"), /profile Drive, 2 points/);
     await page.click("#next");
     await page.waitForSelector(".row.mpoints:not(.head)");
-    assert.equal((await page.textContent(".row.mpoints:not(.head) .value")).trim(), "25 Hz");
+    assert.equal((await page.textContent(".row.mpoints:has-text('Set frequency') .value")).trim(), "25 Hz");
+    // leaving the point filter by a click redraws once, and the click still opens the point
+    await page.fill("#point-filter", "freq");
+    await page.click(".row.mpoints:has-text('Output frequency')");
+    await page.waitForSelector(".detail .dhead:has-text('Output frequency')");
+    // the profile can be saved from the first character typed, not only once the field is left
+    await page.keyboard.press("3");
+    await page.click(".row.mprofiles:not(.head)");
+    await page.click("[data-act=edit-point]");
+    await page.click("#point-description");
+    await page.keyboard.type("x");
+    assert.ok(await page.isEnabled("[data-act=save-profile]"), "Save profile while typing");
+    await page.click("[data-act=save-profile]");
+    await page.waitForSelector(".toast:has-text('saved')");
+    assert.deepEqual(errors, [], "no errors in the page");
   },
 };

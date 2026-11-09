@@ -15,14 +15,15 @@ export default {
     assert.match(await page.textContent(".ask"), /Unlock writing for this session/);
     await assert.rejects(api("write", "POST", { key: "tcp:127.0.0.3:5020/2", point: "Set frequency", value: "30" }), /locked/);
     await page.click("[data-act=unlock]");
+    // a value the point does not take is refused when checked, before the confirmation is asked
     await page.fill("#write-value", "70");
     await page.click("[data-act=write-check]");
-    await page.click("[data-act=write]");
     await page.waitForSelector(".toast:has-text('70 is outside')");
-    await page.click("[data-act=ask-write]");
+    assert.equal(await page.locator("[data-act=write]").count(), 0, "no confirmation for a value refused");
     await page.fill("#write-value", "30,5");
     await page.keyboard.press("Enter");
-    assert.match(await page.textContent(".ask b"), /Write 30,5 to Set frequency\?/);
+    // the value is checked by modbusio first, then the confirmation is asked
+    await page.waitForSelector(".ask b:has-text('Write 30,5 to Set frequency?')");
     await page.click("[data-act=write]");
     await page.waitForSelector(".toast:has-text('Written: 30.5 Hz (was 25 Hz)')");
     await page.waitForSelector(".row.mpoints:has-text('30.5 Hz')");

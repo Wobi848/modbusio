@@ -103,6 +103,11 @@ export function t(key, values = {}) {
   return text.replace(/\{(\w+)\}/g, (_, name) => values[name] ?? "");
 }
 
+/** A text with a count: its `…One` text for 1, the text with {n} for any other number. */
+export function counted(key, n, values = {}) {
+  return n === 1 ? t(`${key}One`, values) : t(key, { ...values, n });
+}
+
 /** A note from the server ({code, ...values, text}) in the current language. */
 export function noteText(note) {
   const own = file().notes[note.code];

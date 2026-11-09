@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 
 globalThis.document = { documentElement: {} };
-const { LANGUAGE_FILES, LANGUAGES, codeText, errorText, noteText, setLanguage, t } = await import("../../web/i18n.js");
+const { LANGUAGE_FILES, LANGUAGES, codeText, counted, errorText, noteText, setLanguage, t } = await import("../../web/i18n.js");
 const { searchRequest } = await import("../../web/actions.js");
 const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../web/workspace.js");
 const { parseStates, statesText } = await import("../../web/profiles.js");
@@ -160,4 +160,14 @@ test("only the chosen word order shows a float as plausible", () => {
   assert.match(pairHtml(badc, "ABCD"), /<dd class="mono dim">/, "a plausible size in another order is no hint");
   assert.match(pairHtml(badc, "BADC"), /<dd class="mono">/);
   assert.match(pairHtml({ ...badc, plausible: false }, "BADC"), /<dd class="mono dim">/);
+});
+
+test("a count of one has its own words", () => {
+  setLanguage("en");
+  assert.equal(counted("prof.pointCount", 1), "1 point");
+  assert.equal(counted("prof.pointCount", 2), "2 points");
+  assert.equal(counted("ws.leadProfile", 1, { profile: "FU-7" }), "profile FU-7, 1 point");
+  setLanguage("de");
+  assert.equal(counted("pts.notReadLead", 1), "Das Profil nennt 1 Datenpunkt.");
+  setLanguage("en");
 });
