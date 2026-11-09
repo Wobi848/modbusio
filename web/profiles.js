@@ -25,7 +25,9 @@ function listHtml(state) {
     const active = profile.id === state.profileId ? " active" : "";
     return `<div class="row mprofiles${active}" data-act="open-profile" data-id="${h(profile.id)}" role="option"><span class="name">${h(profile.name)}</span><span class="cut">${h([profile.vendor, profile.model].filter(Boolean).join(" "))}</span><span class="mono num">${profile.points}</span><span class="num">${profile.used_by ? t("prof.usedBy", { n: profile.used_by }) : ""}</span></div>`;
   }).join("");
-  const toolbar = `<div class="toolbar"><div class="end"><button type="button" class="tonal" data-act="new-profile">${t("prof.new")}</button><button type="button" class="quiet" data-act="import-list">${t("prof.import")}</button></div></div>`;
+  // importing is the page's next step while no profile is open; then the head offers it already
+  const importing = state.profileDraft ? `<button type="button" class="quiet" data-act="import-list">${t("prof.import")}</button>` : "";
+  const toolbar = `<div class="toolbar"><div class="end"><button type="button" class="tonal" data-act="new-profile">${t("prof.new")}</button>${importing}</div></div>`;
   if (!state.profiles.length) {
     return `<section class="listwrap">${toolbar}<div class="empty"><h2>${t("prof.emptyTitle")}</h2><p>${t("prof.emptyLead")}</p></div></section>`;
   }
