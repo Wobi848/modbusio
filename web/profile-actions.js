@@ -89,10 +89,9 @@ async function savePoint() {
   profile.points.push(point);
   const saved = await attempt(() => api.saveProfile(profile));
   if (!saved) return;
-  if (!device.profile) {
-    const site = await attempt(() => api.updateDevice({ key: device.key, profile: saved.id }));
-    if (site) state.site = site;
-  }
+  if (!device.profile) await attempt(() => api.updateDevice({ key: device.key, profile: saved.id }));
+  // the site names each device's point count, which this point changed
+  state.site = (await attempt(api.site)) ?? state.site;
   state.profiles = (await attempt(api.profiles)) ?? state.profiles;
   delete state.readings[device.key];
   explorer.adding = null;
@@ -100,14 +99,19 @@ async function savePoint() {
   render();
 }
 
-async function rawWrite() {
+/** The write of a register without a profile point, as the explorer asks it. */
+function rawRequest() {
   const explorer = state.explorer;
   const asking = state.asking;
   const type = isBits(explorer.area) ? "bool" : "u16";
-  const entry = await attempt(() => api.write({
+  return {
     key: explorer.key, confirm_raw: true, value: asking.value,
     raw: { area: explorer.area, address: asking.address, type, order: explorer.order, factor: 1 },
-  }));
+  };
+}
+
+async function rawWrite() {
+  const entry = await attempt(() => api.write(rawRequest()));
   state.asking = null;
   if (entry?.error) toast(t("write.refused", { reason: entry.error }), true);
   else if (entry) toast(t("write.done", { value: entry.text, before: entry.before_text ?? "–" }));
@@ -173,8 +177,11 @@ function draftPoint() {
   return state.profileDraft?.points[state.pointIndex];
 }
 
+/** Marks the profile changed; true for the first change, which enables *Save profile*. */
 function changed() {
+  const first = !state.profileDirty;
   state.profileDirty = true;
+  return first;
 }
 
 export const profileActions = {
@@ -208,8 +215,9 @@ export const profileActions = {
     state.asking = { kind: "raw-write", address: state.explorer.row, step: "value", value: row?.value ?? "" };
     render();
   },
-  "raw-write-check": () => {
+  "raw-write-check": async () => {
     if (String(state.asking.value).trim() === "") { toast(t("write.empty"), true); return; }
+    if (!(await attempt(() => api.write({ ...rawRequest(), check: true })))) return;
     state.asking.step = "confirm";
     render();
   },
@@ -301,7 +309,7 @@ export const profileActions = {
     if (dataset.explorer) { state.explorer[dataset.explorer] = element.value; remember(); return dataset.explorer === "order" || dataset.explorer === "area"; }
     if (dataset.adding) { state.explorer.adding[dataset.adding] = element.value; return false; }
     if (dataset.addingCheck) { state.explorer.adding[dataset.addingCheck] = element.checked; return false; }
-    if (dataset.profile) { state.profileDraft[dataset.profile] = element.value; changed(); return dataset.profile === "order"; }
+    if (dataset.profile) { state.profileDraft[dataset.profile] = element.value; return changed() || dataset.profile === "order"; }
     if (dataset.pointCheck) { draftPoint()[dataset.pointCheck] = element.checked; changed(); return true; }
     if (dataset.pointField) {
       const point = draftPoint();
@@ -313,8 +321,7 @@ export const profileActions = {
         point[field] = OPTIONAL_FIELDS.includes(field) && element.value.trim() === "" ? undefined : Number.isNaN(number) ? element.value : number;
       } else point[field] = element.value;
       if (field === "area" && isBits(point.area)) point.type = "bool";
-      changed();
-      return field === "area" || field === "type";
+      return changed() || field === "area" || field === "type";
     }
     if (dataset.import === "name") { state.importing.name = element.value; return false; }
     return false;

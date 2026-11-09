@@ -165,6 +165,15 @@ async fn writing_needs_the_unlock_and_can_be_put_back() {
     )
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST, "above the point's max");
+    // checking a value, as the confirmation is asked, writes nothing and logs nothing
+    let check = |value: &str| json!({ "key": key, "point": "Set frequency", "value": value, "check": true });
+    let (status, refused) = call(&app, "POST", "/api/write", Some(check("abc"))).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{refused}");
+    let (status, checked) = call(&app, "POST", "/api/write", Some(check("30"))).await;
+    assert_eq!(status, StatusCode::OK, "{checked}");
+    assert_eq!(checked, json!({ "checked": true, "text": "30 Hz" }));
+    let (_, journal) = call(&app, "GET", "/api/journal", None).await;
+    assert_eq!(journal["entries"], json!([]), "a check is not logged");
     let (status, entry) = call(&app, "POST", "/api/write", Some(write)).await;
     assert_eq!(status, StatusCode::OK, "{entry}");
     assert_eq!(entry["before"], json!([2500]));

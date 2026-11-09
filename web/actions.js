@@ -218,8 +218,10 @@ export const actions = {
     render();
     document.getElementById("write-value")?.focus();
   },
-  "write-check": () => {
+  "write-check": async () => {
     if (String(state.asking.value).trim() === "") { toast(t("write.empty"), true); return; }
+    const checked = await attempt(() => api.write({ key: selectedDevice().key, point: state.asking.point, value: state.asking.value, check: true }));
+    if (!checked) return;
     state.asking.step = "confirm";
     render();
   },

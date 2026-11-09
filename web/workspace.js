@@ -2,7 +2,7 @@
 // (the device list, or a device's points from its profile) and the details beside it.
 
 import { h } from "./html.js";
-import { codeText, localNumber, noteText, t } from "./i18n.js";
+import { codeText, counted, localNumber, noteText, t } from "./i18n.js";
 import { askHtml, writeHtml } from "./asking.js";
 import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
 
@@ -161,7 +161,7 @@ function pointsHtml(state, device) {
       <div class="actions"><button type="button" data-act="explore-device">${t("dev.explore")}</button><button type="button" class="tonal" data-act="import-for-device">${t("dev.importList")}</button></div></div></section>`;
   }
   if (!reading) {
-    return `<section class="listwrap"><div class="empty"><h2>${t("pts.notReadTitle")}</h2><p>${t("pts.notReadLead", { n: device.points })}</p>
+    return `<section class="listwrap"><div class="empty"><h2>${t("pts.notReadTitle")}</h2><p>${counted("pts.notReadLead", device.points)}</p>
       <div class="actions"><button type="button" data-act="read-device">${t("dev.read")}</button></div></div></section>`;
   }
   const points = filterPoints(reading.points, state.pointFilter);
@@ -169,7 +169,7 @@ function pointsHtml(state, device) {
     <span class="hint">${t("pts.count", { n: points.length, all: reading.points.length })}</span>
     <div class="end"><button type="button" class="quiet narrow-only" data-act="open-device-detail">${t("dev.details")}</button><label class="check"><input type="checkbox" id="live" data-act="toggle-live"${state.live ? " checked" : ""}> ${t("pts.live")}</label>
     <button type="button" class="tonal" data-act="read-device">${t("pts.readAgain")}</button></div></div>`;
-  const failed = reading.failed ? `<div class="strip warn">${t("pts.failed", { n: reading.failed })}</div>` : "";
+  const failed = reading.failed ? `<div class="strip warn">${counted("pts.failed", reading.failed)}</div>` : "";
   const strips = failed || reading.notes?.length ? `<div class="strips">${failed}${(reading.notes ?? []).map((note) => `<div class="strip info">${h(noteText(note))}</div>`).join("")}</div>` : "";
   const head = `<div class="row mpoints head" role="row"><span>${t("col.name")}</span><span>${t("col.address")}</span><span class="num">${t("col.value")}</span><span></span></div>`;
   const rows = groupPoints(points).map(([group, members]) =>
@@ -219,7 +219,7 @@ export function viewWorkspace(state) {
   const detail = device ? pointDetailHtml(state, device) : deviceDetailHtml(state);
   const devices = state.site.devices.length;
   const lead = device
-    ? [device.name ? `${h(device.line)} · ${t("unit")} ${device.unit}` : "", device.profile_name ? t("ws.leadProfile", { profile: h(device.profile_name), n: device.points }) : t("dev.noProfile")].filter(Boolean).join(" · ")
+    ? [device.name ? `${h(device.line)} · ${t("unit")} ${device.unit}` : "", device.profile_name ? counted("ws.leadProfile", device.points, { profile: h(device.profile_name) }) : t("dev.noProfile")].filter(Boolean).join(" · ")
     : devices === 0 ? t("ws.leadEmpty") : devices === 1 ? t("ws.leadOne") : t("ws.lead", { n: devices });
   return {
     title: device ? deviceName(device) : state.site.name || t("tab.workspace"),

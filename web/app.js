@@ -42,7 +42,11 @@ document.addEventListener("change", (event) => {
     attempt(() => actions[element.dataset.act]?.(element));
     return;
   }
-  if (onField(element)) render();
+  // a typed field took its value with each input already; its change comes while it loses the
+  // focus, and redrawing then would remove it in the middle of that (the browser throws) and can
+  // swallow the click that moved the focus
+  const typed = element.tagName !== "SELECT" && element.type !== "checkbox";
+  if (!typed && onField(element)) render();
   attempt(() => onChange(element));
 });
 

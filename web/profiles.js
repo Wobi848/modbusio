@@ -3,7 +3,7 @@
 
 import { h } from "./html.js";
 import { askHtml } from "./asking.js";
-import { codeText, localNumber, t } from "./i18n.js";
+import { codeText, counted, localNumber, t } from "./i18n.js";
 import { ORDERS, TYPES } from "./explorer.js";
 import { deviceName, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
@@ -50,7 +50,7 @@ function editorHtml(state) {
     return `<div class="row mprofile-points${active}" data-act="edit-point" data-index="${index}" role="option"><span class="name">${h(point.name)}</span><span class="cut">${h(point.group)}</span><span class="mono">${areaShort(point.area)} ${point.address}</span><span class="mono">${h(point.type)}</span><span class="mono num">${point.factor !== 1 ? `× ${localNumber(point.factor)}` : ""}</span><span>${h(point.unit)}</span><span>${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}</span></div>`;
   }).join("");
   const tableHead = `<div class="row mprofile-points head"><span>${t("col.name")}</span><span>${t("pt.group")}</span><span>${t("col.address")}</span><span>${t("pt.type")}</span><span class="num">${t("pt.factor")}</span><span>${t("pt.unit")}</span><span></span></div>`;
-  const tools = `<div class="toolbar"><span class="hint">${t("prof.pointCount", { n: draft.points.length })}${draft.source ? ` · ${t("prof.source", { source: h(draft.source) })}` : ""}</span><div class="end">
+  const tools = `<div class="toolbar"><span class="hint">${counted("prof.pointCount", draft.points.length)}${draft.source ? ` · ${t("prof.source", { source: h(draft.source) })}` : ""}</span><div class="end">
     <button type="button" class="tonal" data-act="add-profile-point">${t("prof.addPoint")}</button>
     ${draft.id ? `<a class="button quiet" href="/api/profile.csv?id=${encodeURIComponent(draft.id)}" download>CSV</a><a class="button quiet" href="/api/profile.xlsx?id=${encodeURIComponent(draft.id)}" download>Excel</a>` : ""}
     ${draft.id ? `<button type="button" class="quiet" data-act="ask-delete-profile">${t("prof.delete")}</button>` : ""}</div></div>`;
