@@ -73,6 +73,9 @@ pub struct WriteRequest {
     confirm_raw: bool,
     /// The new value as the user typed it: a number, a state word, on or off.
     value: String,
+    /// Only check the value, as the confirmation is asked: nothing is read or written.
+    #[serde(default)]
+    check: bool,
 }
 
 /// The point to write and the word order to write it in.
@@ -140,12 +143,16 @@ pub async fn write(
     }
     let values =
         profile::registers_for(&point, order, &request.value, 0).map_err(ApiError::bad_request)?;
+    let text = profile::evaluate(&point, order, &values, 0).text;
+    if request.check {
+        return Ok(Json(json!({ "checked": true, "text": text })));
+    }
     let planned = Planned {
         target,
         point: request.point.clone(),
         area: point.area,
         address: point.address,
-        text: profile::evaluate(&point, order, &values, 0).text,
+        text,
         values,
         restores: None,
     };
