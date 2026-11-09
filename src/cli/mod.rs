@@ -524,6 +524,14 @@ fn error_text(code: &str) -> String {
         Some(exception) => modbusio::protocol::Exception(exception).to_string(),
         None => match code {
             "timeout" => "no answer in time".into(),
+            "damaged" => "damaged answer".into(),
+            "crc" => "CRC error".into(),
+            "malformed" => "answer does not fit".into(),
+            "other_unit" => "another unit answered".into(),
+            "not_sent" => "not sent".into(),
+            "closed" => "connection closed".into(),
+            "open" => "cannot connect".into(),
+            "io" => "connection failed".into(),
             other => other.replace('_', " "),
         },
     }
@@ -760,4 +768,19 @@ async fn restore(links: &Links, which: &str, data_dir: Option<PathBuf>) -> anyho
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::error_text;
+
+    #[test]
+    fn reading_errors_are_words() {
+        assert_eq!(error_text("open"), "cannot connect");
+        assert_eq!(error_text("timeout"), "no answer in time");
+        assert_eq!(
+            error_text("exception_02"),
+            "exception 02: the device has no data at this address"
+        );
+    }
 }
