@@ -2,8 +2,8 @@
 // the log and the settings. Profiles, explorer and import are in profile-actions.js.
 
 import { api } from "./api.js";
-import { setLanguage, t } from "./i18n.js";
-import { attempt, go, remember, render, selectedDevice, state, toast } from "./store.js";
+import { codeText, setLanguage, t } from "./i18n.js";
+import { attempt, deviceName, go, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
 import { refreshSession } from "./session.js";
 import { setUpdateCheck } from "./update.js";
@@ -97,6 +97,17 @@ async function writePoint() {
 
 const pointOf = (name) => state.readings[state.selected]?.points.find((point) => point.name === name);
 
+/** Chooses a device of the site, or none; the next render shows it. */
+function selectDevice(key) {
+  state.selected = key;
+  state.selectedPoint = null;
+  state.deviceDetailOpen = false;
+  state.pointFilter = "";
+  state.asking = null;
+  state.live = false;
+  remember();
+}
+
 export const actions = {
   ...profileActions,
   go: (element) => go(element.dataset.area),
@@ -151,26 +162,25 @@ export const actions = {
     render();
   },
   "cancel-ask": () => { state.asking = null; render(); },
-  "select-device": (element) => {
-    state.selected = element.dataset.key || null;
-    state.selectedPoint = null;
-    state.deviceDetailOpen = false;
-    state.pointFilter = "";
-    state.asking = null;
-    state.live = false;
-    remember();
-    render();
-  },
+  "select-device": (element) => { selectDevice(element.dataset.key || null); render(); },
   "add-device-menu": () => { state.menu = state.menu === "add-device" ? null : "add-device"; render(); },
   "add-device": async () => {
     const key = document.getElementById("add-key").value.trim();
     const name = document.getElementById("add-name").value.trim();
-    const site = await attempt(() => api.addDevice(key, name));
-    if (!site) return;
+    const before = new Set(state.site.devices.map((device) => device.key));
+    const answer = await attempt(() => api.addDevice(key, name));
+    if (!answer) return;
+    const { check, ...site } = answer;
     state.site = site;
     state.menu = null;
     state.addKey = "";
     state.addName = "";
+    // the new device is chosen, so its next step (read, explore) is at hand
+    const added = site.devices.find((device) => !before.has(device.key));
+    if (added) selectDevice(added.key);
+    const named = added ? deviceName(added) : key;
+    if (check?.answered === false) toast(t("dev.addedSilent", { name: named, reason: codeText(check.error) }), true);
+    else toast(t("dev.added", { name: named }));
     render();
   },
   "export-menu": () => { state.menu = state.menu === "export" ? null : "export"; render(); },

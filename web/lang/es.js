@@ -23,7 +23,7 @@ export default {
     export: "Exportar", "export.devicesCsv": "Lista de equipos (CSV)", "export.siteXlsx": "Toda la instalación (Excel, lee cada equipo)",
     "export.siteFile": "Instalación como archivo", "export.pointsCsv": "Puntos (CSV)", "export.pointsXlsx": "Puntos (Excel)",
     "dev.emptyTitle": "Aún no hay equipos", "dev.emptyLead": "Buscar en una red, detrás de una pasarela o en una línea serie, o añadir un equipo a mano.",
-    "dev.addByHand": "Añadir equipo …", "dev.addHint": "Línea e ID de unidad como tcp:IP:puerto/unidad, rtu-tcp:IP:puerto/unidad o serial:PUERTO:VELOCIDAD:TRAMA/unidad.",
+    "dev.addByHand": "Añadir equipo …", "dev.added": "{name} añadido.", "dev.addedSilent": "{name} añadido, pero no responde: {reason}. Compruebe la dirección y el ID de unidad.", "dev.addHint": "Línea e ID de unidad como tcp:IP:puerto/unidad, rtu-tcp:IP:puerto/unidad o serial:PUERTO:VELOCIDAD:TRAMA/unidad.",
     "dev.key": "Equipo", "dev.name": "Nombre", "dev.add": "Añadir equipo", "dev.choose": "Elegir un equipo de la lista: sus detalles aparecen aquí.",
     "dev.noProfile": "Sin perfil", "dev.read": "Leer puntos", "dev.explore": "Explorar registros", "dev.importList": "Importar lista de registros …",
     "dev.identify": "Preguntar quién es", "dev.line": "Línea", "dev.vendor": "Fabricante", "dev.product": "Producto", "dev.revision": "Versión",

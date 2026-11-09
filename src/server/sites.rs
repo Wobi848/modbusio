@@ -11,7 +11,9 @@ use super::state::new_site;
 use super::views::DeviceView;
 use super::{ApiError, Shared, download};
 use crate::endpoint::Target;
+use crate::links::ANSWER_TIMEOUT;
 use crate::profile::Profile;
+use crate::scan;
 use crate::site::{Site, SiteDevice};
 
 /// Longest name of a site or device.
@@ -208,7 +210,19 @@ pub async fn add_device(
         )));
     }
     state.save_site()?;
-    Ok(site_json(&state))
+    // asked once whether it answers, only on Modbus TCP: on a serial line another master may be
+    // active, and nothing is sent there unasked
+    let check = if target.endpoint.is_serial_line() {
+        Value::Null
+    } else {
+        match scan::unanswered(&state.links, &target, ANSWER_TIMEOUT).await {
+            None => json!({ "answered": true, "error": null }),
+            Some(code) => json!({ "answered": false, "error": code }),
+        }
+    };
+    let Json(mut site) = site_json(&state);
+    site["check"] = check;
+    Ok(Json(site))
 }
 
 #[derive(Deserialize)]
