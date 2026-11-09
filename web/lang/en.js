@@ -101,7 +101,7 @@ export default {
     "log.restores": "puts back {n}", "log.standing": "still written", "log.emptyTitle": "Nothing written yet",
     "log.emptyLead": "Values written from the workspace or the explorer show here, each with the value it replaced.",
     "log.restoreAsk": "Put back the old value of write {n}?", "log.restoreAllAsk": "Put back the old values of all {n} writes?",
-    "log.restoreWhy": "Each old value is written again and logged as a write of its own.", "log.restored": "{n} put back.", "log.restoreFailed": "{n} could not be put back: see the log.",
+    "log.restoreWhat": "Writes {value} to {place}.", "log.restoreWhy": "Each old value is written again and logged as a write of its own.", "log.restored": "{n} put back.", "log.restoreFailed": "{n} could not be put back: see the log.",
     "set.lead": "Sites, language, theme, writing and the capture for Wireshark.", "set.sites": "Sites", "set.siteName": "Name of this site",
     "set.rename": "Rename", "set.open": "open", "set.devices": "{n} devices", "set.openSite": "Open", "set.deleteSite": "Delete",
     "set.deleteAsk": "Delete this site?", "set.deleteWhy": "Its devices and names go from modbusio. Nothing changes in the plant.",

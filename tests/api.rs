@@ -226,6 +226,11 @@ async fn writing_needs_the_unlock_and_can_be_put_back() {
     assert_eq!(entry["before"], json!([2500]));
     assert_eq!(entry["after"], json!([3000]));
     assert_eq!(entry["before_text"], "25 Hz");
+    // a second write to the same place: putting back still means the value before the first
+    let again = json!({ "key": key, "point": "Set frequency", "value": "35" });
+    let (status, entry) = call(&app, "POST", "/api/write", Some(again)).await;
+    assert_eq!(status, StatusCode::OK, "{entry}");
+    assert_eq!(entry["before_text"], "30 Hz");
     let (status, coil) = call(
         &app,
         "POST",
@@ -236,8 +241,15 @@ async fn writing_needs_the_unlock_and_can_be_put_back() {
     assert_eq!(status, StatusCode::OK, "{coil}");
     let (_, journal) = call(&app, "GET", "/api/journal", None).await;
     assert_eq!(journal["standing"], 2);
+    let standing = &journal["entries"][1];
+    assert_eq!(standing["standing"], true, "{standing}");
+    assert_eq!(standing["original"], json!([2500]));
+    assert_eq!(standing["original_text"], "25 Hz");
     let (status, restored) = call(&app, "POST", "/api/restore", Some(json!({ "all": true }))).await;
     assert_eq!(status, StatusCode::OK, "{restored}");
+    let put_back = &restored["results"][0]["entry"];
+    assert_eq!(put_back["written"], json!([2500]), "{restored}");
+    assert_eq!(put_back["text"], "25 Hz", "the words of the value written");
     let (_, journal) = call(&app, "GET", "/api/journal", None).await;
     assert_eq!(journal["standing"], 0, "{journal}");
     let (_, read) = call(

@@ -106,10 +106,18 @@ pub async fn write(
         }
     };
     if let Err(error) = access::write(links, target, area, address, values, limits, timeout).await {
+        // only an exception is a refusal: without any answer the device may hold the new value
+        let after = match error {
+            LinkError::Exception(_) => None,
+            _ => access::read(links, target, area, address, count, timeout)
+                .await
+                .ok(),
+        };
+        let taken = before != values && after.as_deref() == Some(values);
         return Outcome {
             before: Some(before),
-            after: None,
-            error: Some(error),
+            after,
+            error: (!taken).then_some(error),
         };
     }
     let after = access::read(links, target, area, address, count, timeout)
@@ -201,7 +209,7 @@ impl Journal {
     }
 
     /// Writes still standing: per place the last successful write, unless it put the old value
-    /// back. Oldest first.
+    /// back, by restoring or by writing it once more. Oldest first.
     pub fn changed(&self) -> Vec<&Entry> {
         let mut last: HashMap<(String, Area, u16), &Entry> = HashMap::new();
         for entry in self.entries.iter().filter(|entry| entry.succeeded()) {
@@ -210,26 +218,51 @@ impl Journal {
         let mut standing: Vec<&Entry> = last
             .into_values()
             .filter(|entry| entry.restores.is_none())
-            .filter(|entry| entry.before.as_ref() != Some(&entry.written))
+            .filter(|entry| self.original(entry).as_ref() != Some(&entry.written))
             .collect();
         standing.sort_by_key(|entry| entry.id);
         standing
     }
 
-    /// The value to put back for a standing write: the oldest value before the run of writes
-    /// that led to it, so restoring after two writes gives the value before the first.
-    pub fn original(&self, entry: &Entry) -> Option<Vec<u16>> {
+    /// The first write of the run that led to `entry`: what the device held before it is what
+    /// putting back restores, so restoring after two writes gives the value before the first.
+    fn first_of_run<'journal>(&'journal self, entry: &'journal Entry) -> &'journal Entry {
         let place = entry.place();
-        let mut original = entry.before.clone();
-        for earlier in self.entries.iter().rev().filter(|earlier| {
-            earlier.id < entry.id && earlier.succeeded() && earlier.place() == place
-        }) {
-            if earlier.restores.is_some() {
-                break;
-            }
-            original = earlier.before.clone();
-        }
-        original
+        self.entries
+            .iter()
+            .rev()
+            .filter(|earlier| {
+                earlier.id < entry.id && earlier.succeeded() && earlier.place() == place
+            })
+            .take_while(|earlier| earlier.restores.is_none())
+            .last()
+            .unwrap_or(entry)
+    }
+
+    /// The value to put back for a standing write.
+    pub fn original(&self, entry: &Entry) -> Option<Vec<u16>> {
+        self.first_of_run(entry).before.clone()
+    }
+
+    /// The write that puts back the standing write `entry`, with the old value and its words
+    /// from the same log entry. `None` where the old value is not known.
+    pub fn restoring(&self, entry: &Entry) -> Result<Option<Planned>, String> {
+        let first = self.first_of_run(entry);
+        let Some(original) = first.before.clone() else {
+            return Ok(None);
+        };
+        Ok(Some(Planned {
+            target: Target::parse_key(&entry.device)?,
+            point: entry.point.clone(),
+            area: entry.area,
+            address: entry.address,
+            text: first.before_text.clone().unwrap_or_else(|| {
+                let registers: Vec<String> = original.iter().map(u16::to_string).collect();
+                registers.join(" ")
+            }),
+            values: original,
+            restores: Some(entry.id),
+        }))
     }
 }
 
@@ -269,6 +302,36 @@ mod tests {
         let mut journal = Journal::default();
         journal.entries.push(entry(1, 2500, 3000, None));
         journal.entries.push(entry(2, 3000, 3500, None));
+        let standing = journal.changed();
+        assert_eq!(standing.len(), 1);
+        assert_eq!(journal.original(standing[0]), Some(vec![2500]));
+    }
+
+    #[test]
+    fn putting_back_names_the_value_it_writes() {
+        let mut journal = Journal::default();
+        let mut first = entry(1, 2500, 3000, None);
+        first.before_text = Some("25 Hz".into());
+        let mut second = entry(2, 3000, 3500, None);
+        second.before_text = Some("30 Hz".into());
+        journal.entries.extend([first, second]);
+        let standing = journal.changed()[0];
+        let planned = journal
+            .restoring(standing)
+            .expect("a device key")
+            .expect("the old value");
+        assert_eq!((planned.values, planned.text), (vec![2500], "25 Hz".into()));
+        assert_eq!(planned.restores, Some(2));
+    }
+
+    #[test]
+    fn a_value_written_back_by_hand_stands_for_nothing() {
+        let mut journal = Journal::default();
+        journal.entries.push(entry(1, 2500, 3000, None));
+        journal.entries.push(entry(2, 3000, 2500, None));
+        assert!(journal.changed().is_empty());
+        // a new run after it starts from the value the device holds then
+        journal.entries.push(entry(3, 2500, 4000, None));
         let standing = journal.changed();
         assert_eq!(standing.len(), 1);
         assert_eq!(journal.original(standing[0]), Some(vec![2500]));

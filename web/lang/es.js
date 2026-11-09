@@ -106,7 +106,7 @@ export default {
     "log.restores": "restablece {n}", "log.standing": "aún escrito", "log.emptyTitle": "Nada escrito aún",
     "log.emptyLead": "Los valores escritos desde el área de trabajo o el explorador aparecen aquí, cada uno con el valor que reemplazó.",
     "log.restoreAsk": "¿Restablecer el valor anterior de la escritura {n}?", "log.restoreAllAsk": "¿Restablecer los valores anteriores de las {n} escrituras?",
-    "log.restoreWhy": "Cada valor anterior se escribe de nuevo y se anota como una escritura propia.", "log.restored": "{n} restablecidos.", "log.restoreFailed": "{n} no se pudieron restablecer: ver el registro.",
+    "log.restoreWhat": "Escribe {value} en {place}.", "log.restoreWhy": "Cada valor anterior se escribe de nuevo y se anota como una escritura propia.", "log.restored": "{n} restablecidos.", "log.restoreFailed": "{n} no se pudieron restablecer: ver el registro.",
     "set.lead": "Instalaciones, idioma, aspecto, escritura y captura para Wireshark.", "set.sites": "Instalaciones", "set.siteName": "Nombre de esta instalación",
     "set.rename": "Renombrar", "set.open": "abierta", "set.devices": "{n} equipos", "set.openSite": "Abrir", "set.deleteSite": "Borrar",
     "set.deleteAsk": "¿Borrar esta instalación?", "set.deleteWhy": "Sus equipos y nombres desaparecen de modbusio. Nada cambia en la instalación.",

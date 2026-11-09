@@ -706,7 +706,13 @@ fn changed(data_dir: Option<PathBuf>) -> anyhow::Result<()> {
                 entry.device.clone(),
                 format!("{} {}", entry.area.short(), entry.address),
                 entry.text.clone(),
-                entry.before_text.clone().unwrap_or_default(),
+                // what `restore` writes: the value before the first write of a run
+                journal
+                    .restoring(entry)
+                    .ok()
+                    .flatten()
+                    .map(|planned| planned.text)
+                    .unwrap_or_default(),
             ]
         })
         .collect::<Vec<_>>();
@@ -729,31 +735,16 @@ async fn restore(links: &Links, which: &str, data_dir: Option<PathBuf>) -> anyho
             .ok_or_else(|| anyhow!("number {id} is not among the values still written"))?;
         vec![(*entry).clone()]
     };
-    let plans: Vec<(write::Entry, Vec<u16>)> = chosen
-        .into_iter()
-        .map(|entry| {
-            let original = journal.original(&entry);
-            (entry, original.unwrap_or_default())
-        })
-        .collect();
+    let plans = chosen
+        .iter()
+        .map(|entry| Ok((entry.id, journal.restoring(entry)?)))
+        .collect::<Result<Vec<_>, String>>()
+        .map_err(|error| anyhow!(error))?;
     let journal = Mutex::new(journal);
-    for (entry, original) in plans {
-        if original.is_empty() {
-            println!("{}: the old value is not known, nothing put back", entry.id);
+    for (id, planned) in plans {
+        let Some(planned) = planned else {
+            println!("{id}: the old value is not known, nothing put back");
             continue;
-        }
-        let target = Target::parse_key(&entry.device).map_err(|error| anyhow!(error))?;
-        let planned = Planned {
-            target,
-            point: entry.point.clone(),
-            area: entry.area,
-            address: entry.address,
-            text: entry
-                .before_text
-                .clone()
-                .unwrap_or_else(|| format!("{original:?}")),
-            values: original,
-            restores: Some(entry.id),
         };
         let describe = |registers: &[u16]| format!("{registers:?}");
         let mut limits = Limits::default();
@@ -770,8 +761,8 @@ async fn restore(links: &Links, which: &str, data_dir: Option<PathBuf>) -> anyho
         .await
         .map_err(|error| anyhow!(error))?;
         match restored.error {
-            Some(error) => println!("{}: not put back: {error}", entry.id),
-            None => println!("{}: put back {}", entry.id, restored.text),
+            Some(error) => println!("{id}: not put back: {error}"),
+            None => println!("{id}: put back {}", restored.text),
         }
     }
     Ok(())

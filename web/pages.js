@@ -68,11 +68,20 @@ function entryRow(state, entry) {
     <span class="cut">${h(localNumber(entry.before_text ?? "–"))} → <b>${h(localNumber(entry.text))}</b></span><span class="chips">${outcome}${restore}</span></div>`;
 }
 
+/** What putting `entry` back writes and where, in words: the confirmation names it. */
+function restoreText(state, entry) {
+  const device = deviceOf(state, entry.device);
+  const place = [device ? deviceName(device) : entry.device, entry.point, `${areaShort(entry.area)} ${entry.address}`].filter(Boolean).join(" · ");
+  return h(t("log.restoreWhat", { value: localNumber(entry.original_text ?? "–"), place }));
+}
+
 function viewChanged(state) {
   const journal = state.journal;
   const standing = journal.entries.filter((entry) => entry.standing);
+  const asked = state.asking?.kind === "restore" ? standing.filter((entry) => state.asking.all || entry.id === state.asking.id) : [];
   const asking = state.asking?.kind === "restore"
-    ? askHtml(state.asking.all ? (standing.length === 1 ? t("log.restoreOneAsk") : t("log.restoreAllAsk", { n: standing.length })) : t("log.restoreAsk", { n: state.asking.id }), t("log.restoreWhy"), [["restore", t("log.restore")]])
+    ? askHtml(state.asking.all ? (standing.length === 1 ? t("log.restoreOneAsk") : t("log.restoreAllAsk", { n: standing.length })) : t("log.restoreAsk", { n: state.asking.id }),
+      [...asked.map((entry) => restoreText(state, entry)), t("log.restoreWhy")].join("<br>"), [["restore", t("log.restore")]])
     : "";
   const unlock = state.asking?.kind === "restore" && !state.unlocked ? askHtml(t("unlock.title"), t("unlock.why"), [["unlock", t("unlock.allow")]]) : "";
   const toolbar = `<div class="toolbar"><span class="hint">${journal.entries.length === 1 ? t("log.countOne") : t("log.count", { n: journal.entries.length })}</span><div class="end">

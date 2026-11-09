@@ -102,7 +102,7 @@ export default {
     "log.restores": "schreibt {n} zurück", "log.standing": "noch geschrieben", "log.emptyTitle": "Noch nichts geschrieben",
     "log.emptyLead": "Werte, die im Arbeitsbereich oder im Explorer geschrieben werden, stehen hier, jeder mit dem Wert, den er ersetzt hat.",
     "log.restoreAsk": "Den alten Wert von Schreibvorgang {n} zurückschreiben?", "log.restoreAllAsk": "Die alten Werte aller {n} Schreibvorgänge zurückschreiben?",
-    "log.restoreWhy": "Jeder alte Wert wird wieder geschrieben und als eigener Schreibvorgang protokolliert.", "log.restored": "{n} zurückgeschrieben.", "log.restoreFailed": "{n} konnten nicht zurückgeschrieben werden: siehe Protokoll.",
+    "log.restoreWhat": "Schreibt {value} auf {place}.", "log.restoreWhy": "Jeder alte Wert wird wieder geschrieben und als eigener Schreibvorgang protokolliert.", "log.restored": "{n} zurückgeschrieben.", "log.restoreFailed": "{n} konnten nicht zurückgeschrieben werden: siehe Protokoll.",
     "set.lead": "Anlagen, Sprache, Darstellung, Schreiben und der Mitschnitt für Wireshark.", "set.sites": "Anlagen", "set.siteName": "Name dieser Anlage",
     "set.rename": "Umbenennen", "set.open": "offen", "set.devices": "{n} Geräte", "set.openSite": "Öffnen", "set.deleteSite": "Löschen",
     "set.deleteAsk": "Diese Anlage löschen?", "set.deleteWhy": "Ihre Geräte und Namen gehen aus modbusio weg. In der Anlage ändert sich nichts.",
