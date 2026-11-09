@@ -4,7 +4,7 @@
 import { h } from "./html.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
 import { askHtml, writeHtml } from "./asking.js";
-import { deviceName, readingText, registerView, selectedDevice } from "./store.js";
+import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
 
 const AREA_SHORT = { coil: "coil", discrete_input: "DI", input_register: "IR", holding_register: "HR" };
 export const areaShort = (area) => AREA_SHORT[area] ?? area;
@@ -46,7 +46,7 @@ function treeHtml(state) {
     const devices = group.devices.map((device) => {
       const active = device.key === state.selected;
       const failed = (state.readings[device.key]?.failed ?? 0) > 0 ? `<span class="chip err">${state.readings[device.key].failed}</span>` : "";
-      return `<div class="node level-3${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceName(device))}</span><span class="end">${failed}<span class="count mono">${device.unit}</span></span></div>`;
+      return `<div class="node level-3${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${failed}<span class="count mono">${device.unit}</span></span></div>`;
     }).join("");
     return `<div class="node level-2 heading" role="presentation"><span class="label mono">${h(group.line)}</span></div>${devices}`;
   }).join("");
@@ -62,7 +62,7 @@ function deviceRow(state, device) {
   const active = device.key === state.selected ? " active" : "";
   const maker = [device.vendor, device.product].filter(Boolean).join(" ");
   return `<div class="row mdevices${active}" data-act="select-device" data-key="${h(device.key)}" role="option" aria-selected="${Boolean(active)}">
-    <span class="name">${h(deviceName(device))}</span><span class="mono cut">${h(device.line)}</span><span class="mono num">${device.unit}</span>
+    <span class="name">${h(deviceNameOnLine(device))}</span><span class="mono cut">${h(device.line)}<span class="narrow-only">/${device.unit}</span></span><span class="mono num">${device.unit}</span>
     <span class="cut">${device.profile_name ? h(device.profile_name) : `<span class="chip">${t("dev.noProfile")}</span>`}</span><span class="cut">${h(maker)}</span></div>`;
 }
 

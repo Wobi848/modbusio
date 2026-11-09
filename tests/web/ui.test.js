@@ -11,7 +11,7 @@ const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../
 const { parseStates, statesText } = await import("../../web/profiles.js");
 const { draftProblem, pointFromExplorer, typedNumber } = await import("../../web/profile-actions.js");
 const { bounds, byUnit, pathData } = await import("../../web/chart.js");
-const { state } = await import("../../web/store.js");
+const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -143,4 +143,13 @@ test("the workspace offers the search first, then exploring, then reading", () =
   state.site.devices[0].profile = "p";
   assert.equal(viewWorkspace(state).next.act, "read-device");
   assert.match(viewWorkspace(state).html, new RegExp(t("pts.notReadTitle")));
+});
+
+test("a device without a name is not named after its line where the line stands beside it", () => {
+  setLanguage("en");
+  const device = { line: "127.0.0.3:5020", unit: 5 };
+  assert.equal(deviceName(device), "127.0.0.3:5020 · unit 5");
+  assert.equal(deviceNameOnLine(device), "Unit 5");
+  assert.equal(deviceNameOnLine({ ...device, product: "EM-340" }), "EM-340");
+  assert.equal(deviceName({ ...device, name: "Drive" }), "Drive");
 });

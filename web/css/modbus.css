@@ -48,10 +48,14 @@ label.check { display: inline-flex; align-items: center; gap: 6px; cursor: point
 
 .ask.add-device, .ask.add-point { margin: 8px 12px; }
 
-.charts { display: grid; gap: 12px; padding: 12px; }
+.charts { display: grid; gap: 12px; padding: 12px 20px; }
+.chart { margin: 0; }
 .chart figcaption { margin-bottom: 4px; color: var(--muted); font-size: 12.5px; font-weight: 600; }
-.chart svg { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
-.chart .axis { fill: var(--muted); font-size: 11px; font-family: var(--mono); }
+.chart .plot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 6px; }
+.chart svg { display: block; width: 100%; height: clamp(140px, 22vw, 260px); border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.chart .axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.chart .axis.y { flex-direction: column; align-items: flex-end; }
+.chart .axis.x { grid-column: 2; }
 .legend .swatch { display: inline-block; width: 12px; height: 3px; border-radius: 2px; }
 
 .modal-box.import-box { width: min(1000px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; }
@@ -76,6 +80,10 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
   .row.mlog { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mlog > :nth-child(1), .row.mlog > :nth-child(2) { display: none; }
   .row.mlog > .chips { grid-column: 1 / -1; padding-bottom: 6px; }
+  .row.mlog > .where { white-space: normal; overflow-wrap: anywhere; }
+  /* the device under the point's name, as its own column is hidden */
+  .row.mwatch > .name .sub { display: block; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+  .row.mwatch { padding-top: 4px; padding-bottom: 4px; }
   .row.mwatch, .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
   .row.mwatch > :nth-child(2), .row.mrecord > :nth-child(3) { display: none; }
   .row.mimport { grid-template-columns: minmax(0, 1fr) 80px minmax(80px, auto); }
@@ -83,7 +91,8 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 }
 .narrow-only { display: none; }
 @media (max-width: 999px) { .narrow-only { display: inline-flex; } }
-/* the ways to search side by side in equal parts; a long name breaks inside its own part instead of
-   pushing a part into a second row (two parts on Android, three elsewhere) */
-.search-settings .seg { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
+/* the ways to search side by side in one row (two parts on Android, three elsewhere); a long name
+   breaks inside its own part only when the row has no room for it */
+.search-settings .seg { display: flex; width: 100%; }
+.search-settings .seg button { flex: 1 1 auto; }
 .search-settings .seg button { height: auto; min-height: 30px; padding: 4px 6px; white-space: normal; line-height: 1.2; justify-content: center; text-align: center; }

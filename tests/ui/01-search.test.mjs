@@ -7,7 +7,7 @@ export default {
     assert.equal(await page.textContent("#next"), "Search devices …");
     await searchSubnet(page);
     const rows = await page.locator(".row.mdevices:not(.head) .name").allTextContents();
-    assert.deepEqual(rows, ["EM-340", `127.0.0.3:${SIM_PORT} · unit 1`]);
+    assert.deepEqual(rows, ["EM-340", "Unit 1"], "the line stands in its own column, not in the name");
     const notes = await page.locator(".strip").allTextContents();
     assert.ok(notes.some((note) => note.includes("answers every unit ID")), notes.join(" | "));
     assert.ok(notes.some((note) => note.includes("is a gateway")), notes.join(" | "));
