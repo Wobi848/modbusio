@@ -180,7 +180,8 @@ For a device without a profile, or to check a profile against the device:
   as u32, s32, float32 in all four orders (ABCD, CDAB, BADC, DCBA); as text (two characters per
   register).
 - **Plausibility:** for 32-bit values the order that gives plausible numbers across the range is
-  suggested, not chosen silently.
+  suggested, not chosen silently. A single pair is marked plausible only in the chosen order: with
+  swapped bytes two unrelated registers often make a float of a likely size.
 - Live: the rows on screen read again every 1–2 s, changes marked.
 - Anything found becomes a point of the device's profile with one click (name, type, unit, scale).
 

@@ -46,6 +46,12 @@ label.check { display: inline-flex; align-items: center; gap: 6px; cursor: point
 .detail > .form-field, .detail > label.check { margin-top: 10px; }
 .detail > .form-field + .actions { margin-top: 12px; }
 
+/* the explorer's readings with the next register: the float, under it u32 and s32 */
+.facts.pairs { grid-template-columns: 3.5em minmax(0, 1fr); gap: 6px 10px; font-size: 12.5px; }
+.facts.pairs dt.in-use { color: var(--text); font-weight: 700; }
+.facts.pairs .float { display: block; }
+.facts.pairs .ints { display: flex; flex-wrap: wrap; gap: 0 12px; font-size: 12px; }
+
 .ask.add-device, .ask.add-point { margin: 8px 12px; }
 
 .charts { display: grid; gap: 12px; padding: 12px 20px; }
