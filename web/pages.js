@@ -94,10 +94,10 @@ function sitesCard(state) {
     ${site.open ? "" : `<button type="button" class="quiet" data-act="site-open" data-id="${h(site.id)}">${t("set.openSite")}</button><button type="button" class="quiet" data-act="ask-delete-site" data-id="${h(site.id)}">${t("set.deleteSite")}</button>`}</li>`).join("");
   const deleting = state.asking?.kind === "delete-site" ? askHtml(t("set.deleteAsk"), t("set.deleteWhy"), [["delete-site", t("set.deleteSite")]]) : "";
   return `<section class="card"><h2>${t("set.sites")}</h2>
-    <label class="form-field">${t("set.siteName")}<input id="site-name" value="${h(state.site.name)}"></label>
+    <label class="form-field">${t("set.siteName")}<input id="site-name" value="${h(state.siteNameDraft ?? state.site.name)}"></label>
     <div class="actions"><button type="button" class="tonal" data-act="rename-site">${t("set.rename")}</button></div>
     <ul class="plain sites">${rows}</ul>${deleting}
-    <label class="form-field">${t("set.newSite")}<input id="new-site" placeholder="${t("set.newSiteHint")}"></label>
+    <label class="form-field">${t("set.newSite")}<input id="new-site" placeholder="${t("set.newSiteHint")}" value="${h(state.newSiteName ?? "")}"></label>
     <div class="actions"><button type="button" class="quiet" data-act="new-site">${t("set.create")}</button>
       <a class="button quiet" href="/api/site.json" download>${t("export.siteFile")}</a>
       <button type="button" class="quiet" data-act="import-site">${t("set.importSite")}</button></div></section>`;
