@@ -75,7 +75,8 @@ modbusio restore 4                           put back write number 4 (or: restor
 A device is named by its line and unit ID: `192.168.10.20/1` (TCP, port 502),
 `tcp:192.168.10.20:5020/1`, `rtu-tcp:192.168.10.50:4001/2`, `serial:/dev/ttyUSB0:19200:8N1/5`.
 Addresses are as on the wire, from 0: holding register `40001` in a vendor's list is `hr 0`.
-`write`, `changed` and `restore` use the same log as the interface.
+`write`, `changed` and `restore` use the same log as the interface. `read` and `explore` end with
+exit code 1 when no value could be read, so a script sees it.
 
 On Linux the user must be in the group `dialout` once to open a serial port.
 

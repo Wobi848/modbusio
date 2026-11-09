@@ -512,6 +512,10 @@ async fn read(
         std::fs::write(&path, modbusio::csv::file(&lines))
             .with_context(|| format!("cannot write {}", path.display()))?;
     }
+    // a script calling modbusio sees the failure in the exit code, not only in the table
+    if readings.iter().all(|reading| reading.error.is_some()) {
+        anyhow::bail!("no value could be read");
+    }
     Ok(())
 }
 
@@ -606,6 +610,9 @@ async fn explore_device(
     }
     if let Some(error) = explored.stopped {
         println!("Stopped: {error}");
+    }
+    if lines.is_empty() {
+        anyhow::bail!("no address answered with data");
     }
     Ok(())
 }
