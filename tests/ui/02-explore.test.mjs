@@ -1,18 +1,22 @@
-import { assert, chooseDevice, open, SIM_PORT } from "./helpers.mjs";
+import { assert, chooseDevice, headsOverValues, open, SIM_PORT } from "./helpers.mjs";
 
 export default {
   name: "explore: the drive's addresses, a point into a new profile, read in the workspace",
   async setup(api) {
+    await api("devices/add", "POST", { key: `tcp:127.0.0.2:${SIM_PORT}/1`, name: "Meter" });
     await api("devices/add", "POST", { key: `tcp:127.0.0.3:${SIM_PORT}/2`, name: "Drive" });
   },
   async run({ page, base }) {
     await open(page, base);
     await chooseDevice(page, "Drive");
     assert.equal(await page.textContent("#next"), "Explore registers");
-    await page.click("#next");
+    // the area's key takes the device chosen in the workspace along, as the button does
+    await page.keyboard.press("2");
+    assert.equal(await page.inputValue("#explore-key"), `tcp:127.0.0.3:${SIM_PORT}/2`);
     await page.fill("#explore-count", "120");
     await page.click(".explore-form [data-act=explore]");
     await page.waitForSelector(".row.registers[data-address='103']");
+    await headsOverValues(page, "registers:not(.missing)");
     assert.match(await page.textContent(".strips"), /8 addresses with data, 112 without/);
     assert.match(await page.textContent(".strips"), /refused larger blocks: reading at most \d+ registers per request/);
     await page.click(".row.registers[data-address='1']");

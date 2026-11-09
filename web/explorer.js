@@ -68,7 +68,7 @@ function detailHtml(state) {
   const row = explorer.result?.rows.find((item) => item.address === explorer.row);
   if (!row) return `<aside class="detail"><p class="hint">${t("ex.choose")}</p></aside>`;
   const back = `<button type="button" class="quiet back" data-act="explore-close">← ${t("back")}</button>`;
-  const pairs = (row.pairs ?? []).map((reading) => `<dt class="mono">${reading.order}</dt><dd class="mono${reading.plausible ? "" : " dim"}">${h(localNumber(reading.float))} · u32 ${reading.u32} · s32 ${reading.s32}</dd>`).join("");
+  const pairs = (row.pairs ?? []).map((reading) => `<dt class="mono">${reading.order}</dt><dd class="mono${reading.plausible ? "" : " dim"}"><span class="whole">${h(localNumber(reading.float))}</span> · <span class="whole">u32 ${reading.u32}</span> · <span class="whole">s32 ${reading.s32}</span></dd>`).join("");
   const adding = explorer.adding;
   const types = TYPES.filter((type) => (isBits(explorer.area) ? type === "bool" : type !== "bool"))
     .map((type) => `<option${type === adding?.type ? " selected" : ""}>${type}</option>`).join("");

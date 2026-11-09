@@ -86,6 +86,16 @@ export function registerFrame(parts) {
   frame = parts;
 }
 
+/** On a phone the areas are a row that scrolls sideways: keep the current one in sight, also after
+ * the row is drawn anew. */
+function showCurrentArea(side) {
+  const row = side.querySelector(".tabs");
+  const current = row?.querySelector("[aria-current=page]");
+  if (!current || row.scrollWidth <= row.clientWidth) return;
+  const left = current.getBoundingClientRect().left - row.getBoundingClientRect().left + row.scrollLeft;
+  row.scrollLeft = left - (row.clientWidth - current.offsetWidth) / 2;
+}
+
 function keepScroll(root) {
   const kept = {};
   for (const element of root.querySelectorAll("[data-keep]")) kept[element.dataset.keep] = element.scrollTop;
@@ -105,7 +115,9 @@ export function render() {
     ? [document.activeElement.selectionStart, document.activeElement.selectionEnd] : null;
   const work = document.getElementById("work");
   const kept = keepScroll(document.body);
-  document.getElementById("side").innerHTML = frame.side(state);
+  const side = document.getElementById("side");
+  side.innerHTML = frame.side(state);
+  showCurrentArea(side);
   document.getElementById("nextbar").innerHTML = frame.nextbar(view);
   work.innerHTML = view.html;
   document.getElementById("status").innerHTML = frame.status(state);
@@ -149,6 +161,8 @@ export async function attempt(action) {
 }
 
 export function go(area) {
+  // the explorer starts with the device chosen in the workspace, unless it shows another one's result
+  if (area === "explorer" && state.selected && !state.explorer.result && !state.explorer.busy) state.explorer.key = state.selected;
   state.area = area;
   state.menu = null;
   state.asking = null;

@@ -171,7 +171,7 @@ function pointsHtml(state, device) {
     <button type="button" class="tonal" data-act="read-device">${t("pts.readAgain")}</button></div></div>`;
   const failed = reading.failed ? `<div class="strip warn">${t("pts.failed", { n: reading.failed })}</div>` : "";
   const strips = failed || reading.notes?.length ? `<div class="strips">${failed}${(reading.notes ?? []).map((note) => `<div class="strip info">${h(noteText(note))}</div>`).join("")}</div>` : "";
-  const head = `<div class="row mpoints head" role="row"><span>${t("col.name")}</span><span>${t("col.address")}</span><span>${t("col.value")}</span><span></span></div>`;
+  const head = `<div class="row mpoints head" role="row"><span>${t("col.name")}</span><span>${t("col.address")}</span><span class="num">${t("col.value")}</span><span></span></div>`;
   const rows = groupPoints(points).map(([group, members]) =>
     `${group ? `<div class="row group" role="presentation"><span class="name">${h(group)}</span><span class="hint">${members.length}</span></div>` : ""}${members.map((point) => pointRow(state, point)).join("")}`).join("");
   return `<section class="listwrap">${toolbar}${strips}<div class="rows" data-keep="points" role="listbox">${head}${rows || `<div class="empty"><p>${t("pts.none")}</p></div>`}</div></section>`;

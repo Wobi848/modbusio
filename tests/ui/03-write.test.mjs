@@ -1,4 +1,4 @@
-import { assert, chooseDevice, driveWithProfile, open } from "./helpers.mjs";
+import { assert, chooseDevice, driveWithProfile, headsOverValues, noSidewaysScroll, open } from "./helpers.mjs";
 
 export default {
   name: "write: unlock, value, confirmation, logged with the old value, put back",
@@ -27,10 +27,25 @@ export default {
     await page.waitForSelector(".toast:has-text('Written: 30.5 Hz (was 25 Hz)')");
     await page.waitForSelector(".row.mpoints:has-text('30.5 Hz')");
     await page.waitForSelector(".status .chip:has-text('1 changed by you')");
+    await headsOverValues(page, "mpoints");
     // after a restart the write still stands and can be put back
     await restart();
     await page.goto(`${base}/#/changed`);
     await page.waitForSelector(".row.mlog:has-text('still written')");
+    await headsOverValues(page, "mlog");
+    // at phone width the row keeps its state and button in sight, also with German's longer words;
+    // the page stays (leaving it asks first while a value stands), only its size and language change
+    await page.setViewportSize({ width: 390, height: 844 });
+    await noSidewaysScroll(page);
+    await page.keyboard.press("7");
+    await page.selectOption("#language", "de");
+    await page.keyboard.press("6");
+    await page.waitForSelector(".row.mlog:has-text('Zurückschreiben')");
+    await noSidewaysScroll(page);
+    await page.keyboard.press("7");
+    await page.selectOption("#language", "en");
+    await page.keyboard.press("6");
+    await page.setViewportSize({ width: 1500, height: 900 });
     await page.click("#next");
     assert.match(await page.textContent(".ask"), /Unlock writing/);
     await page.click("[data-act=unlock]");

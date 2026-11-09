@@ -23,7 +23,7 @@ function viewWatch(state) {
       <button type="button" class="quiet" data-act="unwatch" data-key="${h(item.key)}" data-point="${h(item.point)}">${t("watch.remove")}</button></div>`;
   }).join("");
   const body = rows
-    ? `<div class="rows" data-keep="watch"><div class="row mwatch head"><span>${t("col.name")}</span><span>${t("col.device")}</span><span>${t("col.value")}</span><span></span></div>${rows}</div>`
+    ? `<div class="rows" data-keep="watch"><div class="row mwatch head"><span>${t("col.name")}</span><span>${t("col.device")}</span><span class="num">${t("col.value")}</span><span></span></div>${rows}</div>`
     : `<div class="empty"><h2>${t("watch.emptyTitle")}</h2><p>${t("watch.emptyLead")}</p></div>`;
   return {
     title: t("tab.watch"),
