@@ -182,7 +182,12 @@ export const selectedDevice = () => state.site.devices.find((device) => device.k
 /** A device's name for people: its own, else the product, else its line and unit. */
 export function deviceName(device) {
   if (!device) return "";
-  return device.name || device.product || `${device.line} · ${t("unit")} ${device.unit}`;
+  return device.name || device.product ? deviceNameOnLine(device) : `${device.line} · ${t("unit")} ${device.unit}`;
+}
+
+/** A device's name where its line is shown beside it already (the tree, the device list). */
+export function deviceNameOnLine(device) {
+  return device.name || device.product || `${t("col.unit")} ${device.unit}`;
 }
 
 /** A reading's value for people, or its error in words. */

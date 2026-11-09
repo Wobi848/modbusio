@@ -19,7 +19,7 @@ function viewWatch(state) {
     const value = answer?.error ? `<span class="chip err">${h(answer.error)}</span>`
       : answer?.reading?.error ? `<span class="chip err">${h(codeText(answer.reading.error))}</span>`
         : `<span class="num">${h(localNumber(readingText(answer?.reading)))}</span>`;
-    return `<div class="row mwatch"><span class="name">${h(item.point)}</span><span class="cut">${h(device ? deviceName(device) : item.key)}</span><span class="value">${value}</span>
+    return `<div class="row mwatch"><span class="name">${h(item.point)}<span class="sub narrow-only">${h(device ? deviceName(device) : item.key)}</span></span><span class="cut">${h(device ? deviceName(device) : item.key)}</span><span class="value">${value}</span>
       <button type="button" class="quiet" data-act="unwatch" data-key="${h(item.key)}" data-point="${h(item.point)}">${t("watch.remove")}</button></div>`;
   }).join("");
   const body = rows
@@ -58,13 +58,13 @@ function viewRecording(state) {
 
 function entryRow(state, entry) {
   const device = deviceOf(state, entry.device);
-  const place = `${entry.point ? `${h(entry.point)} · ` : ""}<span class="mono">${areaShort(entry.area)} ${entry.address}</span>`;
+  const place = `${entry.point ? `${h(entry.point)} · ` : ""}<span class="mono whole">${areaShort(entry.area)} ${entry.address}</span>`;
   const outcome = entry.error ? `<span class="chip err" title="${h(entry.error)}">${t("log.refused")}</span>`
     : entry.kept_other ? `<span class="chip warn">${t("log.keptOther")}</span>`
       : entry.restores ? `<span class="chip">${t("log.restores", { n: entry.restores })}</span>`
         : entry.standing ? `<span class="chip warn">${t("log.standing")}</span>` : "";
   const restore = entry.standing ? `<button type="button" class="quiet" data-act="ask-restore" data-id="${entry.id}">${t("log.restore")}</button>` : "";
-  return `<div class="row mlog"><span class="mono num">${entry.id}</span><span class="cut">${timeText(entry.time)}</span><span class="cut">${h(device ? deviceName(device) : entry.device)} · ${place}</span>
+  return `<div class="row mlog"><span class="mono num">${entry.id}</span><span class="cut">${timeText(entry.time)}</span><span class="cut where">${h(device ? deviceName(device) : entry.device)} · ${place}</span>
     <span class="cut">${h(localNumber(entry.before_text ?? "–"))} → <b>${h(localNumber(entry.text))}</b></span><span class="chips">${outcome}${restore}</span></div>`;
 }
 

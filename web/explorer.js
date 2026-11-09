@@ -63,12 +63,21 @@ function tableHtml(state) {
   return `<div class="strips">${strips}</div><div class="rows" data-keep="registers" role="listbox">${head}${shown.map((row) => rowHtml(state, row)).join("")}</div>`;
 }
 
+/** One word order's readings of a register and the next. Only the order chosen above is shown as
+ * plausible: in a swapped order two unrelated registers often make a float of a likely size
+ * (2498 and 123 read in BADC as −34.37), so a plausible size alone says little. */
+export function pairHtml(reading, chosen) {
+  const inUse = reading.order === chosen;
+  return `<dt class="mono${inUse ? " in-use" : ""}">${reading.order}</dt><dd class="mono${inUse && reading.plausible ? "" : " dim"}">
+    <span class="float">${h(localNumber(reading.float))}</span><span class="ints"><span class="whole">u32 ${reading.u32}</span><span class="whole">s32 ${reading.s32}</span></span></dd>`;
+}
+
 function detailHtml(state) {
   const explorer = state.explorer;
   const row = explorer.result?.rows.find((item) => item.address === explorer.row);
   if (!row) return `<aside class="detail"><p class="hint">${t("ex.choose")}</p></aside>`;
   const back = `<button type="button" class="quiet back" data-act="explore-close">← ${t("back")}</button>`;
-  const pairs = (row.pairs ?? []).map((reading) => `<dt class="mono">${reading.order}</dt><dd class="mono${reading.plausible ? "" : " dim"}"><span class="whole">${h(localNumber(reading.float))}</span> · <span class="whole">u32 ${reading.u32}</span> · <span class="whole">s32 ${reading.s32}</span></dd>`).join("");
+  const pairs = (row.pairs ?? []).map((reading) => pairHtml(reading, explorer.order)).join("");
   const adding = explorer.adding;
   const types = TYPES.filter((type) => (isBits(explorer.area) ? type === "bool" : type !== "bool"))
     .map((type) => `<option${type === adding?.type ? " selected" : ""}>${type}</option>`).join("");
@@ -84,7 +93,7 @@ function detailHtml(state) {
       <div class="actions"><button type="button" data-act="save-point">${t("ex.savePoint")}</button><button type="button" class="quiet" data-act="cancel-add">${t("cancel")}</button></div></div>`;
   return `<aside class="detail open" data-keep="register-detail">${back}
     <div class="dhead"><b class="mono">${areaShort(explorer.area)} ${row.address}</b><span class="sub mono">${row.hex ?? (row.value ? t("on") : t("off"))}</span></div>
-    ${row.pairs?.length ? `<h3>${t("ex.withNext")}</h3><dl class="facts">${pairs}</dl>` : ""}
+    ${row.pairs?.length ? `<h3>${t("ex.withNext")}</h3><dl class="facts pairs">${pairs}</dl>` : ""}
     ${form}
     ${rawWriteHtml(state, row)}
   </aside>`;
