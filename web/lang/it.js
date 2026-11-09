@@ -23,7 +23,7 @@ export default {
     export: "Esporta", "export.devicesCsv": "Elenco apparecchi (CSV)", "export.siteXlsx": "Intero impianto (Excel, legge ogni apparecchio)",
     "export.siteFile": "Impianto come file", "export.pointsCsv": "Punti (CSV)", "export.pointsXlsx": "Punti (Excel)",
     "dev.emptyTitle": "Ancora nessun apparecchio", "dev.emptyLead": "Cercare in una rete, dietro un gateway o su una linea seriale, oppure aggiungere un apparecchio a mano.",
-    "dev.addByHand": "Aggiungi apparecchio …", "dev.addHint": "Linea e ID unità come tcp:IP:porta/unità, rtu-tcp:IP:porta/unità o serial:PORTA:VELOCITÀ:FRAME/unità.",
+    "dev.addByHand": "Aggiungi apparecchio …", "dev.added": "{name} aggiunto.", "dev.addedSilent": "{name} aggiunto, ma non risponde: {reason}. Controllare l'indirizzo e l'ID unità.", "dev.addHint": "Linea e ID unità come tcp:IP:porta/unità, rtu-tcp:IP:porta/unità o serial:PORTA:VELOCITÀ:FRAME/unità.",
     "dev.key": "Apparecchio", "dev.name": "Nome", "dev.add": "Aggiungi apparecchio", "dev.choose": "Scegliere un apparecchio nell'elenco: i suoi dettagli appaiono qui.",
     "dev.noProfile": "Nessun profilo", "dev.read": "Leggi i punti", "dev.explore": "Esplora i registri", "dev.importList": "Importa elenco registri …",
     "dev.identify": "Chiedi chi è", "dev.line": "Linea", "dev.vendor": "Produttore", "dev.product": "Prodotto", "dev.revision": "Versione",

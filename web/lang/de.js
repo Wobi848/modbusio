@@ -21,7 +21,7 @@ export default {
     export: "Export", "export.devicesCsv": "Geräteliste (CSV)", "export.siteXlsx": "Ganze Anlage (Excel, liest jedes Gerät)",
     "export.siteFile": "Anlage als Datei", "export.pointsCsv": "Datenpunkte (CSV)", "export.pointsXlsx": "Datenpunkte (Excel)",
     "dev.emptyTitle": "Noch keine Geräte", "dev.emptyLead": "Ein Netz, die Units hinter einem Gateway oder eine serielle Leitung durchsuchen, oder ein Gerät von Hand hinzufügen.",
-    "dev.addByHand": "Gerät hinzufügen …", "dev.addHint": "Leitung und Unit-ID als tcp:IP:Port/Unit, rtu-tcp:IP:Port/Unit oder serial:PORT:GESCHWINDIGKEIT:FRAME/Unit.",
+    "dev.addByHand": "Gerät hinzufügen …", "dev.added": "{name} hinzugefügt.", "dev.addedSilent": "{name} hinzugefügt, antwortet aber nicht: {reason}. Adresse und Unit-ID prüfen.", "dev.addHint": "Leitung und Unit-ID als tcp:IP:Port/Unit, rtu-tcp:IP:Port/Unit oder serial:PORT:GESCHWINDIGKEIT:FRAME/Unit.",
     "dev.key": "Gerät", "dev.name": "Name", "dev.add": "Gerät hinzufügen", "dev.choose": "Ein Gerät in der Liste wählen: Seine Details stehen dann hier.",
     "dev.noProfile": "Kein Profil", "dev.read": "Datenpunkte lesen", "dev.explore": "Register erkunden", "dev.importList": "Registerliste importieren …",
     "dev.identify": "Fragen, wer es ist", "dev.line": "Leitung", "dev.vendor": "Hersteller", "dev.product": "Produkt", "dev.revision": "Version",

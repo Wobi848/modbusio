@@ -92,7 +92,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Stop a running search | status bar | `api.rs` (one search at a time) |
 | Diagnosis in words: notes of a search, of reading, of the explorer | strips above the tables | `diagnosis.rs`, `tests/web/ui.test.js` (German notes) |
 | Read Device Identification (43/14) | search; device details, *Ask who it is* | `link.rs` (identification), `scan.rs` |
-| Add a device by hand by its line and unit | workspace, *Add device …* | `api.rs` |
+| Add a device by hand by its line and unit; chosen, and asked once whether it answers (TCP only) | workspace, *Add device …* | `api.rs` (asked whether it answers), `ui/01-search` |
 | Device names, profile chosen, removed from the site | device details | `api.rs`, `ui/03-write` |
 | What a device refused learnt and kept (registers per request, no holes, 06) | device details, *Learnt* | `read.rs` (gaps, limits, silence), `api.rs` |
 | Read a device's points by its profile, grouped, filtered, live | workspace | `api.rs` (read), `ui/02-explore`, `tests/web/ui.test.js` |
@@ -115,7 +115,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |
 | Keys `1`–`6`, `7`, `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5) |
 | Only pages of this modbusio may use the API | server | `api.rs` (`foreign_pages_are_refused`) |
-| Command line: `interfaces`, `ports`, `scan`, `listen`, `read`, `explore`, `write`, `changed`, `restore` | terminal | tried against the simulators; the logic below it is tested above |
+| Command line: `interfaces`, `ports`, `scan`, `listen`, `read`, `explore`, `write`, `changed`, `restore`; exit code 1 when nothing could be read | terminal | `cli.rs` (output and exit code), tried against the simulators; the logic below it is tested above |
 
 ## 4. Scope
 

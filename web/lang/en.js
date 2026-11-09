@@ -20,7 +20,7 @@ export default {
     export: "Export", "export.devicesCsv": "Device list (CSV)", "export.siteXlsx": "Whole site (Excel, reads every device)",
     "export.siteFile": "Site as a file", "export.pointsCsv": "Points (CSV)", "export.pointsXlsx": "Points (Excel)",
     "dev.emptyTitle": "No devices yet", "dev.emptyLead": "Search a network, the units behind a gateway or a serial line, or add a device by hand.",
-    "dev.addByHand": "Add device …", "dev.addHint": "Line and unit ID as tcp:IP:port/unit, rtu-tcp:IP:port/unit or serial:PORT:SPEED:FRAME/unit.",
+    "dev.addByHand": "Add device …", "dev.added": "{name} added.", "dev.addedSilent": "{name} added, but it does not answer: {reason}. Check the address and the unit ID.", "dev.addHint": "Line and unit ID as tcp:IP:port/unit, rtu-tcp:IP:port/unit or serial:PORT:SPEED:FRAME/unit.",
     "dev.key": "Device", "dev.name": "Name", "dev.add": "Add device", "dev.choose": "Choose a device in the list: its details show here.",
     "dev.noProfile": "No profile", "dev.read": "Read points", "dev.explore": "Explore registers", "dev.importList": "Import register list …",
     "dev.identify": "Ask who it is", "dev.line": "Line", "dev.vendor": "Vendor", "dev.product": "Product", "dev.revision": "Version",

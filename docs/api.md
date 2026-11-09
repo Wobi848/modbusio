@@ -77,7 +77,10 @@ most_bits, no_holes, single_register_write}`.
 `POST /api/site.json` with such a file opens it as a new site; its profiles join unless one of the
 same id exists.
 
-`POST /api/devices/add` `{key, name?}` → the site; `409` when the device is on it already.
+`POST /api/devices/add` `{key, name?}` → the site with `check`: on Modbus TCP the device is asked
+once whether it answers, `{answered, error}` with the error code when not; `null` on a serial line or
+RTU over TCP, where another master may be active and nothing is sent unasked. The device is added
+either way. `409` when the device is on it already.
 
 `POST /api/devices/update` `{key, name?, profile?}` → the site; `profile: ""` removes the profile.
 

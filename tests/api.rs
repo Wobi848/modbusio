@@ -71,6 +71,53 @@ fn drive_profile() -> Value {
 }
 
 #[tokio::test]
+async fn a_device_added_by_hand_is_asked_whether_it_answers() {
+    let app = app();
+    let address = common::gateway().await;
+    let add = |key: String| json!({ "key": key });
+    let (status, site) = call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(add(format!("tcp:{address}/2"))),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{site}");
+    assert_eq!(site["check"], json!({ "answered": true, "error": null }));
+    assert_eq!(site["devices"].as_array().map(Vec::len), Some(1));
+    // behind the gateway unit 9 is not reached: the gateway says so, the device is kept anyway
+    let (_, site) = call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(add(format!("tcp:{address}/9"))),
+    )
+    .await;
+    assert_eq!(
+        site["check"],
+        json!({ "answered": false, "error": "exception_0b" })
+    );
+    let (_, site) = call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(add("tcp:127.0.0.1:1/1".into())),
+    )
+    .await;
+    assert_eq!(site["check"]["error"], "open");
+    // a serial line is not asked: another master may be active on it
+    let (_, site) = call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(add(format!("rtu-tcp:{address}/3"))),
+    )
+    .await;
+    assert_eq!(site["check"], Value::Null);
+    assert_eq!(site["devices"].as_array().map(Vec::len), Some(4));
+}
+
+#[tokio::test]
 async fn info_names_the_program() {
     let (status, info) = call(&app(), "GET", "/api/info", None).await;
     assert_eq!(status, StatusCode::OK);

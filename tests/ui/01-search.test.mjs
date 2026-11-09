@@ -17,5 +17,19 @@ export default {
     assert.ok(site.devices.some((device) => device.key === `rtu-tcp:127.0.0.4:${SIM_PORT}/5`));
     await page.reload();
     await devicesListed(page, 7);
+    // a device added by hand is chosen, and modbusio says whether it answers
+    const addByHand = async (key, name) => {
+      await page.click(".tree .node.level-1");
+      await page.click("[data-act=add-device-menu]");
+      await page.fill("#add-key", key);
+      await page.fill("#add-name", name);
+      await page.click("[data-act=add-device]");
+    };
+    await addByHand(`tcp:127.0.0.2:${SIM_PORT}/3`, "Meter 3");
+    await page.waitForSelector("#toast:has-text('Meter 3 added.')");
+    assert.equal(await page.textContent(".pagehead h1"), "Meter 3");
+    await addByHand(`tcp:127.0.0.3:${SIM_PORT}/9`, "Unit nine");
+    await page.waitForSelector("#toast:has-text('Unit nine added, but it does not answer: device behind gateway silent.')");
+    assert.equal(await page.textContent(".pagehead h1"), "Unit nine");
   },
 };

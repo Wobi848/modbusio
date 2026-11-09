@@ -130,6 +130,16 @@ enum Probed {
     Failed(LinkError),
 }
 
+/// Whether one unit answers, asked once as the search asks: `None` when it does (with data or an
+/// exception of its own), else the code of what went wrong (docs/api.md).
+pub async fn unanswered(links: &Links, target: &Target, timeout: Duration) -> Option<String> {
+    match links.exchange(target, &probe(), timeout).await {
+        Ok(_) => None,
+        Err(error) if error.device_answered() => None,
+        Err(error) => Some(error.code()),
+    }
+}
+
 async fn probe_unit(links: &Links, target: &Target, timeout: Duration, retries: u8) -> Probed {
     let mut last = Probed::Silent;
     for _ in 0..=retries {

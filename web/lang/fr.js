@@ -23,7 +23,7 @@ export default {
     export: "Exporter", "export.devicesCsv": "Liste des appareils (CSV)", "export.siteXlsx": "Toute l'installation (Excel, lit chaque appareil)",
     "export.siteFile": "Installation comme fichier", "export.pointsCsv": "Points (CSV)", "export.pointsXlsx": "Points (Excel)",
     "dev.emptyTitle": "Pas encore d'appareils", "dev.emptyLead": "Chercher dans un réseau, derrière une passerelle ou sur une ligne série, ou ajouter un appareil à la main.",
-    "dev.addByHand": "Ajouter un appareil …", "dev.addHint": "Ligne et ID d'unité sous la forme tcp:IP:port/unité, rtu-tcp:IP:port/unité ou serial:PORT:VITESSE:TRAME/unité.",
+    "dev.addByHand": "Ajouter un appareil …", "dev.added": "{name} ajouté.", "dev.addedSilent": "{name} ajouté, mais ne répond pas : {reason}. Vérifiez l'adresse et l'ID d'unité.", "dev.addHint": "Ligne et ID d'unité sous la forme tcp:IP:port/unité, rtu-tcp:IP:port/unité ou serial:PORT:VITESSE:TRAME/unité.",
     "dev.key": "Appareil", "dev.name": "Nom", "dev.add": "Ajouter l'appareil", "dev.choose": "Choisir un appareil dans la liste : ses détails s'affichent ici.",
     "dev.noProfile": "Pas de profil", "dev.read": "Lire les points", "dev.explore": "Explorer les registres", "dev.importList": "Importer une liste de registres …",
     "dev.identify": "Demander qui il est", "dev.line": "Ligne", "dev.vendor": "Fabricant", "dev.product": "Produit", "dev.revision": "Version",
