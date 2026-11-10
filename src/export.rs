@@ -1,6 +1,7 @@
 //! Tables for the exports: one table, written as CSV (`csv.rs`) or as an Excel file
 //! (`workbook.rs`), so both always hold the same.
 
+use std::collections::HashMap;
 use std::time::SystemTime;
 
 use crate::profile::{Point, Profile, Reading};
@@ -179,6 +180,12 @@ pub fn recording_table(recording: &Recording, offset_minutes: i32) -> Table {
             format!("{} [{}]", series.label, series.unit)
         }
     }));
+    // looked up by time: searching every series for every row takes seconds after a day of samples
+    let values: Vec<HashMap<u64, Option<f64>>> = recording
+        .series
+        .iter()
+        .map(|series| series.samples.iter().copied().collect())
+        .collect();
     let rows = recording
         .times()
         .into_iter()
@@ -187,12 +194,11 @@ pub fn recording_table(recording: &Recording, offset_minutes: i32) -> Table {
                 SystemTime::UNIX_EPOCH + std::time::Duration::from_millis(time),
                 offset_minutes,
             )];
-            row.extend(recording.series.iter().map(|series| {
+            row.extend(values.iter().map(|series| {
                 series
-                    .samples
-                    .iter()
-                    .find(|(at, _)| *at == time)
-                    .and_then(|(_, value)| *value)
+                    .get(&time)
+                    .copied()
+                    .flatten()
                     .map(number_text)
                     .unwrap_or_default()
             }));
@@ -256,6 +262,32 @@ mod tests {
         let time = SystemTime::UNIX_EPOCH + std::time::Duration::from_secs(1_793_000_000);
         assert_eq!(date_time_text(time, 0), "2026-10-26 07:33:20");
         assert_eq!(date_time_text(time, 60), "2026-10-26 08:33:20");
+    }
+
+    #[test]
+    fn a_recording_has_one_row_per_time_and_a_gap_where_a_point_has_no_value() {
+        let mut recording = Recording::default();
+        recording
+            .add("tcp:a/1", "Flow", "A · Flow".into(), "°C".into())
+            .expect("added");
+        recording
+            .add("tcp:a/1", "Run", "A · Run".into(), String::new())
+            .expect("added");
+        recording.push(0, 1_793_000_000_000, Some(63.5));
+        recording.push(1, 1_793_000_000_000, Some(1.0));
+        // the device did not answer for the first point, and the second joined later
+        recording.push(0, 1_793_000_005_000, None);
+        recording.push(1, 1_793_000_010_000, Some(0.0));
+        let table = recording_table(&recording, 0);
+        assert_eq!(table.columns, ["Time", "A · Flow [°C]", "A · Run"]);
+        assert_eq!(
+            table.rows,
+            [
+                ["2026-10-26 07:33:20", "63.5", "1"],
+                ["2026-10-26 07:33:25", "", ""],
+                ["2026-10-26 07:33:30", "", "0"],
+            ]
+        );
     }
 
     #[test]

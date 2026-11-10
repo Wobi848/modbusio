@@ -107,7 +107,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Put back one or all old values, also after a restart; leaving asks first | *Changed by you* | `write.rs`, `api.rs`, `ui/03-write` |
 | Log as CSV and Excel | *Changed by you* | `export.rs` |
 | Watch list across devices | *Watch list* | `ui/06-live` |
-| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `ui/06-live`, `tests/web/ui.test.js` (charts) |
+| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `export.rs` (one row per time), `api.rs` (stopped and started again), `ui/06-live`, `tests/web/ui.test.js` (charts) |
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
 | Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |

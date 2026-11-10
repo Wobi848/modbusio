@@ -37,7 +37,7 @@ function viewRecording(state) {
   const recording = state.recording;
   const intervals = [5, 10, 15, 30, 60].map((seconds) => `<option value="${seconds}"${seconds === recording.interval ? " selected" : ""}>${seconds} s</option>`).join("");
   const series = recording.series.map((item) => {
-    const last = [...item.samples].reverse().find(([, value]) => value !== null);
+    const last = item.samples.findLast(([, value]) => value !== null);
     return `<div class="row mrecord"><span class="name">${h(item.label)}</span><span class="num mono">${last ? h(localNumber(String(last[1]))) : "–"} ${h(item.unit)}</span><span class="mono num">${item.samples.length}</span>
       <button type="button" class="quiet" data-act="record-remove" data-key="${h(item.device)}" data-point="${h(item.point)}">${t("rec.remove")}</button></div>`;
   }).join("");
