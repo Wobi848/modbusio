@@ -67,6 +67,25 @@ export default {
     await page.click(".ask [data-act=discard-profile]");
     await page.waitForSelector(".row.mprofiles:not(.head)");
     await page.click(".row.mprofiles:not(.head)");
+    // a point added in the explorer while the profile is open with something typed: saving the
+    // profile keeps both
+    await page.click("[data-act=edit-point]");
+    await page.click("#point-description");
+    await page.keyboard.type("z");
+    await page.locator("#point-description").blur();
+    await page.keyboard.press("2");
+    await page.click(".row.registers[data-address='103']");
+    await page.click("[data-act=add-to-profile]");
+    await page.fill("#add-point-name", "Motor current");
+    await page.click("[data-act=save-point]");
+    await page.waitForSelector(".toast:has-text('Motor current added')");
+    await page.keyboard.press("3");
+    await page.waitForSelector(".row.mprofile-points:has-text('Motor current')");
+    await page.click("[data-act=save-profile]");
+    await page.waitForSelector(".toast:has-text('saved')");
+    const kept = await (await fetch(`${base}/api/profiles/get?id=drive`)).json();
+    assert.deepEqual(kept.profile.points.map((point) => point.name), ["Set frequency", "Output frequency", "Motor current"]);
+    assert.equal(kept.profile.points[0].description, "xz", "what was typed is saved too");
     await page.click("[data-act=close-profile]");
     await page.waitForSelector(".row.mprofiles:not(.head)");
     assert.deepEqual(errors, [], "no errors in the page");
