@@ -3,6 +3,7 @@
 mod common;
 
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::body::Body;
 use axum::http::{Request, StatusCode, header};
@@ -490,6 +491,53 @@ async fn a_site_file_is_checked_whole_before_anything_of_it_is_kept() {
     assert_eq!(exported["site"]["devices"][0]["key"], "tcp:10.0.0.5:502/1");
     assert_eq!(exported["profiles"][0]["id"], "fu-7");
     let _ = std::fs::remove_dir_all(folder);
+}
+
+/// Samples of the one recorded point.
+async fn samples(app: &axum::Router) -> usize {
+    let (_, recording) = call(app, "GET", "/api/recording", None).await;
+    recording["series"][0]["samples"]
+        .as_array()
+        .map_or(0, Vec::len)
+}
+
+// The clock is the test's: nothing here waits for a device. The port does not exist, so every
+// round records that reading failed.
+#[tokio::test(start_paused = true)]
+async fn stopping_and_starting_again_leaves_one_sampling() {
+    let app = app();
+    let key = "serial:/dev/modbusio-no-such-port:9600:8N1/1";
+    call(
+        &app,
+        "POST",
+        "/api/devices/add",
+        Some(json!({ "key": key })),
+    )
+    .await;
+    call(&app, "POST", "/api/profiles", Some(drive_profile())).await;
+    let update = json!({ "key": key, "profile": "fu-7" });
+    call(&app, "POST", "/api/devices/update", Some(update)).await;
+    let point = json!({ "key": key, "point": "Set frequency" });
+    let (status, added) = call(&app, "POST", "/api/recording/add", Some(point)).await;
+    assert_eq!(status, StatusCode::OK, "{added}");
+    let start = json!({ "interval": 5 });
+
+    call(&app, "POST", "/api/recording/start", Some(start.clone())).await;
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    assert_eq!(samples(&app).await, 1);
+    // stopped and started while the first sampling sleeps until its next round
+    call(&app, "POST", "/api/recording/stop", None).await;
+    call(&app, "POST", "/api/recording/start", Some(start)).await;
+    tokio::time::sleep(Duration::from_secs(11)).await;
+    assert_eq!(
+        samples(&app).await,
+        4,
+        "one from the first start, then one every 5 s from the second"
+    );
+
+    call(&app, "POST", "/api/recording/stop", None).await;
+    tokio::time::sleep(Duration::from_secs(11)).await;
+    assert_eq!(samples(&app).await, 4, "stopped");
 }
 
 fn base64(bytes: &[u8]) -> String {

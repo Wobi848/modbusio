@@ -83,7 +83,7 @@ pub async fn start(
     State(state): State<Shared>,
     Json(request): Json<Start>,
 ) -> Result<Json<Value>, ApiError> {
-    let already = {
+    let started = {
         let mut recording = state.recording.lock().expect("recording lock");
         recording
             .set_interval(request.interval)
@@ -91,10 +91,10 @@ pub async fn start(
         if recording.series.is_empty() {
             return Err(ApiError::conflict("add points to record first"));
         }
-        std::mem::replace(&mut recording.running, true)
+        recording.start()
     };
-    if !already {
-        tokio::spawn(sample(state.clone()));
+    if let Some(run) = started {
+        tokio::spawn(sample(state.clone(), run));
     }
     Ok(self::state(State(state)).await)
 }
@@ -111,14 +111,14 @@ pub async fn clear(State(state): State<Shared>) -> Json<Value> {
     self::state(State(state)).await
 }
 
-/// Rounds of reading while the recording runs.
-async fn sample(state: Shared) {
+/// Rounds of reading while this run of the recording goes on.
+async fn sample(state: Shared, run: u64) {
     let mut last_backup = tokio::time::Instant::now();
     loop {
         let round_started = tokio::time::Instant::now();
         let (series, interval) = {
             let recording = state.recording.lock().expect("recording lock");
-            if !recording.running {
+            if !recording.runs(run) {
                 break;
             }
             let series: Vec<(String, String)> = recording
@@ -138,6 +138,10 @@ async fn sample(state: Shared) {
         for (key, names) in by_device {
             let values = read_values(&state, &key, &names).await;
             let mut recording = state.recording.lock().expect("recording lock");
+            if !recording.runs(run) {
+                // stopped while the device was read: what came after the stop is not recorded
+                return;
+            }
             for (name, value) in names.iter().zip(values) {
                 if let Some(index) = recording.find(&key, name) {
                     recording.push(index, time, value);
