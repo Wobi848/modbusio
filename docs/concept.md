@@ -99,7 +99,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | A point's value, address, type, order, scaling, raw registers, states | point details | `profile.rs`, `ui/03-write` |
 | Register explorer: addresses found by halving, readings in every order, plausible order | *Registers* | `explore.rs`, `api.rs` (explorer), `ui/02-explore` |
 | A register into the device's profile, a new profile where it has none | *Registers*, *Add to profile …* | `ui/02-explore`, `tests/web/ui.test.js` |
-| Profiles: list, edit points, save, delete, CSV and Excel | *Profiles* | `api.rs`, `export.rs` (export imports back) |
+| Profiles: list, edit points, save, delete, CSV and Excel; closing with changes not saved asks first | *Profiles* | `api.rs`, `export.rs` (export imports back), `ui/02-explore` (closing), `tests/web/ui.test.js` |
 | Import a vendor's list (CSV, Excel), convention and columns recognised, preview from the device | *Profiles*, device details, *Import register list …* | `profile_import.rs`, `api.rs` (import), `ui/04-import` |
 | Write a point behind the unlock (checked by the server), value, confirmation | point details | `api.rs` (writing), `ui/03-write` |
 | Write a raw register after its own confirmation | *Registers*, *Write …* | `api.rs` (raw write) |

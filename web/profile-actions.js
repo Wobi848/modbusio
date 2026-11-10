@@ -184,6 +184,21 @@ function changed() {
   return first;
 }
 
+/** Whether closing the open profile would lose something typed. A new profile nobody typed in loses nothing. */
+export function unsavedChanges(state) {
+  const draft = state.profileDraft;
+  if (!draft || !state.profileDirty) return false;
+  return Boolean(draft.id || draft.name || draft.vendor || draft.model || draft.points.length);
+}
+
+function closeProfile() {
+  state.profileDraft = null;
+  state.profileId = null;
+  state.pointIndex = null;
+  state.asking = null;
+  render();
+}
+
 export const profileActions = {
   "explore-device": () => {
     const device = selectedDevice();
@@ -231,7 +246,11 @@ export const profileActions = {
     render();
     document.getElementById("profile-name")?.focus();
   },
-  "close-profile": () => { state.profileDraft = null; state.profileId = null; state.pointIndex = null; render(); },
+  "close-profile": () => {
+    if (unsavedChanges(state)) { state.asking = { kind: "close-profile" }; render(); return; }
+    closeProfile();
+  },
+  "discard-profile": () => closeProfile(),
   "save-profile": async () => {
     const problem = draftProblem(state.profileDraft);
     if (problem) { toast(problem, true); return; }
@@ -240,6 +259,7 @@ export const profileActions = {
     state.profileDraft = saved;
     state.profileId = saved.id;
     state.profileDirty = false;
+    state.asking = null;
     state.profiles = (await attempt(api.profiles)) ?? state.profiles;
     for (const device of state.site.devices.filter((item) => item.profile === saved.id)) delete state.readings[device.key];
     state.site = (await attempt(api.site)) ?? state.site;

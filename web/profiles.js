@@ -55,7 +55,8 @@ function editorHtml(state) {
     ${draft.id ? `<a class="button quiet" href="/api/profile.csv?id=${encodeURIComponent(draft.id)}" download>CSV</a><a class="button quiet" href="/api/profile.xlsx?id=${encodeURIComponent(draft.id)}" download>Excel</a>` : ""}
     ${draft.id ? `<button type="button" class="quiet" data-act="ask-delete-profile">${t("prof.delete")}</button>` : ""}</div></div>`;
   const deleting = state.asking?.kind === "delete-profile" ? askHtml(t("prof.deleteAsk", { name: draft.name }), t("prof.deleteWhy"), [["delete-profile", t("prof.delete")]]) : "";
-  return `<section class="listwrap">${head}${tools}${deleting}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
+  const closing = state.asking?.kind === "close-profile" ? askHtml(t("prof.closeAsk"), t("prof.closeWhy"), [["discard-profile", t("prof.discard")]]) : "";
+  return `<section class="listwrap">${head}${tools}${deleting}${closing}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
 }
 
 function pointFormHtml(state) {

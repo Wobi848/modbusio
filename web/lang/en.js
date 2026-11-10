@@ -72,6 +72,7 @@ export default {
     "prof.new": "New profile", "prof.import": "Import register list …", "prof.emptyTitle": "No profiles yet",
     "prof.emptyLead": "Import the vendor's register list (CSV or Excel), or explore a device and take what you find.",
     "prof.points": "Points", "prof.usedBy": "used by {n}", "prof.model": "Model", "prof.order": "Word order", "prof.save": "Save profile", "prof.close": "Close",
+    "prof.closeAsk": "Close without saving?", "prof.closeWhy": "What was changed in this profile since it was last saved is lost.", "prof.discard": "Drop the changes",
     "prof.pointCount": "{n} points", "prof.pointCountOne": "1 point", "prof.source": "from {source}", "prof.addPoint": "Add point", "prof.delete": "Delete profile",
     "prof.deleteAsk": "Delete the profile {name}?", "prof.deleteWhy": "Its file goes. Devices must use another profile first.",
     "prof.noPoints": "No points yet.", "prof.choose": "Open a profile to change it.", "prof.choosePoint": "Choose a point to change it.",

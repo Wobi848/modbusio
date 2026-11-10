@@ -55,6 +55,20 @@ export default {
     assert.ok(await page.isEnabled("[data-act=save-profile]"), "Save profile while typing");
     await page.click("[data-act=save-profile]");
     await page.waitForSelector(".toast:has-text('saved')");
+    // closing with something typed and not saved asks first; Cancel keeps the profile open
+    await page.click("#point-description");
+    await page.keyboard.press("End");
+    await page.keyboard.type("y");
+    await page.click("[data-act=close-profile]");
+    await page.waitForSelector(".ask [data-act=discard-profile]");
+    await page.click(".ask [data-act=cancel-ask]");
+    assert.equal(await page.inputValue("#point-description"), "xy", "Cancel keeps what was typed");
+    await page.click("[data-act=close-profile]");
+    await page.click(".ask [data-act=discard-profile]");
+    await page.waitForSelector(".row.mprofiles:not(.head)");
+    await page.click(".row.mprofiles:not(.head)");
+    await page.click("[data-act=close-profile]");
+    await page.waitForSelector(".row.mprofiles:not(.head)");
     assert.deepEqual(errors, [], "no errors in the page");
   },
 };
