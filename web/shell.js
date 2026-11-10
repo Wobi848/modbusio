@@ -168,7 +168,7 @@ export function dialogHtml(state) {
   const mode = state.search.mode;
   const fields = mode === "serial" ? serialFields(state) : mode === "gateway" ? gatewayFields(state) : tcpFields(state);
   const serialTools = mode === "serial" ? `<button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button>` : "";
-  return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
+  return `<div class="modal"><div class="modal-box search-settings" data-keep="search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
     <h2 id="search-title">${t("search.title")}</h2>
     <p class="sub">${t(`search.lead.${mode}`)}</p>
     <dl class="facts">${modeChoice(state)}${fields}</dl>
