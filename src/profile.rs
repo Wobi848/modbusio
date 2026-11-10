@@ -289,9 +289,32 @@ fn with_unit(number: &str, unit: &str) -> String {
     }
 }
 
-/// A file name of letters, digits and dashes from a profile's name.
+/// Longest id; the id names a file.
+const MOST_SLUG: usize = 60;
+
+/// Names Windows keeps for its devices: no file can carry one, whatever its ending.
+const WINDOWS_DEVICE_NAMES: [&str; 4] = ["con", "prn", "aux", "nul"];
+const WINDOWS_PORT_NAMES: [&str; 2] = ["com", "lpt"];
+
+/// A file name of letters, digits and dashes from a profile's or a site's name, one every system
+/// can store: a site called "Aux" gets `aux-1`.
 pub fn slug(name: &str) -> String {
-    let slug: String = name
+    let slug = dashed(name);
+    if windows_device_name(&slug) {
+        format!("{slug}-1")
+    } else {
+        slug
+    }
+}
+
+/// Whether `id` has the form of a slug. An id kept before Windows' device names were avoided
+/// still counts, so its profile can be saved again.
+pub fn is_slug(id: &str) -> bool {
+    id == dashed(id)
+}
+
+fn dashed(name: &str) -> String {
+    let dashed: String = name
         .to_ascii_lowercase()
         .chars()
         .map(|character| {
@@ -302,16 +325,25 @@ pub fn slug(name: &str) -> String {
             }
         })
         .collect();
-    let slug = slug
+    let dashed = dashed
         .split('-')
         .filter(|part| !part.is_empty())
         .collect::<Vec<_>>()
         .join("-");
-    if slug.is_empty() {
-        "profile".into()
-    } else {
-        slug.chars().take(60).collect()
+    if dashed.is_empty() {
+        return "profile".into();
     }
+    let cut: String = dashed.chars().take(MOST_SLUG).collect();
+    cut.trim_end_matches('-').into()
+}
+
+fn windows_device_name(slug: &str) -> bool {
+    WINDOWS_DEVICE_NAMES.contains(&slug)
+        || WINDOWS_PORT_NAMES.iter().any(|port| {
+            slug.strip_prefix(port).is_some_and(|number| {
+                number.len() == 1 && number.chars().all(|c| c.is_ascii_digit())
+            })
+        })
 }
 
 #[cfg(test)]
@@ -420,5 +452,14 @@ mod tests {
     fn slugs_are_safe_file_names() {
         assert_eq!(slug("HM-50 Heat meter (v2)"), "hm-50-heat-meter-v2");
         assert_eq!(slug("../.."), "profile");
+        assert_eq!(slug("Aux"), "aux-1", "Windows keeps aux for a device");
+        assert_eq!(slug("COM3"), "com3-1");
+        assert_eq!(slug("Com 3"), "com-3");
+        assert_eq!(slug("Compressor"), "compressor");
+        // cut where a dash would end it: the id stays one that is taken again
+        let long = format!("{}-b", "a".repeat(59));
+        assert_eq!(slug(&long), "a".repeat(59));
+        assert!(is_slug(&slug(&long)) && is_slug("aux-1") && is_slug("aux"));
+        assert!(!is_slug("../escaped") && !is_slug("FU-7") && !is_slug("a--b"));
     }
 }
