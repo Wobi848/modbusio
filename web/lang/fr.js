@@ -60,7 +60,7 @@ export default {
     "search.listen": "Écouter d'abord", "search.findSettings": "Trouver vitesse et trame", "search.start": "Chercher", "search.open": "Chercher des appareils …", "search.again": "Chercher à nouveau",
     "search.badTimeout": "L'attente doit être de 50 à 10000 ms.", "search.badPort": "Le port doit être entre 1 et 65535.", "search.badRange": "Les unités vont de 1 à 247, la première pas au-dessus de la dernière.",
     "search.badRetries": "Au plus 5 essais supplémentaires.", "search.needGateway": "Indiquer l'adresse de la passerelle.", "search.needPort": "Choisir un port série.",
-    "listen.details": "Ce qui a été entendu à chaque réglage", "listen.trial": "{frames} trames, {stray} octets isolés",
+    "listen.details": "Ce qui a été entendu à chaque réglage", "listen.trial": "{frames} trames, {stray} octets isolés", "listen.units": "ID d'unité dans le trafic entendu : {units}. Un appareil qui n'a pas été interrogé entre-temps n'y figure pas.",
     "ex.lead": "Quelles adresses existent et ce que chaque registre pourrait signifier. Reprendre ce qu'on reconnaît dans le profil de l'appareil.",
     "ex.area": "Zone", "ex.start": "À partir de l'adresse", "ex.count": "Combien", "ex.order": "Ordre des mots", "ex.go": "Explorer", "ex.busy": "Exploration …",
     "ex.noDevice": "Ajouter d'abord un appareil", "ex.emptyTitle": "Rien d'exploré encore", "ex.emptyLead": "Choisir un appareil et une zone, puis explorer. Les blocs refusés par l'appareil sont divisés par deux jusqu'à ce que chaque adresse soit connue.",

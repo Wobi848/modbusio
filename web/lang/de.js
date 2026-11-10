@@ -58,7 +58,7 @@ export default {
     "search.listen": "Zuerst mithören", "search.findSettings": "Geschwindigkeit und Frame finden", "search.start": "Suchen", "search.open": "Geräte suchen …", "search.again": "Erneut suchen",
     "search.badTimeout": "Die Wartezeit muss 50 bis 10000 ms sein.", "search.badPort": "Der Port muss 1 bis 65535 sein.", "search.badRange": "Units gehen von 1 bis 247, die erste nicht über der letzten.",
     "search.badRetries": "Höchstens 5 weitere Versuche.", "search.needGateway": "Die Adresse des Gateways angeben.", "search.needPort": "Einen seriellen Port wählen.",
-    "listen.details": "Was bei jeder Einstellung zu hören war", "listen.trial": "{frames} Frames, {stray} verirrte Bytes",
+    "listen.details": "Was bei jeder Einstellung zu hören war", "listen.trial": "{frames} Frames, {stray} verirrte Bytes", "listen.units": "Unit-IDs im gehörten Verkehr: {units}. Ein Gerät, das in dieser Zeit nicht gefragt wurde, fehlt darin.",
     "ex.lead": "Welche Adressen es gibt und was jedes Register bedeuten könnte. Erkanntes ins Profil des Geräts übernehmen.",
     "ex.area": "Bereich", "ex.start": "Ab Adresse", "ex.count": "Wie viele", "ex.order": "Wortreihenfolge", "ex.go": "Erkunden", "ex.busy": "Erkunde …",
     "ex.noDevice": "Zuerst ein Gerät hinzufügen", "ex.emptyTitle": "Noch nichts erkundet", "ex.emptyLead": "Gerät und Bereich wählen, dann erkunden. Blöcke, die das Gerät ablehnt, werden halbiert, bis jede Adresse bekannt ist.",

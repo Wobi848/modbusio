@@ -60,7 +60,7 @@ export default {
     "search.listen": "Escuchar primero", "search.findSettings": "Encontrar velocidad y trama", "search.start": "Buscar", "search.open": "Buscar equipos …", "search.again": "Buscar de nuevo",
     "search.badTimeout": "La espera debe ser de 50 a 10000 ms.", "search.badPort": "El puerto debe ser de 1 a 65535.", "search.badRange": "Las unidades van de 1 a 247, la primera no por encima de la última.",
     "search.badRetries": "Como máximo 5 intentos más.", "search.needGateway": "Indicar la dirección de la pasarela.", "search.needPort": "Elegir un puerto serie.",
-    "listen.details": "Lo que se oyó en cada ajuste", "listen.trial": "{frames} tramas, {stray} bytes sueltos",
+    "listen.details": "Lo que se oyó en cada ajuste", "listen.trial": "{frames} tramas, {stray} bytes sueltos", "listen.units": "ID de unidad en el tráfico oído: {units}. Un equipo al que no se preguntó entretanto no aparece.",
     "ex.lead": "Qué direcciones existen y qué podría significar cada registro. Llevar lo que se reconoce al perfil del equipo.",
     "ex.area": "Área", "ex.start": "Desde la dirección", "ex.count": "Cuántas", "ex.order": "Orden de palabras", "ex.go": "Explorar", "ex.busy": "Explorando …",
     "ex.noDevice": "Añadir primero un equipo", "ex.emptyTitle": "Nada explorado aún", "ex.emptyLead": "Elegir un equipo y un área, luego explorar. Los bloques que el equipo rechaza se dividen a la mitad hasta conocer cada dirección.",

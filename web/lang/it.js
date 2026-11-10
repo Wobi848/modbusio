@@ -60,7 +60,7 @@ export default {
     "search.listen": "Ascolta prima", "search.findSettings": "Trova velocità e frame", "search.start": "Cerca", "search.open": "Cerca apparecchi …", "search.again": "Cerca di nuovo",
     "search.badTimeout": "L'attesa deve essere da 50 a 10000 ms.", "search.badPort": "La porta deve essere da 1 a 65535.", "search.badRange": "Le unità vanno da 1 a 247, la prima non sopra l'ultima.",
     "search.badRetries": "Al massimo 5 tentativi in più.", "search.needGateway": "Indicare l'indirizzo del gateway.", "search.needPort": "Scegliere una porta seriale.",
-    "listen.details": "Ciò che si è sentito a ogni impostazione", "listen.trial": "{frames} frame, {stray} byte sparsi",
+    "listen.details": "Ciò che si è sentito a ogni impostazione", "listen.trial": "{frames} frame, {stray} byte sparsi", "listen.units": "ID unità nel traffico ascoltato: {units}. Un apparecchio non interrogato nel frattempo non vi compare.",
     "ex.lead": "Quali indirizzi esistono e cosa potrebbe significare ogni registro. Riportare ciò che si riconosce nel profilo dell'apparecchio.",
     "ex.area": "Area", "ex.start": "Dall'indirizzo", "ex.count": "Quanti", "ex.order": "Ordine delle parole", "ex.go": "Esplora", "ex.busy": "Esplorazione …",
     "ex.noDevice": "Aggiungere prima un apparecchio", "ex.emptyTitle": "Ancora nulla di esplorato", "ex.emptyLead": "Scegliere un apparecchio e un'area, poi esplorare. I blocchi rifiutati dall'apparecchio vengono dimezzati finché ogni indirizzo è noto.",

@@ -140,11 +140,15 @@ function gatewayFields(state) {
     ${rangeFields(state, "500")}`;
 }
 
-function listenedHtml(state) {
+/** What listening heard: the note, the unit IDs that talked, each setting's count behind a fold. */
+export function listenedHtml(state) {
   const listened = state.listened;
   if (!listened) return "";
-  const trials = listened.listened.trials.map((trial) => `<li><span class="mono">${h(trial.settings)}</span>: ${t("listen.trial", { frames: trial.frames, stray: trial.stray_bytes })}</li>`).join("");
-  return `<div class="strip ${listened.listened.active ? "warn" : "info"}">${h(noteText(listened.note))}</div><details><summary>${t("listen.details")}</summary><ul class="plain">${trials}</ul></details>`;
+  const trials = listened.listened.trials;
+  const units = [...new Set(trials.flatMap((trial) => trial.units))].sort((a, b) => a - b);
+  const talking = units.length ? `<p class="hint">${t("listen.units", { units: units.join(", ") })}</p>` : "";
+  const counts = trials.map((trial) => `<li><span class="mono">${h(trial.settings)}</span>: ${t("listen.trial", { frames: trial.frames, stray: trial.stray_bytes })}</li>`).join("");
+  return `<div class="strip ${listened.listened.active ? "warn" : "info"}">${h(noteText(listened.note))}</div>${talking}<details><summary>${t("listen.details")}</summary><ul class="plain">${counts}</ul></details>`;
 }
 
 function serialFields(state) {

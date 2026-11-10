@@ -13,6 +13,7 @@ const { draftProblem, pointFromExplorer, typedNumber, unsavedChanges } = await i
 const { bounds, byUnit, pathData } = await import("../../web/chart.js");
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
+const { listenedHtml } = await import("../../web/shell.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -197,4 +198,13 @@ test("closing a profile asks only when something typed would be lost", () => {
   assert.equal(unsavedChanges({ profileDraft: { ...empty, name: "FU-7" }, profileDirty: true }), true);
   assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7", name: "FU-7" }, profileDirty: false }), false, "a saved profile");
   assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7" }, profileDirty: true }), true, "a saved profile whose name was emptied");
+});
+
+test("listening names the unit IDs that talked on the line", () => {
+  setLanguage("en");
+  const trial = (settings, frames, units) => ({ settings, frames, stray_bytes: 0, units });
+  const heard = (trials, active) => ({ listened: { trials, active, quiet: !active }, note: { kind: "quiet", text: "The line is quiet." } });
+  const busy = listenedHtml({ listened: heard([trial("9600 8N1", 0, []), trial("9600 8E1", 6, [12, 2, 5])], "9600 8E1") });
+  assert.match(busy, /Unit IDs in the traffic heard: 2, 5, 12\./);
+  assert.doesNotMatch(listenedHtml({ listened: heard([trial("9600 8E1", 0, [])], null) }), /Unit IDs/);
 });
