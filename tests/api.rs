@@ -248,7 +248,8 @@ async fn writing_needs_the_unlock_and_can_be_put_back() {
     assert_eq!(standing["original_text"], "25 Hz");
     let (status, restored) = call(&app, "POST", "/api/restore", Some(json!({ "all": true }))).await;
     assert_eq!(status, StatusCode::OK, "{restored}");
-    let put_back = &restored["results"][0]["entry"];
+    // the newest, the coil, goes back first
+    let put_back = &restored["results"][1]["entry"];
     assert_eq!(put_back["written"], json!([2500]), "{restored}");
     assert_eq!(put_back["text"], "25 Hz", "the words of the value written");
     let (_, journal) = call(&app, "GET", "/api/journal", None).await;
