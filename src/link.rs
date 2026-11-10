@@ -336,7 +336,10 @@ impl Link {
             if waited_out {
                 let nothing_followed = echo_taken && buffer.is_empty() && skipped == 0;
                 if nothing_followed && self.echoes != Some(true) {
-                    // no adapter is known to echo here: what looked like one was the answer
+                    // no adapter is known to echo here: what looked like one was the answer.
+                    // Behind an adapter not known yet, a unit that is silent would look the same;
+                    // a write is safe from that, as the old value is read first on the same line
+                    // (`write::write`), which fails for a silent unit and tells of the echo otherwise
                     if let Ok(response) = pdu::decode_response(request, pdu) {
                         self.capture.record(
                             &self.endpoint,
