@@ -452,6 +452,46 @@ async fn wrong_requests_are_refused_in_words() {
     }
 }
 
+#[tokio::test]
+async fn a_site_file_is_checked_whole_before_anything_of_it_is_kept() {
+    let folder = std::env::temp_dir().join(format!("modbusio-api-site-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&folder);
+    let data = folder.join("data");
+    let app = router(Arc::new(AppState::new(Some(data.clone())).expect("state")));
+    let device = json!({ "key": "tcp:10.0.0.5:502/1", "name": "Drive", "profile": "fu-7" });
+    let file = |profile_id: &str| {
+        let mut profile = drive_profile();
+        profile["id"] = json!(profile_id);
+        json!({
+            "modbusio_site": 1,
+            "site": { "id": "plant", "name": "Plant", "devices": [device.clone(), device.clone()] },
+            "profiles": [profile],
+        })
+    };
+
+    // a profile's id names its file: one that leads out of the data folder is refused
+    let (status, refused) = call(&app, "POST", "/api/site.json", Some(file("../../escaped"))).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{refused}");
+    assert!(!folder.join("escaped.json").exists());
+    let (_, sites) = call(&app, "GET", "/api/sites", None).await;
+    assert_eq!(sites.as_array().map(Vec::len), Some(1), "no site was added");
+
+    let (status, site) = call(&app, "POST", "/api/site.json", Some(file("fu-7"))).await;
+    assert_eq!(status, StatusCode::OK, "{site}");
+    assert_eq!(site["name"], "Plant");
+    let devices = site["devices"].as_array().expect("devices");
+    assert_eq!(devices.len(), 1, "a device named twice is there once");
+    assert_eq!(devices[0]["profile_name"], "FU-7");
+    assert!(data.join("profiles/fu-7.json").exists());
+
+    let (status, exported) = call(&app, "GET", "/api/site.json", None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(exported["modbusio_site"], 1);
+    assert_eq!(exported["site"]["devices"][0]["key"], "tcp:10.0.0.5:502/1");
+    assert_eq!(exported["profiles"][0]["id"], "fu-7");
+    let _ = std::fs::remove_dir_all(folder);
+}
+
 fn base64(bytes: &[u8]) -> String {
     const LETTERS: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut text = String::new();

@@ -109,7 +109,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Watch list across devices | *Watch list* | `ui/06-live` |
 | Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `ui/06-live`, `tests/web/ui.test.js` (charts) |
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
-| Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `ui/07-settings` |
+| Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |
 | Language and theme, following the system | *Settings* | `tests/web/ui.test.js`, `ui/07-settings` |
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |

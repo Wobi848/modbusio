@@ -9,7 +9,7 @@ use serde_json::{Value, json};
 
 use super::state::new_site;
 use super::views::DeviceView;
-use super::{ApiError, Shared, download};
+use super::{ApiError, Shared, download, profiles};
 use crate::endpoint::Target;
 use crate::links::ANSWER_TIMEOUT;
 use crate::profile::Profile;
@@ -165,25 +165,31 @@ pub struct SiteFile {
 }
 
 /// A site file brought in: opened as a new site; its profiles join unless one of that id exists.
+/// The file is checked whole before anything of it is kept.
 pub async fn import(
     State(state): State<Shared>,
     Json(file): Json<SiteFile>,
 ) -> Result<Json<Value>, ApiError> {
     for profile in &file.profiles {
-        profile.check().map_err(ApiError::bad_request)?;
-    }
-    for device in &file.site.devices {
-        Target::parse_key(&device.key).map_err(ApiError::bad_request)?;
+        profiles::check_to_keep(profile)?;
+        profiles::check_id(&profile.id)?;
     }
     let name = check_name(&file.site.name)?;
+    let mut site = new_site(if name.is_empty() { "Site" } else { &name }, &state.sites());
+    for mut device in file.site.devices {
+        // the key as modbusio writes it, so the device is found by it and is there once
+        device.key = Target::parse_key(&device.key)
+            .map_err(ApiError::bad_request)?
+            .key();
+        device.name = check_name(&device.name)?;
+        site.add(device);
+    }
     for profile in file.profiles {
         if state.profile(&profile.id).is_none() {
             state.save_profile(&profile)?;
             state.profiles.lock().expect("profiles lock").push(profile);
         }
     }
-    let mut site = new_site(if name.is_empty() { "Site" } else { &name }, &state.sites());
-    site.devices = file.site.devices;
     switch(&state, site)?;
     Ok(site_json(&state))
 }
