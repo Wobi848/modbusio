@@ -32,6 +32,16 @@ pub struct Device {
     pub delay: Duration,
 }
 
+/// The addresses of a request. After 65535 there is none: the device refuses with exception 02.
+fn span(address: u16, count: usize) -> impl Iterator<Item = Result<u16, ExceptionCode>> {
+    (0..count).map(move |offset| {
+        u16::try_from(offset)
+            .ok()
+            .and_then(|offset| address.checked_add(offset))
+            .ok_or(ExceptionCode::IllegalDataAddress)
+    })
+}
+
 impl Device {
     fn read_registers(
         &self,
@@ -42,11 +52,13 @@ impl Device {
         if count > self.most_registers.max(1) {
             return Err(ExceptionCode::IllegalDataValue);
         }
-        (address..address.saturating_add(count))
+        span(address, usize::from(count))
             .map(|at| {
-                area.get(&at)
-                    .copied()
-                    .ok_or(ExceptionCode::IllegalDataAddress)
+                at.and_then(|at| {
+                    area.get(&at)
+                        .copied()
+                        .ok_or(ExceptionCode::IllegalDataAddress)
+                })
             })
             .collect()
     }
@@ -56,11 +68,13 @@ impl Device {
         address: u16,
         count: u16,
     ) -> Result<Vec<bool>, ExceptionCode> {
-        (address..address.saturating_add(count))
+        span(address, usize::from(count))
             .map(|at| {
-                area.get(&at)
-                    .copied()
-                    .ok_or(ExceptionCode::IllegalDataAddress)
+                at.and_then(|at| {
+                    area.get(&at)
+                        .copied()
+                        .ok_or(ExceptionCode::IllegalDataAddress)
+                })
             })
             .collect()
     }
@@ -107,29 +121,27 @@ impl Device {
     }
 
     fn write_registers(&mut self, address: u16, values: &[u16]) -> Result<(), ExceptionCode> {
-        for (at, _) in (address..).zip(values) {
-            if !self.holding.contains_key(&at) {
+        let places: Vec<u16> = span(address, values.len()).collect::<Result<_, _>>()?;
+        for at in &places {
+            if !self.holding.contains_key(at) {
                 return Err(ExceptionCode::IllegalDataAddress);
             }
-            if self.read_only.contains(&at) {
+            if self.read_only.contains(at) {
                 return Err(ExceptionCode::IllegalDataValue);
             }
         }
-        for (at, value) in (address..).zip(values) {
-            self.holding.insert(at, *value);
-        }
+        self.holding
+            .extend(places.into_iter().zip(values.iter().copied()));
         Ok(())
     }
 
     fn write_coils(&mut self, address: u16, values: &[bool]) -> Result<(), ExceptionCode> {
-        for (at, _) in (address..).zip(values) {
-            if !self.coils.contains_key(&at) {
-                return Err(ExceptionCode::IllegalDataAddress);
-            }
+        let places: Vec<u16> = span(address, values.len()).collect::<Result<_, _>>()?;
+        if places.iter().any(|at| !self.coils.contains_key(at)) {
+            return Err(ExceptionCode::IllegalDataAddress);
         }
-        for (at, value) in (address..).zip(values) {
-            self.coils.insert(at, *value);
-        }
+        self.coils
+            .extend(places.into_iter().zip(values.iter().copied()));
         Ok(())
     }
 

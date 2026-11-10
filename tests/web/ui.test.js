@@ -9,7 +9,7 @@ const { LANGUAGE_FILES, LANGUAGES, codeText, counted, errorText, noteText, setLa
 const { searchRequest } = await import("../../web/actions.js");
 const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../web/workspace.js");
 const { parseStates, statesText } = await import("../../web/profiles.js");
-const { draftProblem, pointFromExplorer, typedNumber } = await import("../../web/profile-actions.js");
+const { draftProblem, pointFromExplorer, typedNumber, unsavedChanges } = await import("../../web/profile-actions.js");
 const { bounds, byUnit, pathData } = await import("../../web/chart.js");
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
@@ -170,4 +170,31 @@ test("a count of one has its own words", () => {
   setLanguage("de");
   assert.equal(counted("pts.notReadLead", 1), "Das Profil nennt 1 Datenpunkt.");
   setLanguage("en");
+});
+
+test("a point's name reaches the write question as text, whatever a vendor's list put in it", () => {
+  setLanguage("en");
+  const key = "tcp:10.0.0.5:502/1";
+  const name = `<img src=x onerror="fetch('/api/session')">`;
+  const point = { name, group: "", area: "holding_register", address: 4, count: 1, type: "u16", unit: "", factor: 1, writable: true, reading: { text: "7", value: 7, raw: [7] } };
+  Object.assign(state, {
+    scan: { finished: true, notes: [] }, site: { name: "S", devices: [{ key, line: "10.0.0.5:502", unit: 1, name: "", profile: "p", points: 1, limits: { most_registers: 125 } }] },
+    selected: key, selectedPoint: name, readings: { [key]: { points: [point], failed: 0, notes: [] } }, watch: [], recording: { series: [] }, pointFilter: "", profiles: [], menu: null, unlocked: true,
+  });
+  for (const step of ["value", "confirm"]) {
+    state.asking = { kind: "write", point: name, step, value: "12" };
+    const html = viewWorkspace(state).html;
+    assert.match(html, /class="ask"/, `the ${step} step is shown`);
+    assert.doesNotMatch(html, /<img/, `the ${step} step shows the name as text`);
+  }
+  Object.assign(state, { asking: null, selected: null, selectedPoint: null, readings: {}, unlocked: false });
+});
+
+test("closing a profile asks only when something typed would be lost", () => {
+  const empty = { id: "", name: "", vendor: "", model: "", points: [] };
+  assert.equal(unsavedChanges({ profileDraft: null, profileDirty: true }), false);
+  assert.equal(unsavedChanges({ profileDraft: empty, profileDirty: true }), false, "a new profile nobody typed in");
+  assert.equal(unsavedChanges({ profileDraft: { ...empty, name: "FU-7" }, profileDirty: true }), true);
+  assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7", name: "FU-7" }, profileDirty: false }), false, "a saved profile");
+  assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7" }, profileDirty: true }), true, "a saved profile whose name was emptied");
 });

@@ -75,6 +75,7 @@ export default {
     "prof.new": "Nuovo profilo", "prof.import": "Importa elenco registri …", "prof.emptyTitle": "Ancora nessun profilo",
     "prof.emptyLead": "Importare l'elenco registri del produttore (CSV o Excel), oppure esplorare un apparecchio e riportare ciò che si trova.",
     "prof.points": "Punti", "prof.usedBy": "usato da {n}", "prof.model": "Modello", "prof.order": "Ordine delle parole", "prof.save": "Salva profilo", "prof.close": "Chiudi",
+    "prof.closeAsk": "Chiudere senza salvare?", "prof.closeWhy": "Ciò che è stato modificato in questo profilo dall'ultimo salvataggio va perso.", "prof.discard": "Scarta le modifiche",
     "prof.pointCount": "{n} punti", "prof.pointCountOne": "1 punto", "prof.source": "da {source}", "prof.addPoint": "Aggiungi punto", "prof.delete": "Elimina profilo",
     "prof.deleteAsk": "Eliminare il profilo {name}?", "prof.deleteWhy": "Il suo file viene eliminato. Gli apparecchi devono prima usare un altro profilo.",
     "prof.noPoints": "Ancora nessun punto.", "prof.choose": "Aprire un profilo per modificarlo.", "prof.choosePoint": "Scegliere un punto per modificarlo.",

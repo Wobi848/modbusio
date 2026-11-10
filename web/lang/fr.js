@@ -75,6 +75,7 @@ export default {
     "prof.new": "Nouveau profil", "prof.import": "Importer une liste de registres …", "prof.emptyTitle": "Pas encore de profils",
     "prof.emptyLead": "Importer la liste de registres du fabricant (CSV ou Excel), ou explorer un appareil et reprendre ce qu'on trouve.",
     "prof.points": "Points", "prof.usedBy": "utilisé par {n}", "prof.model": "Modèle", "prof.order": "Ordre des mots", "prof.save": "Enregistrer le profil", "prof.close": "Fermer",
+    "prof.closeAsk": "Fermer sans enregistrer ?", "prof.closeWhy": "Ce qui a été modifié dans ce profil depuis le dernier enregistrement est perdu.", "prof.discard": "Abandonner les modifications",
     "prof.pointCount": "{n} points", "prof.pointCountOne": "1 point", "prof.source": "de {source}", "prof.addPoint": "Ajouter un point", "prof.delete": "Supprimer le profil",
     "prof.deleteAsk": "Supprimer le profil {name} ?", "prof.deleteWhy": "Son fichier disparaît. Les appareils doivent d'abord utiliser un autre profil.",
     "prof.noPoints": "Pas encore de points.", "prof.choose": "Ouvrir un profil pour le modifier.", "prof.choosePoint": "Choisir un point pour le modifier.",

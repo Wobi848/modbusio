@@ -28,6 +28,8 @@ webpki-roots = "1"
 tokio-serial = "5"
 
 [dev-dependencies]
+# the test's own clock for the recording, which samples every 5 s at the fastest
+tokio = { version = "1.54.1", features = ["test-util"] }
 tokio-modbus = { version = "0.17", default-features = false, features = ["tcp-server", "rtu-server", "rtu-over-tcp-server"] }
 tower = { version = "0.5", features = ["util"] }
 

@@ -75,6 +75,7 @@ export default {
     "prof.new": "Nuevo perfil", "prof.import": "Importar lista de registros …", "prof.emptyTitle": "Aún no hay perfiles",
     "prof.emptyLead": "Importar la lista de registros del fabricante (CSV o Excel), o explorar un equipo y llevar lo encontrado.",
     "prof.points": "Puntos", "prof.usedBy": "usado por {n}", "prof.model": "Modelo", "prof.order": "Orden de palabras", "prof.save": "Guardar perfil", "prof.close": "Cerrar",
+    "prof.closeAsk": "¿Cerrar sin guardar?", "prof.closeWhy": "Lo que se cambió en este perfil desde la última vez que se guardó se pierde.", "prof.discard": "Descartar los cambios",
     "prof.pointCount": "{n} puntos", "prof.pointCountOne": "1 punto", "prof.source": "de {source}", "prof.addPoint": "Añadir punto", "prof.delete": "Borrar perfil",
     "prof.deleteAsk": "¿Borrar el perfil {name}?", "prof.deleteWhy": "Su archivo desaparece. Los equipos deben usar antes otro perfil.",
     "prof.noPoints": "Aún no hay puntos.", "prof.choose": "Abrir un perfil para cambiarlo.", "prof.choosePoint": "Elegir un punto para cambiarlo.",

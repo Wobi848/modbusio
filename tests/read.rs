@@ -1,5 +1,5 @@
 //! Reading points: blocks planned, made smaller where the device refuses, what was learnt kept
-//! (concept section 6).
+//! (concept section 6). And the explorer at the end of the address range (section 5.3).
 
 mod common;
 
@@ -8,6 +8,7 @@ use std::time::{Duration, Instant};
 use common::sim;
 use modbusio::access::Limits;
 use modbusio::endpoint::Endpoint;
+use modbusio::explore::explore;
 use modbusio::profile::Point;
 use modbusio::protocol::Area;
 use modbusio::read::read_points;
@@ -137,4 +138,62 @@ async fn scale_registers_and_swapped_floats_read_as_values() {
         .map(|reading| reading.text.as_str())
         .collect();
     assert_eq!(texts, ["88.21 m³", "1234.5 kWh", "HM5012345678"]);
+}
+
+#[tokio::test]
+async fn the_explorer_reads_up_to_the_last_address() {
+    let mut map = sim::Device {
+        most_registers: 125,
+        ..sim::Device::default()
+    };
+    map.holding.insert(65534, 7);
+    map.holding.insert(65535, 8);
+    map.input.insert(65533, 9);
+    let target = common::target(Endpoint::Tcp(device(map).await), 1);
+    let links = common::links();
+    let mut limits = Limits::default();
+    let cells = |explored: modbusio::explore::Explored| -> Vec<(u16, Option<u16>)> {
+        assert_eq!(explored.stopped, None);
+        explored
+            .cells
+            .iter()
+            .map(|cell| (cell.address, cell.value))
+            .collect()
+    };
+
+    let holding = explore(
+        &links,
+        &target,
+        Area::HoldingRegister,
+        65532,
+        100,
+        &mut limits,
+        WAIT,
+    )
+    .await;
+    assert_eq!(
+        cells(holding),
+        [
+            (65532, None),
+            (65533, None),
+            (65534, Some(7)),
+            (65535, Some(8))
+        ]
+    );
+
+    // nothing at the last address: it is listed as missing, not left out
+    let input = explore(
+        &links,
+        &target,
+        Area::InputRegister,
+        65533,
+        3,
+        &mut limits,
+        WAIT,
+    )
+    .await;
+    assert_eq!(
+        cells(input),
+        [(65533, Some(9)), (65534, None), (65535, None)]
+    );
 }

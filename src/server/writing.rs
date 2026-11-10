@@ -184,10 +184,7 @@ async fn journaled(
     )
     .await
     .map_err(ApiError::internal)?;
-    // a device removed from the site since the write keeps no limits
-    if limits != before && state.device(key).is_ok() {
-        state.update_device(key, |device| device.limits = limits)?;
-    }
+    state.keep_limits(key, before, limits)?;
     Ok(entry)
 }
 

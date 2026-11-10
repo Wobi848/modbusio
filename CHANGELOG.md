@@ -13,6 +13,7 @@ First version.
 - Profiles: what a device's registers mean, with types, word orders, scaling, scale registers,
   units, state texts and limits; import of vendor register lists from CSV and Excel with the
   address convention recognised and a preview read from the device; export as CSV and Excel.
+  Closing a profile with changes not saved asks first.
 - Register explorer: existing addresses found by halving refused blocks, every register's readings,
   the plausible word order suggested, points taken into the profile.
 - Reading by profile in blocks sized to what each device takes, learnt and kept.

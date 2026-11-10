@@ -99,7 +99,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | A point's value, address, type, order, scaling, raw registers, states | point details | `profile.rs`, `ui/03-write` |
 | Register explorer: addresses found by halving, readings in every order, plausible order | *Registers* | `explore.rs`, `api.rs` (explorer), `ui/02-explore` |
 | A register into the device's profile, a new profile where it has none | *Registers*, *Add to profile …* | `ui/02-explore`, `tests/web/ui.test.js` |
-| Profiles: list, edit points, save, delete, CSV and Excel | *Profiles* | `api.rs`, `export.rs` (export imports back) |
+| Profiles: list, edit points, save, delete, CSV and Excel; closing with changes not saved asks first | *Profiles* | `api.rs`, `export.rs` (export imports back), `ui/02-explore` (closing), `tests/web/ui.test.js` |
 | Import a vendor's list (CSV, Excel), convention and columns recognised, preview from the device | *Profiles*, device details, *Import register list …* | `profile_import.rs`, `api.rs` (import), `ui/04-import` |
 | Write a point behind the unlock (checked by the server), value, confirmation | point details | `api.rs` (writing), `ui/03-write` |
 | Write a raw register after its own confirmation | *Registers*, *Write …* | `api.rs` (raw write) |
@@ -108,9 +108,9 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | A write without confirmation read back: taken or not | *Changed by you* | `tests/write.rs` |
 | Log as CSV and Excel | *Changed by you* | `export.rs` |
 | Watch list across devices | *Watch list* | `ui/06-live` |
-| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `ui/06-live`, `tests/web/ui.test.js` (charts) |
+| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `export.rs` (one row per time), `api.rs` (stopped and started again), `ui/06-live`, `tests/web/ui.test.js` (charts) |
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
-| Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `ui/07-settings` |
+| Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |
 | Language and theme, following the system | *Settings* | `tests/web/ui.test.js`, `ui/07-settings` |
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |

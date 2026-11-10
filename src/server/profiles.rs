@@ -60,12 +60,8 @@ pub async fn get(
     Ok(Json(json!({ "profile": profile, "points": points })))
 }
 
-/// Saves a profile whole; a new one (empty id) gets an id from its name. Returns it.
-pub async fn save(
-    State(state): State<Shared>,
-    Json(mut profile): Json<Profile>,
-) -> Result<Json<Value>, ApiError> {
-    profile.name = profile.name.trim().to_string();
+/// Checks a profile from outside before it is kept: its points, their number and their names.
+pub(super) fn check_to_keep(profile: &Profile) -> Result<(), ApiError> {
     profile.check().map_err(ApiError::bad_request)?;
     if profile.points.len() > MOST_POINTS {
         return Err(ApiError::bad_request(format!(
@@ -82,12 +78,30 @@ pub async fn save(
             "two points have the same name; each needs its own",
         ));
     }
-    if profile.id.trim().is_empty() {
-        profile.id = state.free_profile_id(&profile.name);
-    } else if profile.id != crate::profile::slug(&profile.id) {
+    Ok(())
+}
+
+/// The id names the profile's file in the data folder, so it holds nothing a path could use.
+pub(super) fn check_id(id: &str) -> Result<(), ApiError> {
+    if id != crate::profile::slug(id) {
         return Err(ApiError::bad_request(
             "a profile id is letters, digits and dashes",
         ));
+    }
+    Ok(())
+}
+
+/// Saves a profile whole; a new one (empty id) gets an id from its name. Returns it.
+pub async fn save(
+    State(state): State<Shared>,
+    Json(mut profile): Json<Profile>,
+) -> Result<Json<Value>, ApiError> {
+    profile.name = profile.name.trim().to_string();
+    check_to_keep(&profile)?;
+    if profile.id.trim().is_empty() {
+        profile.id = state.free_profile_id(&profile.name);
+    } else {
+        check_id(&profile.id)?;
     }
     state.save_profile(&profile)?;
     {

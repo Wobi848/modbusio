@@ -11,6 +11,7 @@ use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
 use super::ApiError;
+use crate::access::Limits;
 use crate::capture::Capture;
 use crate::endpoint::Target;
 use crate::links::Links;
@@ -207,6 +208,22 @@ impl AppState {
             .expect("some number is free")
     }
 
+    /// Keeps the limits a read, a look or a write learnt about a device. A device taken off the site
+    /// meanwhile keeps none: what was read is still answered.
+    pub fn keep_limits(&self, key: &str, before: Limits, learnt: Limits) -> Result<(), ApiError> {
+        if learnt == before {
+            return Ok(());
+        }
+        {
+            let mut site = self.site.lock().expect("site lock");
+            let Some(device) = site.device_mut(key) else {
+                return Ok(());
+            };
+            device.limits = learnt;
+        }
+        self.save_site()
+    }
+
     /// Stores what was learnt about a device (limits, identity) and saves the site.
     pub fn update_device(
         &self,
@@ -235,5 +252,32 @@ pub fn new_site(name: &str, taken: &[Site]) -> Site {
         id,
         name: name.into(),
         devices: Vec::new(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn limits_are_kept_for_a_device_on_the_site_and_dropped_for_one_taken_off() {
+        let state = AppState::new(None).expect("state");
+        let key = "tcp:10.0.0.5:502/1";
+        let on_site = || state.device(key).ok().map(|(device, _)| device.limits);
+        let learnt = Limits {
+            most_registers: 10,
+            ..Limits::default()
+        };
+        state
+            .site
+            .lock()
+            .expect("site lock")
+            .add(SiteDevice::new(key.into()));
+        assert!(state.keep_limits(key, Limits::default(), learnt).is_ok());
+        assert_eq!(on_site(), Some(learnt));
+        // taken off the site while it was read: what the read learnt has no place, and is no error
+        state.site.lock().expect("site lock").devices.clear();
+        assert!(state.keep_limits(key, learnt, Limits::default()).is_ok());
+        assert_eq!(on_site(), None);
     }
 }

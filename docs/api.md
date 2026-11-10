@@ -75,7 +75,10 @@ most_bits, no_holes, single_register_write}`.
 
 `GET /api/site.json` downloads the open site with the profiles its devices use.
 `POST /api/site.json` with such a file opens it as a new site; its profiles join unless one of the
-same id exists.
+same id exists. The file is checked whole before anything of it is kept: `400` for a device key
+that is none, a name over 80 characters, or a profile that could not be saved by
+`POST /api/profiles` (its points, or an id that is no file name). A device named twice is there
+once.
 
 `POST /api/devices/add` `{key, name?}` → the site with `check`: on Modbus TCP the device is asked
 once whether it answers, `{answered, error}` with the error code when not; `null` on a serial line or

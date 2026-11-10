@@ -73,6 +73,7 @@ export default {
     "prof.new": "Neues Profil", "prof.import": "Registerliste importieren …", "prof.emptyTitle": "Noch keine Profile",
     "prof.emptyLead": "Die Registerliste des Herstellers importieren (CSV oder Excel), oder ein Gerät erkunden und Gefundenes übernehmen.",
     "prof.points": "Datenpunkte", "prof.usedBy": "genutzt von {n}", "prof.model": "Modell", "prof.order": "Wortreihenfolge", "prof.save": "Profil speichern", "prof.close": "Schliessen",
+    "prof.closeAsk": "Ohne Speichern schliessen?", "prof.closeWhy": "Was seit dem letzten Speichern an diesem Profil geändert wurde, geht verloren.", "prof.discard": "Änderungen verwerfen",
     "prof.pointCount": "{n} Datenpunkte", "prof.pointCountOne": "1 Datenpunkt", "prof.source": "aus {source}", "prof.addPoint": "Datenpunkt hinzufügen", "prof.delete": "Profil löschen",
     "prof.deleteAsk": "Das Profil {name} löschen?", "prof.deleteWhy": "Seine Datei geht weg. Geräte müssen zuerst ein anderes Profil nutzen.",
     "prof.noPoints": "Noch keine Datenpunkte.", "prof.choose": "Ein Profil öffnen, um es zu ändern.", "prof.choosePoint": "Einen Datenpunkt wählen, um ihn zu ändern.",

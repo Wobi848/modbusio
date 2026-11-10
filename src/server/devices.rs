@@ -69,9 +69,7 @@ pub async fn read_device(
     )
     .await;
     let notes = learnt(&device.limits, &limits);
-    if limits != device.limits {
-        state.update_device(key, |device| device.limits = limits)?;
-    }
+    state.keep_limits(key, device.limits, limits)?;
     Ok((readings, notes))
 }
 
@@ -222,9 +220,7 @@ pub async fn explore(
             .into(),
         );
     }
-    if on_site.is_some() && limits != before {
-        state.update_device(&request.key, |device| device.limits = limits)?;
-    }
+    state.keep_limits(&request.key, before, limits)?;
     Ok(Json(json!({
         "rows": rows,
         "order": order,

@@ -30,6 +30,9 @@ pub struct Recording {
     pub series: Vec<Series>,
     pub interval: u64,
     pub running: bool,
+    /// Counts the starts: the sampling of an earlier start ends itself when it wakes.
+    #[serde(skip)]
+    run: u64,
 }
 
 impl Default for Recording {
@@ -38,6 +41,7 @@ impl Default for Recording {
             series: Vec::new(),
             interval: 10,
             running: false,
+            run: 0,
         }
     }
 }
@@ -47,6 +51,21 @@ impl Recording {
     pub fn stopped(mut self) -> Recording {
         self.running = false;
         self
+    }
+
+    /// Starts the sampling unless it runs. Returns the number of the run to hand to the sampling.
+    pub fn start(&mut self) -> Option<u64> {
+        if self.running {
+            return None;
+        }
+        self.running = true;
+        self.run += 1;
+        Some(self.run)
+    }
+
+    /// The sampling of this run goes on: not stopped, and not started anew since.
+    pub fn runs(&self, run: u64) -> bool {
+        self.running && self.run == run
     }
 
     pub fn add(
@@ -145,5 +164,17 @@ mod tests {
         );
         assert!(recording.set_interval(7).is_err());
         assert!(recording.remove("tcp:a/1", "Flow"));
+    }
+
+    #[test]
+    fn a_new_start_ends_the_sampling_of_the_one_before() {
+        let mut recording = Recording::default();
+        let first = recording.start().expect("started");
+        assert_eq!(recording.start(), None, "it runs already");
+        recording.running = false;
+        assert!(!recording.runs(first));
+        let second = recording.start().expect("started again");
+        assert!(recording.runs(second));
+        assert!(!recording.runs(first), "the first sampling still sleeps");
     }
 }

@@ -80,8 +80,8 @@ async fn block(
     let mut pending = vec![(address, count)];
     while let Some((address, count)) = pending.pop() {
         match access::read(links, target, area, address, count, timeout).await {
-            Ok(values) => cells.extend(values.into_iter().zip(address..).map(
-                |(value, address)| Cell {
+            Ok(values) => cells.extend(addresses(address, count).zip(values).map(
+                |(address, value)| Cell {
                     address,
                     value: Some(value),
                     error: None,
@@ -97,7 +97,7 @@ async fn block(
                 pending.push((address, first));
             }
             Err(error) if ends_exploration(&error) => return Err(error),
-            Err(error) => cells.extend((address..address + count).map(|address| Cell {
+            Err(error) => cells.extend(addresses(address, count).map(|address| Cell {
                 address,
                 value: None,
                 error: Some(error.code()),
@@ -105,6 +105,12 @@ async fn block(
         }
     }
     Ok(())
+}
+
+/// The addresses of a block. Counted from its first one: a block may end at 65535, and the address
+/// after that does not exist.
+fn addresses(address: u16, count: u16) -> impl Iterator<Item = u16> {
+    (0..count).map(move |offset| address + offset)
 }
 
 /// A smaller block may succeed: a gap in the map, too many items, or silence instead of refusal.

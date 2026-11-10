@@ -47,7 +47,7 @@ function editorHtml(state) {
     <div class="end"><button type="button" data-act="save-profile"${state.profileDirty ? "" : " disabled"}>${t("prof.save")}</button><button type="button" class="quiet" data-act="close-profile">${t("prof.close")}</button></div></div>`;
   const rows = draft.points.map((point, index) => {
     const active = index === state.pointIndex ? " active" : "";
-    return `<div class="row mprofile-points${active}" data-act="edit-point" data-index="${index}" role="option"><span class="name">${h(point.name)}</span><span class="cut">${h(point.group)}</span><span class="mono">${areaShort(point.area)} ${point.address}</span><span class="mono">${h(point.type)}</span><span class="mono num">${point.factor !== 1 ? `× ${localNumber(point.factor)}` : ""}</span><span>${h(point.unit)}</span><span>${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}</span></div>`;
+    return `<div class="row mprofile-points${active}" data-act="edit-point" data-index="${index}" role="option"><span class="name">${h(point.name)}</span><span class="cut">${h(point.group)}</span><span class="mono">${areaShort(point.area)} ${h(point.address)}</span><span class="mono">${h(point.type)}</span><span class="mono num">${point.factor !== 1 ? `× ${h(localNumber(point.factor))}` : ""}</span><span>${h(point.unit)}</span><span>${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}</span></div>`;
   }).join("");
   const tableHead = `<div class="row mprofile-points head"><span>${t("col.name")}</span><span>${t("pt.group")}</span><span>${t("col.address")}</span><span>${t("pt.type")}</span><span class="num">${t("pt.factor")}</span><span>${t("pt.unit")}</span><span></span></div>`;
   const tools = `<div class="toolbar"><span class="hint">${counted("prof.pointCount", draft.points.length)}${draft.source ? ` · ${t("prof.source", { source: h(draft.source) })}` : ""}</span><div class="end">
@@ -55,7 +55,8 @@ function editorHtml(state) {
     ${draft.id ? `<a class="button quiet" href="/api/profile.csv?id=${encodeURIComponent(draft.id)}" download>CSV</a><a class="button quiet" href="/api/profile.xlsx?id=${encodeURIComponent(draft.id)}" download>Excel</a>` : ""}
     ${draft.id ? `<button type="button" class="quiet" data-act="ask-delete-profile">${t("prof.delete")}</button>` : ""}</div></div>`;
   const deleting = state.asking?.kind === "delete-profile" ? askHtml(t("prof.deleteAsk", { name: draft.name }), t("prof.deleteWhy"), [["delete-profile", t("prof.delete")]]) : "";
-  return `<section class="listwrap">${head}${tools}${deleting}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
+  const closing = state.asking?.kind === "close-profile" ? askHtml(t("prof.closeAsk"), t("prof.closeWhy"), [["discard-profile", t("prof.discard")]]) : "";
+  return `<section class="listwrap">${head}${tools}${deleting}${closing}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
 }
 
 function pointFormHtml(state) {
