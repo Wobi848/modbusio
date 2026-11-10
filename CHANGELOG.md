@@ -17,7 +17,8 @@ First version.
   the plausible word order suggested, points taken into the profile.
 - Reading by profile in blocks sized to what each device takes, learnt and kept.
 - Writing behind the session unlock with a confirmation, the old value read and logged first, read
-  back; *Changed by you* with putting old values back, also after a restart.
+  back; *Changed by you* with putting old values back, also after a restart. A write the device
+  did not confirm is read back too, and putting back names the value it writes.
 - Watch list, recording with charts, CSV and Excel exports, capture for Wireshark, several sites.
 - Connections kept out of the plant's way: a TCP connection is closed after 10 seconds without a
   request, so a device taking only one lets its own master in again; RS-485 adapters that give

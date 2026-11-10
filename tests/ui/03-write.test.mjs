@@ -50,6 +50,8 @@ export default {
     await page.click("#next");
     assert.match(await page.textContent(".ask"), /Unlock writing/);
     await page.click("[data-act=unlock]");
+    // the confirmation names the value that is written and its place
+    await page.waitForSelector(".ask:has-text('Writes 25 Hz to Drive · Set frequency · HR 1.')");
     await page.click("[data-act=restore]");
     await page.waitForSelector(".toast:has-text('1 put back')");
     const journal = await api("journal");

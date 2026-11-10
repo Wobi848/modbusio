@@ -86,8 +86,9 @@ pub struct EntryView {
     pub standing: bool,
     /// The device confirmed but holds another value.
     pub kept_other: bool,
-    /// The value restoring would put back, in registers.
+    /// The value restoring would put back, in registers and in words.
     pub original: Option<Vec<u16>>,
+    pub original_text: Option<String>,
 }
 
 impl EntryView {
@@ -96,14 +97,18 @@ impl EntryView {
         journal
             .entries
             .iter()
-            .map(|entry| EntryView {
-                standing: standing.contains(&entry.id),
-                kept_other: entry.kept_other(),
-                original: standing
+            .map(|entry| {
+                let restoring = standing
                     .contains(&entry.id)
-                    .then(|| journal.original(entry))
-                    .flatten(),
-                entry: entry.clone(),
+                    .then(|| journal.restoring(entry).ok().flatten())
+                    .flatten();
+                EntryView {
+                    standing: standing.contains(&entry.id),
+                    kept_other: entry.kept_other(),
+                    original: restoring.as_ref().map(|planned| planned.values.clone()),
+                    original_text: restoring.map(|planned| planned.text),
+                    entry: entry.clone(),
+                }
             })
             .collect()
     }

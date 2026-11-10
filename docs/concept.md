@@ -104,7 +104,8 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Write a point behind the unlock (checked by the server), value, confirmation | point details | `api.rs` (writing), `ui/03-write` |
 | Write a raw register after its own confirmation | *Registers*, *Write …* | `api.rs` (raw write) |
 | Old value read and logged first, read back; log on disk | *Changed by you* | `write.rs`, `storage.rs`, `ui/03-write` |
-| Put back one or all old values, also after a restart; leaving asks first | *Changed by you* | `write.rs`, `api.rs`, `ui/03-write` |
+| Put back one or all old values, also after a restart, the confirmation naming value and place; leaving asks first | *Changed by you* | `write.rs`, `api.rs`, `ui/03-write` |
+| A write without confirmation read back: taken or not | *Changed by you* | `tests/write.rs` |
 | Log as CSV and Excel | *Changed by you* | `export.rs` |
 | Watch list across devices | *Watch list* | `ui/06-live` |
 | Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `ui/06-live`, `tests/web/ui.test.js` (charts) |
@@ -221,6 +222,10 @@ Modbus has no priority array and no relinquish. So:
 - **Before every write the old value is read and logged.** *Changed by you* lists every point
   still differing from its old value, with *Restore* (one or all), also after a restart.
 - **Read back after the write**; a device that answers OK and keeps the old value is shown so.
+  Also after a write that got no confirmation (no answer, a damaged one): only an exception is a
+  refusal. A device holding the new value then has taken the write, and it stands like any other.
+- **Putting back** writes the value from before the first write of a run to a place, and the
+  confirmation names that value and the place. A value written back by hand stands for nothing.
 - **Leaving the site** lists what was changed and not restored, as bacnetio does for held values.
 - Writes go only to points the profile marks writable, or in the explorer to a register after one
   more confirmation naming area and address.

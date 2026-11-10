@@ -106,7 +106,7 @@ export default {
     "log.restores": "rétablit {n}", "log.standing": "encore écrit", "log.emptyTitle": "Rien d'écrit encore",
     "log.emptyLead": "Les valeurs écrites depuis l'espace de travail ou l'explorateur s'affichent ici, chacune avec la valeur qu'elle a remplacée.",
     "log.restoreAsk": "Rétablir l'ancienne valeur de l'écriture {n} ?", "log.restoreAllAsk": "Rétablir les anciennes valeurs des {n} écritures ?",
-    "log.restoreWhy": "Chaque ancienne valeur est écrite à nouveau et consignée comme une écriture propre.", "log.restored": "{n} rétablies.", "log.restoreFailed": "{n} n'ont pas pu être rétablies : voir le journal.",
+    "log.restoreWhat": "Écrit {value} sur {place}.", "log.restoreWhy": "Chaque ancienne valeur est écrite à nouveau et consignée comme une écriture propre.", "log.restored": "{n} rétablies.", "log.restoreFailed": "{n} n'ont pas pu être rétablies : voir le journal.",
     "set.lead": "Installations, langue, apparence, écriture et capture pour Wireshark.", "set.sites": "Installations", "set.siteName": "Nom de cette installation",
     "set.rename": "Renommer", "set.open": "ouverte", "set.devices": "{n} appareils", "set.openSite": "Ouvrir", "set.deleteSite": "Supprimer",
     "set.deleteAsk": "Supprimer cette installation ?", "set.deleteWhy": "Ses appareils et noms disparaissent de modbusio. Rien ne change dans l'installation.",

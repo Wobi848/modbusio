@@ -13,7 +13,6 @@ use serde_json::{Value, json};
 
 use super::views::{EntryView, registers_text};
 use super::{ApiError, Shared, Zone, csv_file, xlsx_file};
-use crate::endpoint::Target;
 use crate::export::journal_table;
 use crate::links::ANSWER_TIMEOUT;
 use crate::profile::{self, Point};
@@ -214,7 +213,7 @@ pub async fn restore(
     Json(request): Json<Restore>,
 ) -> Result<Json<Value>, ApiError> {
     require_unlocked(&state)?;
-    let plans: Vec<(write::Entry, Option<Vec<u16>>)> = {
+    let plans: Vec<(u64, Option<Planned>)> = {
         let journal = state.journal.lock().expect("journal lock");
         let standing = journal.changed();
         if !request.all {
@@ -234,36 +233,25 @@ pub async fn restore(
         standing
             .into_iter()
             .filter(|entry| request.all || request.ids.contains(&entry.id))
-            .map(|entry| (entry.clone(), journal.original(entry)))
-            .collect()
+            .map(|entry| Ok((entry.id, journal.restoring(entry)?)))
+            .collect::<Result<_, String>>()
+            .map_err(ApiError::internal)?
     };
     let mut results = Vec::new();
-    for (entry, original) in plans {
-        let Some(original) = original else {
-            results.push(json!({ "id": entry.id, "error": "the old value is not known" }));
+    for (id, planned) in plans {
+        let Some(planned) = planned else {
+            results.push(json!({ "id": id, "error": "the old value is not known" }));
             continue;
         };
-        let target = Target::parse_key(&entry.device).map_err(ApiError::internal)?;
+        let key = planned.target.key();
         let limits = state
-            .device(&entry.device)
+            .device(&key)
             .map(|(device, _)| device.limits)
             .unwrap_or_default();
-        let planned = Planned {
-            target,
-            point: entry.point.clone(),
-            area: entry.area,
-            address: entry.address,
-            text: entry
-                .before_text
-                .clone()
-                .unwrap_or_else(|| registers_text(&original)),
-            values: original,
-            restores: Some(entry.id),
-        };
-        let restored = journaled(&state, planned, limits, &entry.device, registers_text).await;
+        let restored = journaled(&state, planned, limits, &key, registers_text).await;
         match restored {
-            Ok(done) => results.push(json!({ "id": entry.id, "entry": done })),
-            Err(error) => results.push(json!({ "id": entry.id, "error": error.message() })),
+            Ok(done) => results.push(json!({ "id": id, "entry": done })),
+            Err(error) => results.push(json!({ "id": id, "error": error.message() })),
         }
     }
     Ok(Json(json!({ "results": results })))

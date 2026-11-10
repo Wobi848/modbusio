@@ -144,8 +144,9 @@ point not writable, `400` for unit 0, the broadcast. With `check: true` only the
 as the confirmation is asked: → `{checked: true, text}`, the value as it would be written; nothing
 is read, written or logged.
 
-`GET /api/journal` → `{entries: [entry, standing, kept_other, original], standing}`. `standing`
-marks writes not put back yet; `original` is what restoring writes.
+`GET /api/journal` → `{entries: [entry, standing, kept_other, original, original_text], standing}`.
+`standing` marks writes not put back yet; `original` is what restoring writes, in registers, and
+`original_text` the same in words.
 
 `POST /api/restore` `{ids}` or `{all: true}` writes the old values of standing writes again, each
 logged as a write with `restores` → `{results: [{id, entry}|{id, error}]}`.

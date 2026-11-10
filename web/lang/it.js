@@ -106,7 +106,7 @@ export default {
     "log.restores": "ripristina {n}", "log.standing": "ancora scritto", "log.emptyTitle": "Ancora nulla di scritto",
     "log.emptyLead": "I valori scritti dall'area di lavoro o dall'esploratore appaiono qui, ciascuno con il valore che ha sostituito.",
     "log.restoreAsk": "Ripristinare il valore precedente della scrittura {n}?", "log.restoreAllAsk": "Ripristinare i valori precedenti di tutte le {n} scritture?",
-    "log.restoreWhy": "Ogni valore precedente viene riscritto e registrato come una scrittura propria.", "log.restored": "{n} ripristinati.", "log.restoreFailed": "{n} non hanno potuto essere ripristinati: vedere il registro.",
+    "log.restoreWhat": "Scrive {value} su {place}.", "log.restoreWhy": "Ogni valore precedente viene riscritto e registrato come una scrittura propria.", "log.restored": "{n} ripristinati.", "log.restoreFailed": "{n} non hanno potuto essere ripristinati: vedere il registro.",
     "set.lead": "Impianti, lingua, aspetto, scrittura e cattura per Wireshark.", "set.sites": "Impianti", "set.siteName": "Nome di questo impianto",
     "set.rename": "Rinomina", "set.open": "aperto", "set.devices": "{n} apparecchi", "set.openSite": "Apri", "set.deleteSite": "Elimina",
     "set.deleteAsk": "Eliminare questo impianto?", "set.deleteWhy": "I suoi apparecchi e nomi spariscono da modbusio. Nell'impianto non cambia nulla.",
