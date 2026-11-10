@@ -723,7 +723,8 @@ fn changed(data_dir: Option<PathBuf>) -> anyhow::Result<()> {
 async fn restore(links: &Links, which: &str, data_dir: Option<PathBuf>) -> anyhow::Result<()> {
     let (journal, path) = journal_of(&data_dir)?;
     let chosen: Vec<write::Entry> = if which == "all" {
-        journal.changed().into_iter().cloned().collect()
+        // the newest first, as an undo: a write over part of an earlier one has to go before it
+        journal.changed().into_iter().rev().cloned().collect()
     } else {
         let id: u64 = which
             .parse()

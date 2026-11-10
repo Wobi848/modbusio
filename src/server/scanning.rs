@@ -85,18 +85,32 @@ pub async fn stop(State(state): State<Shared>) -> Json<Value> {
     Json(json!({}))
 }
 
+const RUNNING: &str = "a search is running; stop it first";
+
+fn running(search: &Option<Arc<Search>>) -> bool {
+    search
+        .as_ref()
+        .is_some_and(|search| !search.report.lock().expect("report lock").finished)
+}
+
 /// A new search, unless one runs; refused while one does.
 fn begin(state: &Shared) -> Result<Arc<Search>, ApiError> {
     let mut current = state.search.lock().expect("search lock");
-    if current
-        .as_ref()
-        .is_some_and(|search| !search.report.lock().expect("report lock").finished)
-    {
-        return Err(ApiError::conflict("a search is running; stop it first"));
+    if running(&current) {
+        return Err(ApiError::conflict(RUNNING));
     }
     let search = Arc::new(Search::default());
     *current = Some(search.clone());
     Ok(search)
+}
+
+/// Refuses to open another site while a search runs: what it finds joins the open site, and
+/// that has to be the one searched on.
+pub(super) fn refuse_while_searching(state: &Shared) -> Result<(), ApiError> {
+    if running(&state.search.lock().expect("search lock")) {
+        return Err(ApiError::conflict(RUNNING));
+    }
+    Ok(())
 }
 
 /// When a search ends, its devices join the open site with what was learnt about them.

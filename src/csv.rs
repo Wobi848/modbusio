@@ -65,10 +65,7 @@ pub fn line(fields: &[String]) -> String {
 }
 
 fn quote(field: &str) -> String {
-    // a leading = + - @ would run as a formula in Excel
-    let field = if field.starts_with(['=', '+', '@'])
-        || (field.starts_with('-') && field.parse::<f64>().is_err())
-    {
+    let field = if formula_like(field) {
         format!("'{field}")
     } else {
         field.to_string()
@@ -78,6 +75,23 @@ fn quote(field: &str) -> String {
     } else {
         field
     }
+}
+
+/// Whether Excel would run the field as a formula: it starts with = + @, a tab or a carriage
+/// return, or with a - that does not begin a value.
+fn formula_like(field: &str) -> bool {
+    match field.chars().next() {
+        Some('=' | '+' | '@' | '\t' | '\r') => true,
+        Some('-') => !negative_value(field),
+        _ => false,
+    }
+}
+
+/// A negative number, alone or with its unit after a space ("-3.5 °C"). A unit that could carry
+/// a formula on does not count.
+fn negative_value(field: &str) -> bool {
+    let (number, unit) = field.split_once(' ').unwrap_or((field, ""));
+    number.parse::<f64>().is_ok() && !unit.contains(['=', '+', '-', '@', '|', '!', '('])
 }
 
 /// A whole file: a byte order mark so Excel reads UTF-8, then the lines.
@@ -116,6 +130,18 @@ mod tests {
         assert_eq!(
             line(&["a;b".into(), "=SUM(A1)".into(), "-3.5".into()]),
             "\"a;b\";'=SUM(A1);-3.5\r\n"
+        );
+        assert_eq!(
+            line(&["-3.5 °C".into(), "-12 m³/h".into(), "-".into()]),
+            "-3.5 °C;-12 m³/h;'-\r\n"
+        );
+        assert_eq!(
+            line(&["-1 +cmd|' /C calc'!A0".into(), "-cmd".into()]),
+            "'-1 +cmd|' /C calc'!A0;'-cmd\r\n"
+        );
+        assert_eq!(
+            line(&["\t=1+1".into(), "\r=1+1".into()]),
+            "'\t=1+1;\"'\r=1+1\"\r\n"
         );
     }
 }

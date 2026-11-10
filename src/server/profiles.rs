@@ -83,7 +83,7 @@ pub(super) fn check_to_keep(profile: &Profile) -> Result<(), ApiError> {
 
 /// The id names the profile's file in the data folder, so it holds nothing a path could use.
 pub(super) fn check_id(id: &str) -> Result<(), ApiError> {
-    if id != crate::profile::slug(id) {
+    if !crate::profile::is_slug(id) {
         return Err(ApiError::bad_request(
             "a profile id is letters, digits and dashes",
         ));

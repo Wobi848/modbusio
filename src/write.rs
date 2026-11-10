@@ -2,7 +2,7 @@
 //! write reads the old value first and logs it, reads back afterwards, and can be undone by
 //! writing the old value again. *Changed by you* is derived from the log, not kept apart.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
@@ -168,7 +168,7 @@ pub async fn journaled(
     let since = now
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default();
-    let mut journal = journal.lock().expect("journal lock");
+    let mut journal = up_to_date(journal, path);
     let entry = Entry {
         id: journal.next_id(),
         time: since.as_secs(),
@@ -198,7 +198,31 @@ pub struct Journal {
     pub entries: Vec<Entry>,
 }
 
+/// The journal with what the log file at `path` holds beyond it: the command line beside a
+/// running server writes into the same data folder, and a number must not be given twice.
+pub fn up_to_date<'journal>(
+    journal: &'journal std::sync::Mutex<Journal>,
+    path: Option<&std::path::Path>,
+) -> std::sync::MutexGuard<'journal, Journal> {
+    let mut journal = journal.lock().expect("journal lock");
+    // a file that cannot be read leaves the log as it is known; saving to it says what is wrong
+    if let Some((stored, _)) = path.and_then(|path| crate::storage::load_entries(path).ok()) {
+        journal.take_up(stored);
+    }
+    journal
+}
+
 impl Journal {
+    /// Adds the entries of `stored` this journal does not hold yet.
+    fn take_up(&mut self, stored: Vec<Entry>) {
+        let known: HashSet<u64> = self.entries.iter().map(|entry| entry.id).collect();
+        self.entries.extend(
+            stored
+                .into_iter()
+                .filter(|entry| !known.contains(&entry.id)),
+        );
+    }
+
     /// The number after the highest one in the log.
     pub fn next_id(&self) -> u64 {
         self.entries.iter().map(|entry| entry.id).max().unwrap_or(0) + 1

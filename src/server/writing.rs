@@ -189,7 +189,7 @@ async fn journaled(
 }
 
 pub async fn journal(State(state): State<Shared>) -> Json<Value> {
-    let journal = state.journal.lock().expect("journal lock");
+    let journal = state.journal();
     let entries = EntryView::all(&journal);
     let standing = entries.iter().filter(|entry| entry.standing).count();
     Json(json!({ "entries": entries, "standing": standing }))
@@ -211,7 +211,7 @@ pub async fn restore(
 ) -> Result<Json<Value>, ApiError> {
     require_unlocked(&state)?;
     let plans: Vec<(u64, Option<Planned>)> = {
-        let journal = state.journal.lock().expect("journal lock");
+        let journal = state.journal();
         let standing = journal.changed();
         if !request.all {
             if request.ids.is_empty() {
@@ -227,8 +227,10 @@ pub async fn restore(
                 )));
             }
         }
+        // the newest first, as an undo: a write over part of an earlier one has to go before it
         standing
             .into_iter()
+            .rev()
             .filter(|entry| request.all || request.ids.contains(&entry.id))
             .map(|entry| Ok((entry.id, journal.restoring(entry)?)))
             .collect::<Result<_, String>>()
@@ -255,10 +257,7 @@ pub async fn restore(
 }
 
 pub async fn journal_csv(State(state): State<Shared>, Query(zone): Query<Zone>) -> Response {
-    let table = journal_table(
-        &state.journal.lock().expect("journal lock").entries,
-        zone.offset,
-    );
+    let table = journal_table(&state.journal().entries, zone.offset);
     csv_file("modbusio-writes.csv", &table)
 }
 
@@ -266,9 +265,6 @@ pub async fn journal_xlsx(
     State(state): State<Shared>,
     Query(zone): Query<Zone>,
 ) -> Result<Response, ApiError> {
-    let table = journal_table(
-        &state.journal.lock().expect("journal lock").entries,
-        zone.offset,
-    );
+    let table = journal_table(&state.journal().entries, zone.offset);
     xlsx_file("modbusio-writes.xlsx", &[table])
 }

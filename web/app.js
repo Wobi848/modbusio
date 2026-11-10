@@ -9,6 +9,7 @@ import { AREAS, areaOfHash, attempt, go, recall, registerFrame, render, selected
 import "./workspace.js";
 import "./explorer.js";
 import "./pages.js";
+import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 
 state.areas = AREAS;
@@ -111,6 +112,11 @@ window.addEventListener("beforeunload", (event) => {
   if (state.journal.standing) event.preventDefault();
 });
 
+/** The recording with what is new since `held`; all of it where the page's samples do not fit. */
+async function latestRecording(held) {
+  return withNewSamples(held, await api.recording(heldUntil(held))) ?? api.recording();
+}
+
 let ticking = false;
 let ticks = 0;
 /** Once a second: what the page shows live. Each part only while it is on screen or running. */
@@ -129,9 +135,13 @@ async function tick() {
       render();
     }
     if ((state.area === "recording" || state.recording.running) && ticks % 2 === 0) {
-      const before = state.recording.running;
-      state.recording = await api.recording();
-      if (state.area === "recording" || before !== state.recording.running) render();
+      const held = state.recording;
+      const latest = await latestRecording(held);
+      // a button's answer that came meanwhile is newer than this one
+      if (state.recording === held) {
+        state.recording = latest;
+        if (state.area === "recording" ? !sameRecording(held, latest) : held.running !== latest.running) render();
+      }
     }
     if (state.capture.running && ticks % 2 === 0) {
       state.capture = await api.capture();

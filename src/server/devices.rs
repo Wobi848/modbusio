@@ -252,7 +252,7 @@ pub async fn identify(
         .iter()
         .map(|(id, text)| json!({ "id": id, "text": text }))
         .collect();
-    state.update_device(&request.key, |device| {
+    state.keep_learnt(&request.key, |device| {
         device.vendor = identity.get(0).map(str::to_string);
         device.product = identity.get(1).map(str::to_string);
         device.revision = identity.get(2).map(str::to_string);

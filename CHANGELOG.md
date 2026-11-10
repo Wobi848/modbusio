@@ -8,17 +8,19 @@ First version.
 
 - Search a TCP subnet for Modbus devices (port 502, units 1, 255 and 0), naming devices that answer
   every unit and gateways; the units behind a gateway, over Modbus TCP or RTU over TCP; the units
-  on an RS-485 line over a USB adapter, with listening first and finding speed and frame.
+  on an RS-485 line over a USB adapter, with listening first (it names the unit IDs heard) and
+  finding speed and frame.
 - Read Device Identification (43/14) for vendor, product and version.
 - Profiles: what a device's registers mean, with types, word orders, scaling, scale registers,
   units, state texts and limits; import of vendor register lists from CSV and Excel with the
-  address convention recognised and a preview read from the device; export as CSV and Excel.
+  address convention recognised, the access column deciding what may be written, and a preview read
+  from the device; export as CSV and Excel.
   Closing a profile with changes not saved asks first.
 - Register explorer: existing addresses found by halving refused blocks, every register's readings,
   the plausible word order suggested, points taken into the profile.
 - Reading by profile in blocks sized to what each device takes, learnt and kept.
 - Writing behind the session unlock with a confirmation, the old value read and logged first, read
-  back; *Changed by you* with putting old values back, also after a restart. A write the device
+  back; *Changed by you* with putting old values back, the newest first, also after a restart. A write the device
   did not confirm is read back too, and putting back names the value it writes.
 - Watch list, recording with charts, CSV and Excel exports, capture for Wireshark, several sites.
 - Connections kept out of the plant's way: a TCP connection is closed after 10 seconds without a

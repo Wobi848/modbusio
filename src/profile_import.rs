@@ -446,12 +446,37 @@ fn point_of(
     point.order = WordOrder::parse(&cell(Role::Order));
     point.scale_register = scale_register;
     point.states = states_of(&cell(Role::States));
-    let access = cell(Role::Access).to_lowercase();
-    point.writable = area.writable() && (access.contains('w') || access.contains("schreib"));
+    point.writable = area.writable() && allows_writing(&cell(Role::Access));
     point.min = decimal(&cell(Role::Min));
     point.max = decimal(&cell(Role::Max));
     point.check()?;
     Ok(point)
+}
+
+/// Words in an access cell that take writing away again: `write protected`, `schreibgeschützt`,
+/// `no write`.
+const DENIES_WRITING: [&str; 9] = [
+    "protect",
+    "geschützt",
+    "geschuetzt",
+    "gesperrt",
+    "locked",
+    "no ",
+    "not ",
+    "kein",
+    "nicht",
+];
+
+/// Whether an access cell allows writing: `RW`, `R/W`, `W`, `read/write`, `Lesen/Schreiben`.
+/// In doubt it does not: the user can still mark the point writable in the profile.
+fn allows_writing(access: &str) -> bool {
+    let access = access.to_lowercase();
+    let named = access.contains("writ")
+        || access.contains("schreib")
+        || access
+            .split(|character: char| !character.is_alphanumeric())
+            .any(|word| matches!(word, "w" | "rw" | "wr" | "wo"));
+    named && !DENIES_WRITING.iter().any(|word| access.contains(word))
 }
 
 /// An address of the list on the wire, with the area a reference address names.
@@ -485,6 +510,12 @@ fn reference(number: u32) -> Option<(Area, u32)> {
 fn kind_of(text: &str, count: &str, area: Area) -> Result<DataType, String> {
     if area.is_bits() {
         return Ok(DataType::Bool);
+    }
+    if DataType::is_text_word(text) {
+        // "string" alone: the count column says how many registers it takes
+        return parse_number(count).and_then(DataType::text).ok_or_else(|| {
+            format!("{text} needs its length: a count of registers, or {text}20 for 20 characters")
+        });
     }
     if !text.is_empty() {
         return DataType::parse(text)
@@ -573,6 +604,50 @@ mod tests {
         let room = &imported.points[4];
         assert_eq!((room.area, room.address), (Area::InputRegister, 0));
         assert!((room.scale.factor - 0.1).abs() < 1e-12);
+    }
+
+    #[test]
+    fn an_access_cell_allows_writing_only_where_it_says_so() {
+        for access in [
+            "RW",
+            "R/W",
+            "w",
+            "Read/Write",
+            "Lesen/Schreiben",
+            "WO",
+            "read-write",
+        ] {
+            assert!(allows_writing(access), "{access}");
+        }
+        for access in [
+            "",
+            "R",
+            "RO",
+            "read only",
+            "read always",
+            "nur lesen",
+            "schreibgeschützt",
+            "write protected",
+            "read, no write",
+            "kein Schreibzugriff",
+        ] {
+            assert!(!allows_writing(access), "{access}");
+        }
+    }
+
+    #[test]
+    fn a_text_takes_its_length_from_the_count_column() {
+        let list = rows(
+            "Name;Address;Area;Type;Length\n\
+             Serial;0;HR;STRING;8\n\
+             Model;8;HR;string20;\n\
+             Type;18;HR;char;\n",
+        );
+        let imported = import(&list, &Options::default()).expect("imported");
+        let kinds: Vec<DataType> = imported.points.iter().map(|point| point.kind).collect();
+        assert_eq!(kinds, [DataType::Text(8), DataType::Text(10)]);
+        assert_eq!(imported.skipped.len(), 1);
+        assert!(imported.skipped[0].1.contains("needs its length"));
     }
 
     #[test]

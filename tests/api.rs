@@ -248,7 +248,8 @@ async fn writing_needs_the_unlock_and_can_be_put_back() {
     assert_eq!(standing["original_text"], "25 Hz");
     let (status, restored) = call(&app, "POST", "/api/restore", Some(json!({ "all": true }))).await;
     assert_eq!(status, StatusCode::OK, "{restored}");
-    let put_back = &restored["results"][0]["entry"];
+    // the newest, the coil, goes back first
+    let put_back = &restored["results"][1]["entry"];
     assert_eq!(put_back["written"], json!([2500]), "{restored}");
     assert_eq!(put_back["text"], "25 Hz", "the words of the value written");
     let (_, journal) = call(&app, "GET", "/api/journal", None).await;
@@ -414,6 +415,10 @@ async fn a_search_of_the_units_behind_a_gateway_adds_them_to_the_site() {
     )
     .await;
     assert_eq!(status, StatusCode::CONFLICT, "one search at a time");
+    // what it finds joins the open site, so no other site is opened meanwhile
+    let other = json!({ "name": "Other plant" });
+    let (status, refused) = call(&app, "POST", "/api/sites/new", Some(other)).await;
+    assert_eq!(status, StatusCode::CONFLICT, "{refused}");
     let mut report = json!({});
     for _ in 0..100 {
         report = call(&app, "GET", "/api/scan", None).await.1;
@@ -505,6 +510,99 @@ async fn a_site_file_is_checked_whole_before_anything_of_it_is_kept() {
     let _ = std::fs::remove_dir_all(folder);
 }
 
+#[tokio::test]
+async fn writes_over_one_another_are_put_back_newest_first() {
+    let app = app();
+    let key = drive_on_site(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/session",
+        Some(json!({ "unlocked": true })),
+    )
+    .await;
+    // the two ramps, 300 each: written as one 32-bit value, then the second register alone
+    let raw = |address: u16, kind: &str, value: &str| {
+        let place = json!({ "area": "holding_register", "address": address, "type": kind });
+        json!({ "key": key, "raw": place, "confirm_raw": true, "value": value })
+    };
+    let (status, both) = call(&app, "POST", "/api/write", Some(raw(2, "u32", "458761"))).await;
+    assert_eq!(
+        (status, &both["after"]),
+        (StatusCode::OK, &json!([7, 9])),
+        "{both}"
+    );
+    let (status, second) = call(&app, "POST", "/api/write", Some(raw(3, "u16", "50"))).await;
+    assert_eq!(
+        (status, &second["before"]),
+        (StatusCode::OK, &json!([9])),
+        "{second}"
+    );
+    let (status, restored) = call(&app, "POST", "/api/restore", Some(json!({ "all": true }))).await;
+    assert_eq!(status, StatusCode::OK, "{restored}");
+    let results = restored["results"].as_array().expect("results");
+    assert_eq!(
+        (&results[0]["id"], &results[1]["id"]),
+        (&json!(2), &json!(1))
+    );
+    assert_eq!(
+        results[1]["entry"]["after"],
+        json!([300, 300]),
+        "{restored}"
+    );
+    let ramps = json!({ "key": key, "area": "holding_register", "start": 2, "count": 2 });
+    let (_, explored) = call(&app, "POST", "/api/explore", Some(ramps)).await;
+    let held: Vec<&Value> = explored["rows"]
+        .as_array()
+        .expect("rows")
+        .iter()
+        .map(|row| &row["value"])
+        .collect();
+    assert_eq!(held, [&json!(300), &json!(300)], "{explored}");
+}
+
+#[tokio::test]
+async fn a_write_from_the_command_line_beside_the_server_keeps_its_number() {
+    let data = std::env::temp_dir().join(format!("modbusio-api-log-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&data);
+    let app = router(Arc::new(AppState::new(Some(data.clone())).expect("state")));
+    let key = drive_on_site(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/session",
+        Some(json!({ "unlocked": true })),
+    )
+    .await;
+    let raw = json!({ "area": "holding_register", "address": 1, "type": "u16" });
+    let write =
+        |value: &str| json!({ "key": key, "raw": raw, "confirm_raw": true, "value": value });
+    let (status, first) = call(&app, "POST", "/api/write", Some(write("3000"))).await;
+    assert_eq!(
+        (status, &first["id"]),
+        (StatusCode::OK, &json!(1)),
+        "{first}"
+    );
+
+    // the command line, started with the same data folder, logs a write of its own
+    let log = data.join(modbusio::storage::JOURNAL);
+    let (stored, _) = modbusio::storage::load_entries(&log).expect("the log file");
+    let mut beside = stored[0].clone();
+    beside.id = 2;
+    beside.address = 7;
+    modbusio::storage::append_entry(&log, &beside).expect("the log file");
+
+    let (_, journal) = call(&app, "GET", "/api/journal", None).await;
+    assert_eq!(journal["entries"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        journal["standing"], 2,
+        "its write stands as well: {journal}"
+    );
+    let (status, next) = call(&app, "POST", "/api/write", Some(write("3500"))).await;
+    assert_eq!((status, &next["id"]), (StatusCode::OK, &json!(3)), "{next}");
+    let _ = std::fs::remove_dir_all(data);
+}
+
 /// Samples of the one recorded point.
 async fn samples(app: &axum::Router) -> usize {
     let (_, recording) = call(app, "GET", "/api/recording", None).await;
@@ -513,25 +611,24 @@ async fn samples(app: &axum::Router) -> usize {
         .map_or(0, Vec::len)
 }
 
-// The clock is the test's: nothing here waits for a device. The port does not exist, so every
-// round records that reading failed.
+/// One point to record, of a device on a port that does not exist: every round records that
+/// reading failed, and nothing waits for a device.
+async fn one_point_to_record(app: &axum::Router) {
+    let key = "serial:/dev/modbusio-no-such-port:9600:8N1/1";
+    call(app, "POST", "/api/devices/add", Some(json!({ "key": key }))).await;
+    call(app, "POST", "/api/profiles", Some(drive_profile())).await;
+    let update = json!({ "key": key, "profile": "fu-7" });
+    call(app, "POST", "/api/devices/update", Some(update)).await;
+    let point = json!({ "key": key, "point": "Set frequency" });
+    let (status, added) = call(app, "POST", "/api/recording/add", Some(point)).await;
+    assert_eq!(status, StatusCode::OK, "{added}");
+}
+
+// The clock is the test's.
 #[tokio::test(start_paused = true)]
 async fn stopping_and_starting_again_leaves_one_sampling() {
     let app = app();
-    let key = "serial:/dev/modbusio-no-such-port:9600:8N1/1";
-    call(
-        &app,
-        "POST",
-        "/api/devices/add",
-        Some(json!({ "key": key })),
-    )
-    .await;
-    call(&app, "POST", "/api/profiles", Some(drive_profile())).await;
-    let update = json!({ "key": key, "profile": "fu-7" });
-    call(&app, "POST", "/api/devices/update", Some(update)).await;
-    let point = json!({ "key": key, "point": "Set frequency" });
-    let (status, added) = call(&app, "POST", "/api/recording/add", Some(point)).await;
-    assert_eq!(status, StatusCode::OK, "{added}");
+    one_point_to_record(&app).await;
     let start = json!({ "interval": 5 });
 
     call(&app, "POST", "/api/recording/start", Some(start.clone())).await;
@@ -550,6 +647,44 @@ async fn stopping_and_starting_again_leaves_one_sampling() {
     call(&app, "POST", "/api/recording/stop", None).await;
     tokio::time::sleep(Duration::from_secs(11)).await;
     assert_eq!(samples(&app).await, 4, "stopped");
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_page_holding_samples_is_sent_the_new_ones_only() {
+    let app = app();
+    one_point_to_record(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/recording/start",
+        Some(json!({ "interval": 5 })),
+    )
+    .await;
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    for _ in 0..3 {
+        // the samples carry the system's time, which the test's clock does not move
+        std::thread::sleep(Duration::from_millis(2));
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+    let (_, whole) = call(&app, "GET", "/api/recording", None).await;
+    let all = whole["series"][0]["samples"].as_array().expect("samples");
+    assert_eq!((all.len(), &whole["series"][0]["total"]), (4, &json!(4)));
+
+    let held = all[1][0].as_u64().expect("a time");
+    let path = format!("/api/recording?after={held}");
+    let (status, new) = call(&app, "GET", &path, None).await;
+    assert_eq!(status, StatusCode::OK, "{new}");
+    let series = &new["series"][0];
+    assert_eq!(series["samples"], json!(all[2..]), "{new}");
+    assert_eq!(
+        (&series["total"], &series["point"], &new["running"]),
+        (&json!(4), &json!("Set frequency"), &json!(true)),
+        "the rest of the answer stays as it is: {new}"
+    );
+    let last = all[3][0].as_u64().expect("a time");
+    let path = format!("/api/recording?after={last}");
+    let (_, none) = call(&app, "GET", &path, None).await;
+    assert_eq!(none["series"][0]["samples"], json!([]), "{none}");
 }
 
 fn base64(bytes: &[u8]) -> String {

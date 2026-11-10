@@ -140,11 +140,15 @@ function gatewayFields(state) {
     ${rangeFields(state, "500")}`;
 }
 
-function listenedHtml(state) {
+/** What listening heard: the note, the unit IDs that talked, each setting's count behind a fold. */
+export function listenedHtml(state) {
   const listened = state.listened;
   if (!listened) return "";
-  const trials = listened.listened.trials.map((trial) => `<li><span class="mono">${h(trial.settings)}</span>: ${t("listen.trial", { frames: trial.frames, stray: trial.stray_bytes })}</li>`).join("");
-  return `<div class="strip ${listened.listened.active ? "warn" : "info"}">${h(noteText(listened.note))}</div><details><summary>${t("listen.details")}</summary><ul class="plain">${trials}</ul></details>`;
+  const trials = listened.listened.trials;
+  const units = [...new Set(trials.flatMap((trial) => trial.units))].sort((a, b) => a - b);
+  const talking = units.length ? `<p class="hint">${t("listen.units", { units: units.join(", ") })}</p>` : "";
+  const counts = trials.map((trial) => `<li><span class="mono">${h(trial.settings)}</span>: ${t("listen.trial", { frames: trial.frames, stray: trial.stray_bytes })}</li>`).join("");
+  return `<div class="strip ${listened.listened.active ? "warn" : "info"}">${h(noteText(listened.note))}</div>${talking}<details><summary>${t("listen.details")}</summary><ul class="plain">${counts}</ul></details>`;
 }
 
 function serialFields(state) {
@@ -164,7 +168,7 @@ export function dialogHtml(state) {
   const mode = state.search.mode;
   const fields = mode === "serial" ? serialFields(state) : mode === "gateway" ? gatewayFields(state) : tcpFields(state);
   const serialTools = mode === "serial" ? `<button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button>` : "";
-  return `<div class="modal"><div class="modal-box search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
+  return `<div class="modal"><div class="modal-box search-settings" data-keep="search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
     <h2 id="search-title">${t("search.title")}</h2>
     <p class="sub">${t(`search.lead.${mode}`)}</p>
     <dl class="facts">${modeChoice(state)}${fields}</dl>

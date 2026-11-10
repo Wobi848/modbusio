@@ -11,8 +11,10 @@ const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../
 const { parseStates, statesText } = await import("../../web/profiles.js");
 const { draftProblem, pointFromExplorer, typedNumber, unsavedChanges } = await import("../../web/profile-actions.js");
 const { bounds, byUnit, pathData } = await import("../../web/chart.js");
+const { heldUntil, sameRecording, withNewSamples } = await import("../../web/recording.js");
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
+const { listenedHtml } = await import("../../web/shell.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -124,6 +126,38 @@ test("a point taken from the explorer keeps the order only where it differs from
   assert.equal(coil.order, undefined);
 });
 
+test("the recording takes up new samples and keeps what it holds", () => {
+  const series = (point, samples, total = samples.length) => ({ device: "tcp:10.0.0.5:502/1", point, label: point, unit: "°C", samples, total });
+  const recording = (...all) => ({ series: all, interval: 5, running: true });
+  const held = recording(series("Flow", [[1000, 20], [2000, 21]]), series("Return", [[1000, 15]]));
+  assert.equal(heldUntil(held), 1000, "the series a round behind decides what is asked for");
+  assert.equal(heldUntil(recording()), 0);
+  assert.equal(heldUntil(recording(series("Flow", []))), 0, "a series without samples: everything");
+
+  // what modbusio answers to after=1000: Flow's second sample once more, and a new one of each
+  const merged = withNewSamples(held, recording(series("Flow", [[2000, 21], [3000, null]], 3), series("Return", [[2000, 16]], 2)));
+  assert.deepEqual(merged.series.map((item) => item.samples), [[[1000, 20], [2000, 21], [3000, null]], [[1000, 15], [2000, 16]]]);
+  assert.ok(!sameRecording(held, merged));
+
+  const quiet = withNewSamples(merged, recording(series("Flow", [], 3), series("Return", [[3000, 17]], 3)));
+  assert.equal(quiet.series[0].samples, merged.series[0].samples, "a series without news keeps its list");
+  assert.ok(!sameRecording(merged, quiet));
+  const nothing = withNewSamples(quiet, recording(series("Flow", [], 3), series("Return", [], 3)));
+  assert.ok(sameRecording(quiet, nothing), "nothing to draw anew");
+  assert.ok(!sameRecording(quiet, { ...nothing, running: false }));
+
+  // a full series loses its oldest; an emptied recording all it had
+  const full = withNewSamples(quiet, recording(series("Flow", [[4000, 23]], 3), series("Return", [], 3)));
+  assert.deepEqual(full.series[0].samples, [[2000, 21], [3000, null], [4000, 23]]);
+  const emptied = withNewSamples(quiet, recording(series("Flow", [[9000, 1]], 1), series("Return", [], 0)));
+  assert.deepEqual(emptied.series.map((item) => item.samples), [[[9000, 1]], []]);
+
+  // what does not fit is asked for whole
+  assert.equal(withNewSamples(quiet, recording(series("Flow", [], 3))), null, "a point removed meanwhile");
+  assert.equal(withNewSamples(quiet, recording(series("Flow", [], 3), series("Speed", [], 3))), null, "another point in its place");
+  assert.equal(withNewSamples(quiet, recording(series("Flow", [], 5), series("Return", [], 3))), null, "samples the page missed");
+});
+
 test("charts group by unit, leave gaps and give a flat line room", () => {
   const series = [{ unit: "°C", samples: [[0, 20], [1000, null], [2000, 22]] }, { unit: "%", samples: [[0, 5], [2000, 5]] }, { unit: "°C", samples: [] }];
   assert.deepEqual(byUnit(series).map(([unit, members]) => [unit, members.length]), [["°C", 2], ["%", 1]]);
@@ -197,4 +231,13 @@ test("closing a profile asks only when something typed would be lost", () => {
   assert.equal(unsavedChanges({ profileDraft: { ...empty, name: "FU-7" }, profileDirty: true }), true);
   assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7", name: "FU-7" }, profileDirty: false }), false, "a saved profile");
   assert.equal(unsavedChanges({ profileDraft: { ...empty, id: "fu-7" }, profileDirty: true }), true, "a saved profile whose name was emptied");
+});
+
+test("listening names the unit IDs that talked on the line", () => {
+  setLanguage("en");
+  const trial = (settings, frames, units) => ({ settings, frames, stray_bytes: 0, units });
+  const heard = (trials, active) => ({ listened: { trials, active, quiet: !active }, note: { kind: "quiet", text: "The line is quiet." } });
+  const busy = listenedHtml({ listened: heard([trial("9600 8N1", 0, []), trial("9600 8E1", 6, [12, 2, 5])], "9600 8E1") });
+  assert.match(busy, /Unit IDs in the traffic heard: 2, 5, 12\./);
+  assert.doesNotMatch(listenedHtml({ listened: heard([trial("9600 8E1", 0, [])], null) }), /Unit IDs/);
 });

@@ -80,6 +80,9 @@ that is none, a name over 80 characters, or a profile that could not be saved by
 `POST /api/profiles` (its points, or an id that is no file name). A device named twice is there
 once.
 
+Opening another site (`sites/new`, `sites/open`, `site.json`, deleting the open one) answers `409`
+while a search runs: what a search finds joins the open site.
+
 `POST /api/devices/add` `{key, name?}` → the site with `check`: on Modbus TCP the device is asked
 once whether it answers, `{answered, error}` with the error code when not; `null` on a serial line or
 RTU over TCP, where another master may be active and nothing is sent unasked. The device is added
@@ -152,15 +155,18 @@ is read, written or logged.
 `original_text` the same in words.
 
 `POST /api/restore` `{ids}` or `{all: true}` writes the old values of standing writes again, each
-logged as a write with `restores` → `{results: [{id, entry}|{id, error}]}`.
+logged as a write with `restores` → `{results: [{id, entry}|{id, error}]}`. The newest is put back
+first, as an undo: a write over part of an earlier one goes before it.
 
 `GET /api/journal.csv?offset=`, `GET /api/journal.xlsx?offset=`: the log; `offset` is the viewer's
 time zone in minutes east of UTC.
 
 ## Recording
 
-`GET /api/recording` → `{series: [{device, point, label, unit, samples: [[ms, value]]}], interval,
-running}`.
+`GET /api/recording` → `{series: [{device, point, label, unit, samples: [[ms, value]], total}],
+interval, running}`. With `?after=ms` each series holds only its samples later than that time, for a
+page that has the rest; `total` is how many the series holds in modbusio, so the page sees when its
+own do not fit (emptied meanwhile, or the oldest dropped) and asks for all of them.
 
 `POST /api/recording/add` `{key, point}`, `POST /api/recording/remove` `{key, point}` → the
 recording. At most 50 points.

@@ -22,6 +22,19 @@ pub enum DataType {
     Bit(u8),
 }
 
+/// Longest text, in registers: it is read in one request.
+const MOST_TEXT_REGISTERS: u32 = 120;
+
+/// What lists call a text.
+const TEXT_WORDS: [&str; 5] = ["text", "string", "str", "char", "ascii"];
+
+/// A type's name as lists write it, without case, spaces and dashes.
+fn lower_joined(text: &str) -> String {
+    text.trim()
+        .to_ascii_lowercase()
+        .replace([' ', '_', '-'], "")
+}
+
 impl DataType {
     pub fn registers(self) -> u16 {
         match self {
@@ -57,22 +70,30 @@ impl DataType {
         }
     }
 
+    /// A text of that many registers, as a list gives it apart from the type's name.
+    pub fn text(registers: u32) -> Option<DataType> {
+        (1..=MOST_TEXT_REGISTERS)
+            .contains(&registers)
+            .then_some(DataType::Text(registers as u8))
+    }
+
+    /// Whether lists name a text so, without its length: `string`, `CHAR`.
+    pub fn is_text_word(text: &str) -> bool {
+        TEXT_WORDS.contains(&lower_joined(text).as_str())
+    }
+
     /// Reads the names lists use: `uint16`, `INT32`, `float`, `real`, `string20`, `bit3` …
     pub fn parse(text: &str) -> Option<DataType> {
-        let lower = text
-            .trim()
-            .to_ascii_lowercase()
-            .replace([' ', '_', '-'], "");
+        let lower = lower_joined(text);
         let numbered = |prefixes: &[&str]| {
             prefixes.iter().find_map(|prefix| {
                 lower
                     .strip_prefix(prefix)
-                    .and_then(|rest| rest.parse::<u16>().ok())
+                    .and_then(|rest| rest.parse::<u32>().ok())
             })
         };
-        if let Some(characters) = numbered(&["text", "string", "str", "char", "ascii"]) {
-            let registers = characters.div_ceil(2).clamp(1, 120);
-            return Some(DataType::Text(registers as u8));
+        if let Some(characters) = numbered(&TEXT_WORDS) {
+            return DataType::text(characters.div_ceil(2).clamp(1, MOST_TEXT_REGISTERS));
         }
         if let Some(bit) = numbered(&["bit"]).filter(|bit| *bit < 16) {
             return Some(DataType::Bit(bit as u8));
@@ -261,6 +282,10 @@ pub fn decode(registers: &[u16], kind: DataType, order: WordOrder) -> Raw {
     }
 }
 
+/// 2^53 − 1: up to here a whole number typed is the number kept. Beyond it a neighbour would be
+/// written, so a 64-bit value is not written there.
+pub const MOST_EXACT_WHOLE: f64 = 9_007_199_254_740_991.0;
+
 /// Encodes a number for writing; `None` when it does not fit `kind`.
 pub fn encode(value: f64, kind: DataType, order: WordOrder) -> Option<Vec<u16>> {
     if !value.is_finite() {
@@ -279,8 +304,12 @@ pub fn encode(value: f64, kind: DataType, order: WordOrder) -> Option<Vec<u16>> 
         DataType::S32 => (whole(-2_147_483_648.0, 2_147_483_647.0)? as i32)
             .to_be_bytes()
             .to_vec(),
-        DataType::U64 => (whole(0.0, 1.8e19)? as u64).to_be_bytes().to_vec(),
-        DataType::S64 => (whole(-9.2e18, 9.2e18)? as i64).to_be_bytes().to_vec(),
+        DataType::U64 => (whole(0.0, MOST_EXACT_WHOLE)? as u64)
+            .to_be_bytes()
+            .to_vec(),
+        DataType::S64 => (whole(-MOST_EXACT_WHOLE, MOST_EXACT_WHOLE)? as i64)
+            .to_be_bytes()
+            .to_vec(),
         DataType::F32 => {
             if value.abs() > f64::from(f32::MAX) {
                 return None;
@@ -454,6 +483,13 @@ mod tests {
         assert_eq!(encode(70000.0, DataType::U16, WordOrder::Abcd), None);
         assert_eq!(encode(1.5, DataType::S16, WordOrder::Abcd), None);
         assert_eq!(encode(f64::NAN, DataType::F32, WordOrder::Abcd), None);
+        // beyond 2^53 the number typed is not the number a 64-bit register would get
+        assert_eq!(encode(1e16, DataType::U64, WordOrder::Abcd), None);
+        assert_eq!(encode(-1e16, DataType::S64, WordOrder::Abcd), None);
+        assert_eq!(
+            encode(MOST_EXACT_WHOLE, DataType::U64, WordOrder::Abcd),
+            Some(vec![0x001F, 0xFFFF, 0xFFFF, 0xFFFF])
+        );
         assert_eq!(
             encode(-1.0, DataType::S16, WordOrder::Abcd),
             Some(vec![0xFFFF])

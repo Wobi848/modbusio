@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
@@ -114,6 +114,11 @@ impl AppState {
         self.data_dir.as_ref().map(|dir| dir.join(storage::JOURNAL))
     }
 
+    /// The write log, with what another modbusio wrote into the same data folder meanwhile.
+    pub fn journal(&self) -> MutexGuard<'_, Journal> {
+        crate::write::up_to_date(&self.journal, self.journal_path().as_deref())
+    }
+
     /// Saves the open site and notes it as the one to open next time.
     pub fn save_site(&self) -> Result<(), ApiError> {
         let Some(dir) = &self.data_dir else {
@@ -208,23 +213,32 @@ impl AppState {
             .expect("some number is free")
     }
 
-    /// Keeps the limits a read, a look or a write learnt about a device. A device taken off the site
-    /// meanwhile keeps none: what was read is still answered.
+    /// Keeps the limits a read, a look or a write learnt about a device.
     pub fn keep_limits(&self, key: &str, before: Limits, learnt: Limits) -> Result<(), ApiError> {
         if learnt == before {
             return Ok(());
         }
+        self.keep_learnt(key, |device| device.limits = learnt)
+    }
+
+    /// Keeps what a request learnt about a device (limits, identity). A device taken off the
+    /// site meanwhile keeps nothing: what was read is still answered.
+    pub fn keep_learnt(
+        &self,
+        key: &str,
+        change: impl FnOnce(&mut SiteDevice),
+    ) -> Result<(), ApiError> {
         {
             let mut site = self.site.lock().expect("site lock");
             let Some(device) = site.device_mut(key) else {
                 return Ok(());
             };
-            device.limits = learnt;
+            change(device);
         }
         self.save_site()
     }
 
-    /// Stores what was learnt about a device (limits, identity) and saves the site.
+    /// Changes a device as the user asked and saves the site.
     pub fn update_device(
         &self,
         key: &str,
@@ -278,6 +292,8 @@ mod tests {
         // taken off the site while it was read: what the read learnt has no place, and is no error
         state.site.lock().expect("site lock").devices.clear();
         assert!(state.keep_limits(key, learnt, Limits::default()).is_ok());
+        let identified = |device: &mut SiteDevice| device.vendor = Some("Acme".into());
+        assert!(state.keep_learnt(key, identified).is_ok());
         assert_eq!(on_site(), None);
     }
 }

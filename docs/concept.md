@@ -108,7 +108,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | A write without confirmation read back: taken or not | *Changed by you* | `tests/write.rs` |
 | Log as CSV and Excel | *Changed by you* | `export.rs` |
 | Watch list across devices | *Watch list* | `ui/06-live` |
-| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `export.rs` (one row per time), `api.rs` (stopped and started again), `ui/06-live`, `tests/web/ui.test.js` (charts) |
+| Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `export.rs` (one row per time), `api.rs` (stopped and started again), `api.rs` (only the new samples for a page that holds the rest), `ui/06-live`, `tests/web/ui.test.js` (charts, new samples taken up) |
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
 | Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |

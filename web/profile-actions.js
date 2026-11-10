@@ -85,10 +85,16 @@ async function savePoint() {
   }
   const point = pointFromExplorer(explorer.adding, explorer, row, profile.order);
   if (!Number.isFinite(point.factor) || point.factor === 0) { toast(t("prof.badFactor"), true); return; }
-  if (profile.points.some((item) => item.name === point.name)) { toast(t("prof.twice", { name: point.name }), true); return; }
+  // the same profile open in the editor: what is typed there and not saved counts too
+  const draft = profile.id && state.profileDraft?.id === profile.id ? state.profileDraft : null;
+  const typed = draft && state.profileDirty;
+  if ([...profile.points, ...(typed ? draft.points : [])].some((item) => item.name === point.name)) { toast(t("prof.twice", { name: point.name }), true); return; }
   profile.points.push(point);
   const saved = await attempt(() => api.saveProfile(profile));
   if (!saved) return;
+  // the editor takes the point as well, or saving there would write the profile without it
+  if (typed) draft.points.push(saved.points.find((item) => item.name === point.name));
+  else if (draft) state.profileDraft = saved;
   if (!device.profile) await attempt(() => api.updateDevice({ key: device.key, profile: saved.id }));
   // the site names each device's point count, which this point changed
   state.site = (await attempt(api.site)) ?? state.site;

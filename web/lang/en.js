@@ -57,7 +57,7 @@ export default {
     "search.listen": "Listen first", "search.findSettings": "Find speed and frame", "search.start": "Search", "search.open": "Search devices …", "search.again": "Search again",
     "search.badTimeout": "The wait must be 50 to 10000 ms.", "search.badPort": "The port must be 1 to 65535.", "search.badRange": "Units run from 1 to 247, the first not above the last.",
     "search.badRetries": "At most 5 tries more.", "search.needGateway": "Give the gateway's address.", "search.needPort": "Choose a serial port.",
-    "listen.details": "What was heard at each setting", "listen.trial": "{frames} frames, {stray} stray bytes",
+    "listen.details": "What was heard at each setting", "listen.trial": "{frames} frames, {stray} stray bytes", "listen.units": "Unit IDs in the traffic heard: {units}. A device that was not asked meanwhile is not among them.",
     "ex.lead": "Which addresses exist and what each register could mean. Take what you recognise into the device's profile.",
     "ex.area": "Area", "ex.start": "From address", "ex.count": "How many", "ex.order": "Word order", "ex.go": "Explore", "ex.busy": "Exploring …",
     "ex.noDevice": "Add a device first", "ex.emptyTitle": "Nothing explored yet", "ex.emptyLead": "Choose a device and an area, then explore. Blocks the device refuses are halved until each address is known.",
