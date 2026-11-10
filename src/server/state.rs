@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
@@ -112,6 +112,11 @@ impl AppState {
 
     pub fn journal_path(&self) -> Option<PathBuf> {
         self.data_dir.as_ref().map(|dir| dir.join(storage::JOURNAL))
+    }
+
+    /// The write log, with what another modbusio wrote into the same data folder meanwhile.
+    pub fn journal(&self) -> MutexGuard<'_, Journal> {
+        crate::write::up_to_date(&self.journal, self.journal_path().as_deref())
     }
 
     /// Saves the open site and notes it as the one to open next time.

@@ -505,6 +505,48 @@ async fn a_site_file_is_checked_whole_before_anything_of_it_is_kept() {
     let _ = std::fs::remove_dir_all(folder);
 }
 
+#[tokio::test]
+async fn a_write_from_the_command_line_beside_the_server_keeps_its_number() {
+    let data = std::env::temp_dir().join(format!("modbusio-api-log-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&data);
+    let app = router(Arc::new(AppState::new(Some(data.clone())).expect("state")));
+    let key = drive_on_site(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/session",
+        Some(json!({ "unlocked": true })),
+    )
+    .await;
+    let raw = json!({ "area": "holding_register", "address": 1, "type": "u16" });
+    let write =
+        |value: &str| json!({ "key": key, "raw": raw, "confirm_raw": true, "value": value });
+    let (status, first) = call(&app, "POST", "/api/write", Some(write("3000"))).await;
+    assert_eq!(
+        (status, &first["id"]),
+        (StatusCode::OK, &json!(1)),
+        "{first}"
+    );
+
+    // the command line, started with the same data folder, logs a write of its own
+    let log = data.join(modbusio::storage::JOURNAL);
+    let (stored, _) = modbusio::storage::load_entries(&log).expect("the log file");
+    let mut beside = stored[0].clone();
+    beside.id = 2;
+    beside.address = 7;
+    modbusio::storage::append_entry(&log, &beside).expect("the log file");
+
+    let (_, journal) = call(&app, "GET", "/api/journal", None).await;
+    assert_eq!(journal["entries"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        journal["standing"], 2,
+        "its write stands as well: {journal}"
+    );
+    let (status, next) = call(&app, "POST", "/api/write", Some(write("3500"))).await;
+    assert_eq!((status, &next["id"]), (StatusCode::OK, &json!(3)), "{next}");
+    let _ = std::fs::remove_dir_all(data);
+}
+
 /// Samples of the one recorded point.
 async fn samples(app: &axum::Router) -> usize {
     let (_, recording) = call(app, "GET", "/api/recording", None).await;
