@@ -7,6 +7,7 @@ use axum::response::Response;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
+use super::scanning::refuse_while_searching;
 use super::state::new_site;
 use super::views::DeviceView;
 use super::{ApiError, Shared, download, profiles};
@@ -76,6 +77,7 @@ pub async fn create(
     State(state): State<Shared>,
     Json(request): Json<Name>,
 ) -> Result<Json<Value>, ApiError> {
+    refuse_while_searching(&state)?;
     let name = check_name(&request.name)?;
     if name.is_empty() {
         return Err(ApiError::bad_request("a site needs a name"));
@@ -107,6 +109,7 @@ pub async fn open(
     State(state): State<Shared>,
     Json(request): Json<Id>,
 ) -> Result<Json<Value>, ApiError> {
+    refuse_while_searching(&state)?;
     let site = state
         .sites()
         .into_iter()
@@ -125,6 +128,9 @@ pub async fn delete(
         return Err(ApiError::not_found(format!("no site {}", request.id)));
     }
     let open = state.site.lock().expect("site lock").id.clone();
+    if open == request.id {
+        refuse_while_searching(&state)?;
+    }
     state.remove_site_file(&request.id);
     if open == request.id {
         let next = sites
@@ -170,6 +176,7 @@ pub async fn import(
     State(state): State<Shared>,
     Json(file): Json<SiteFile>,
 ) -> Result<Json<Value>, ApiError> {
+    refuse_while_searching(&state)?;
     for profile in &file.profiles {
         profiles::check_to_keep(profile)?;
         profiles::check_id(&profile.id)?;

@@ -414,6 +414,10 @@ async fn a_search_of_the_units_behind_a_gateway_adds_them_to_the_site() {
     )
     .await;
     assert_eq!(status, StatusCode::CONFLICT, "one search at a time");
+    // what it finds joins the open site, so no other site is opened meanwhile
+    let other = json!({ "name": "Other plant" });
+    let (status, refused) = call(&app, "POST", "/api/sites/new", Some(other)).await;
+    assert_eq!(status, StatusCode::CONFLICT, "{refused}");
     let mut report = json!({});
     for _ in 0..100 {
         report = call(&app, "GET", "/api/scan", None).await.1;

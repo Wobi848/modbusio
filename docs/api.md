@@ -80,6 +80,9 @@ that is none, a name over 80 characters, or a profile that could not be saved by
 `POST /api/profiles` (its points, or an id that is no file name). A device named twice is there
 once.
 
+Opening another site (`sites/new`, `sites/open`, `site.json`, deleting the open one) answers `409`
+while a search runs: what a search finds joins the open site.
+
 `POST /api/devices/add` `{key, name?}` → the site with `check`: on Modbus TCP the device is asked
 once whether it answers, `{answered, error}` with the error code when not; `null` on a serial line or
 RTU over TCP, where another master may be active and nothing is sent unasked. The device is added
