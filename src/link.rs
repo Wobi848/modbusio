@@ -246,6 +246,8 @@ impl Link {
                 if header.transaction != transaction {
                     continue;
                 }
+                // the transaction number names the request; the unit in the header is not
+                // compared, as devices that hold one unit only answer with their own
                 return Ok(pdu::decode_response(request, &answer[tcp::HEADER..])?);
             }
             if !read_more(stream, received, deadline).await? {
