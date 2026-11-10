@@ -17,8 +17,44 @@ use crate::storage;
 /// How often the samples are saved to the data folder.
 const BACKUP_EVERY: Duration = Duration::from_secs(60);
 
-pub async fn state(State(state): State<Shared>) -> Json<Value> {
-    Json(json!(*state.recording.lock().expect("recording lock")))
+#[derive(Deserialize)]
+pub struct Since {
+    /// Milliseconds since 1970: only the samples later than this are wanted.
+    after: Option<u64>,
+}
+
+pub async fn state(State(state): State<Shared>, Query(since): Query<Since>) -> Json<Value> {
+    view(&state, since.after)
+}
+
+/// The recording as the page takes it. With `after`, each series holds only its samples later
+/// than that: a page that has the rest asks for what is new instead of a day of samples every
+/// two seconds. `total` says how many the series holds, so the page sees when its own do not fit.
+fn view(state: &Shared, after: Option<u64>) -> Json<Value> {
+    let recording = state.recording.lock().expect("recording lock");
+    let series: Vec<Value> = recording
+        .series
+        .iter()
+        .map(|series| {
+            let held = after.map_or(0, |after| {
+                series.samples.partition_point(|(time, _)| *time <= after)
+            });
+            let samples: Vec<_> = series.samples.range(held..).collect();
+            json!({
+                "device": series.device,
+                "point": series.point,
+                "label": series.label,
+                "unit": series.unit,
+                "samples": samples,
+                "total": series.samples.len(),
+            })
+        })
+        .collect();
+    Json(json!({
+        "series": series,
+        "interval": recording.interval,
+        "running": recording.running,
+    }))
 }
 
 #[derive(Deserialize)]
@@ -55,7 +91,7 @@ pub async fn add(
         )
         .map_err(ApiError::conflict)?;
     backup(&state);
-    Ok(self::state(State(state)).await)
+    Ok(view(&state, None))
 }
 
 pub async fn remove(
@@ -71,7 +107,7 @@ pub async fn remove(
         return Err(ApiError::not_found("this point is not recorded"));
     }
     backup(&state);
-    Ok(self::state(State(state)).await)
+    Ok(view(&state, None))
 }
 
 #[derive(Deserialize)]
@@ -96,19 +132,19 @@ pub async fn start(
     if let Some(run) = started {
         tokio::spawn(sample(state.clone(), run));
     }
-    Ok(self::state(State(state)).await)
+    Ok(view(&state, None))
 }
 
 pub async fn stop(State(state): State<Shared>) -> Json<Value> {
     state.recording.lock().expect("recording lock").running = false;
     backup(&state);
-    self::state(State(state)).await
+    view(&state, None)
 }
 
 pub async fn clear(State(state): State<Shared>) -> Json<Value> {
     state.recording.lock().expect("recording lock").clear();
     backup(&state);
-    self::state(State(state)).await
+    view(&state, None)
 }
 
 /// Rounds of reading while this run of the recording goes on.

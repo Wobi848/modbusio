@@ -163,8 +163,10 @@ time zone in minutes east of UTC.
 
 ## Recording
 
-`GET /api/recording` → `{series: [{device, point, label, unit, samples: [[ms, value]]}], interval,
-running}`.
+`GET /api/recording` → `{series: [{device, point, label, unit, samples: [[ms, value]], total}],
+interval, running}`. With `?after=ms` each series holds only its samples later than that time, for a
+page that has the rest; `total` is how many the series holds in modbusio, so the page sees when its
+own do not fit (emptied meanwhile, or the oldest dropped) and asks for all of them.
 
 `POST /api/recording/add` `{key, point}`, `POST /api/recording/remove` `{key, point}` → the
 recording. At most 50 points.

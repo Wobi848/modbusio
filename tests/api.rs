@@ -610,25 +610,24 @@ async fn samples(app: &axum::Router) -> usize {
         .map_or(0, Vec::len)
 }
 
-// The clock is the test's: nothing here waits for a device. The port does not exist, so every
-// round records that reading failed.
+/// One point to record, of a device on a port that does not exist: every round records that
+/// reading failed, and nothing waits for a device.
+async fn one_point_to_record(app: &axum::Router) {
+    let key = "serial:/dev/modbusio-no-such-port:9600:8N1/1";
+    call(app, "POST", "/api/devices/add", Some(json!({ "key": key }))).await;
+    call(app, "POST", "/api/profiles", Some(drive_profile())).await;
+    let update = json!({ "key": key, "profile": "fu-7" });
+    call(app, "POST", "/api/devices/update", Some(update)).await;
+    let point = json!({ "key": key, "point": "Set frequency" });
+    let (status, added) = call(app, "POST", "/api/recording/add", Some(point)).await;
+    assert_eq!(status, StatusCode::OK, "{added}");
+}
+
+// The clock is the test's.
 #[tokio::test(start_paused = true)]
 async fn stopping_and_starting_again_leaves_one_sampling() {
     let app = app();
-    let key = "serial:/dev/modbusio-no-such-port:9600:8N1/1";
-    call(
-        &app,
-        "POST",
-        "/api/devices/add",
-        Some(json!({ "key": key })),
-    )
-    .await;
-    call(&app, "POST", "/api/profiles", Some(drive_profile())).await;
-    let update = json!({ "key": key, "profile": "fu-7" });
-    call(&app, "POST", "/api/devices/update", Some(update)).await;
-    let point = json!({ "key": key, "point": "Set frequency" });
-    let (status, added) = call(&app, "POST", "/api/recording/add", Some(point)).await;
-    assert_eq!(status, StatusCode::OK, "{added}");
+    one_point_to_record(&app).await;
     let start = json!({ "interval": 5 });
 
     call(&app, "POST", "/api/recording/start", Some(start.clone())).await;
@@ -647,6 +646,44 @@ async fn stopping_and_starting_again_leaves_one_sampling() {
     call(&app, "POST", "/api/recording/stop", None).await;
     tokio::time::sleep(Duration::from_secs(11)).await;
     assert_eq!(samples(&app).await, 4, "stopped");
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_page_holding_samples_is_sent_the_new_ones_only() {
+    let app = app();
+    one_point_to_record(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/recording/start",
+        Some(json!({ "interval": 5 })),
+    )
+    .await;
+    tokio::time::sleep(Duration::from_secs(1)).await;
+    for _ in 0..3 {
+        // the samples carry the system's time, which the test's clock does not move
+        std::thread::sleep(Duration::from_millis(2));
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+    let (_, whole) = call(&app, "GET", "/api/recording", None).await;
+    let all = whole["series"][0]["samples"].as_array().expect("samples");
+    assert_eq!((all.len(), &whole["series"][0]["total"]), (4, &json!(4)));
+
+    let held = all[1][0].as_u64().expect("a time");
+    let path = format!("/api/recording?after={held}");
+    let (status, new) = call(&app, "GET", &path, None).await;
+    assert_eq!(status, StatusCode::OK, "{new}");
+    let series = &new["series"][0];
+    assert_eq!(series["samples"], json!(all[2..]), "{new}");
+    assert_eq!(
+        (&series["total"], &series["point"], &new["running"]),
+        (&json!(4), &json!("Set frequency"), &json!(true)),
+        "the rest of the answer stays as it is: {new}"
+    );
+    let last = all[3][0].as_u64().expect("a time");
+    let path = format!("/api/recording?after={last}");
+    let (_, none) = call(&app, "GET", &path, None).await;
+    assert_eq!(none["series"][0]["samples"], json!([]), "{none}");
 }
 
 fn base64(bytes: &[u8]) -> String {

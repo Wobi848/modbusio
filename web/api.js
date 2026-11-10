@@ -68,7 +68,7 @@ export const api = {
   write: (request) => call("POST", "/api/write", request),
   journal: () => call("GET", "/api/journal"),
   restore: (request) => call("POST", "/api/restore", request),
-  recording: () => call("GET", "/api/recording"),
+  recording: (after) => call("GET", after ? `/api/recording?after=${after}` : "/api/recording"),
   recordAdd: (key, point) => call("POST", "/api/recording/add", { key, point }),
   recordRemove: (key, point) => call("POST", "/api/recording/remove", { key, point }),
   recordStart: (interval) => call("POST", "/api/recording/start", { interval }),
