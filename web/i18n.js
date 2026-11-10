@@ -22,6 +22,7 @@ const ERROR_PATTERNS = [
   [/^(.+) is not on or off \(1 or 0\)$/, "notOnOff"],
   [/^(.+) is outside (.*) … (.*)$/, "outside"],
   [/^(.+) does not fit (.+) with factor (.+)$/, "noFit"],
+  [/^(.+) is beyond (.+): so large a whole number is not written exactly$/, "notExact"],
   [/^(.+) is not marked writable in the profile$/, "notWritable"],
   [/^(.+) is not a subnet like 192\.168\.10\.0\/24$/, "notSubnet"],
   [/^(.+) is too large to ask address by address .*$/, "subnetTooLarge"],

@@ -262,6 +262,12 @@ pub fn registers_for(
     } else {
         round_near(raw)
     };
+    if matches!(point.kind, DataType::U64 | DataType::S64) && raw.abs() > values::MOST_EXACT_WHOLE {
+        return Err(format!(
+            "{input} is beyond {:.0}: so large a whole number is not written exactly",
+            values::MOST_EXACT_WHOLE
+        ));
+    }
     values::encode(raw, point.kind, order).ok_or_else(|| {
         format!(
             "{input} does not fit {} with factor {}",
@@ -446,6 +452,14 @@ mod tests {
         assert_eq!(registers_for(&run, WordOrder::Abcd, "on", 0), Ok(vec![1]));
         let fraction = point(DataType::U16);
         assert!(registers_for(&fraction, WordOrder::Abcd, "2.5", 0).is_err());
+        // typed as 2^53 + 1, kept as 2^53: the neighbour is not written in its place
+        let counter = point(DataType::U64);
+        let refused = registers_for(&counter, WordOrder::Abcd, "9007199254740993", 0);
+        assert!(refused.is_err_and(|reason| reason.contains("not written exactly")));
+        assert_eq!(
+            registers_for(&counter, WordOrder::Abcd, "4294967296", 0),
+            Ok(vec![0, 1, 0, 0])
+        );
     }
 
     #[test]

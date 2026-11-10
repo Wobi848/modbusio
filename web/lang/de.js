@@ -143,6 +143,7 @@ export default {
     notOnOff: "$1 ist nicht ein oder aus (1 oder 0)",
     outside: "$1 liegt ausserhalb von $2 … $3",
     noFit: "$1 passt nicht in $2 mit Faktor $3",
+    notExact: "$1 liegt über $2: Eine so grosse ganze Zahl wird nicht genau geschrieben",
     notWritable: "$1 ist im Profil nicht als schreibbar markiert",
     notSubnet: "$1 ist kein Subnetz wie 192.168.10.0/24",
     subnetTooLarge: "$1 ist zu gross, um jede Adresse abzufragen (bis /22)",

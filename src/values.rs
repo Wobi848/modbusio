@@ -282,6 +282,10 @@ pub fn decode(registers: &[u16], kind: DataType, order: WordOrder) -> Raw {
     }
 }
 
+/// 2^53 − 1: up to here a whole number typed is the number kept. Beyond it a neighbour would be
+/// written, so a 64-bit value is not written there.
+pub const MOST_EXACT_WHOLE: f64 = 9_007_199_254_740_991.0;
+
 /// Encodes a number for writing; `None` when it does not fit `kind`.
 pub fn encode(value: f64, kind: DataType, order: WordOrder) -> Option<Vec<u16>> {
     if !value.is_finite() {
@@ -300,8 +304,12 @@ pub fn encode(value: f64, kind: DataType, order: WordOrder) -> Option<Vec<u16>> 
         DataType::S32 => (whole(-2_147_483_648.0, 2_147_483_647.0)? as i32)
             .to_be_bytes()
             .to_vec(),
-        DataType::U64 => (whole(0.0, 1.8e19)? as u64).to_be_bytes().to_vec(),
-        DataType::S64 => (whole(-9.2e18, 9.2e18)? as i64).to_be_bytes().to_vec(),
+        DataType::U64 => (whole(0.0, MOST_EXACT_WHOLE)? as u64)
+            .to_be_bytes()
+            .to_vec(),
+        DataType::S64 => (whole(-MOST_EXACT_WHOLE, MOST_EXACT_WHOLE)? as i64)
+            .to_be_bytes()
+            .to_vec(),
         DataType::F32 => {
             if value.abs() > f64::from(f32::MAX) {
                 return None;
@@ -475,6 +483,13 @@ mod tests {
         assert_eq!(encode(70000.0, DataType::U16, WordOrder::Abcd), None);
         assert_eq!(encode(1.5, DataType::S16, WordOrder::Abcd), None);
         assert_eq!(encode(f64::NAN, DataType::F32, WordOrder::Abcd), None);
+        // beyond 2^53 the number typed is not the number a 64-bit register would get
+        assert_eq!(encode(1e16, DataType::U64, WordOrder::Abcd), None);
+        assert_eq!(encode(-1e16, DataType::S64, WordOrder::Abcd), None);
+        assert_eq!(
+            encode(MOST_EXACT_WHOLE, DataType::U64, WordOrder::Abcd),
+            Some(vec![0x001F, 0xFFFF, 0xFFFF, 0xFFFF])
+        );
         assert_eq!(
             encode(-1.0, DataType::S16, WordOrder::Abcd),
             Some(vec![0xFFFF])

@@ -149,6 +149,7 @@ export default {
     notOnOff: "$1 no es encendido ni apagado (1 o 0)",
     outside: "$1 está fuera de $2 … $3",
     noFit: "$1 no cabe en $2 con el factor $3",
+    notExact: "$1 supera $2: un número entero tan grande no se escribe con exactitud",
     notWritable: "$1 no está marcado como escribible en el perfil",
     notSubnet: "$1 no es una subred como 192.168.10.0/24",
     subnetTooLarge: "$1 es demasiado grande para preguntar cada dirección (hasta /22)",

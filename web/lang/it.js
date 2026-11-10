@@ -149,6 +149,7 @@ export default {
     notOnOff: "$1 non è acceso o spento (1 o 0)",
     outside: "$1 è fuori da $2 … $3",
     noFit: "$1 non sta in $2 con il fattore $3",
+    notExact: "$1 supera $2: un numero intero così grande non viene scritto esattamente",
     notWritable: "$1 non è segnato come scrivibile nel profilo",
     notSubnet: "$1 non è una sottorete come 192.168.10.0/24",
     subnetTooLarge: "$1 è troppo grande per interrogare ogni indirizzo (fino a /22)",
