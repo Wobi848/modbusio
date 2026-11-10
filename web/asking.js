@@ -41,7 +41,7 @@ export function writeHtml(state, point) {
     );
   }
   const accepts = acceptsText(point);
-  return `<div class="ask" role="group"><b>${t("write.title", { point: point.name })}</b>
+  return `<div class="ask" role="group"><b>${h(t("write.title", { point: point.name }))}</b>
     ${accepts ? `<span class="hint">${h(accepts)}</span>` : ""}
     <label class="form-field">${t("write.value")}<input id="write-value" class="mono" value="${h(asking.value ?? "")}" autocomplete="off"></label>
     <div class="actions"><button type="button" data-act="write-check">${t("write.next")}</button><button type="button" class="quiet" data-act="cancel-ask">${t("cancel")}</button></div></div>`;
