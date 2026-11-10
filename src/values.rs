@@ -22,6 +22,19 @@ pub enum DataType {
     Bit(u8),
 }
 
+/// Longest text, in registers: it is read in one request.
+const MOST_TEXT_REGISTERS: u32 = 120;
+
+/// What lists call a text.
+const TEXT_WORDS: [&str; 5] = ["text", "string", "str", "char", "ascii"];
+
+/// A type's name as lists write it, without case, spaces and dashes.
+fn lower_joined(text: &str) -> String {
+    text.trim()
+        .to_ascii_lowercase()
+        .replace([' ', '_', '-'], "")
+}
+
 impl DataType {
     pub fn registers(self) -> u16 {
         match self {
@@ -57,22 +70,30 @@ impl DataType {
         }
     }
 
+    /// A text of that many registers, as a list gives it apart from the type's name.
+    pub fn text(registers: u32) -> Option<DataType> {
+        (1..=MOST_TEXT_REGISTERS)
+            .contains(&registers)
+            .then_some(DataType::Text(registers as u8))
+    }
+
+    /// Whether lists name a text so, without its length: `string`, `CHAR`.
+    pub fn is_text_word(text: &str) -> bool {
+        TEXT_WORDS.contains(&lower_joined(text).as_str())
+    }
+
     /// Reads the names lists use: `uint16`, `INT32`, `float`, `real`, `string20`, `bit3` …
     pub fn parse(text: &str) -> Option<DataType> {
-        let lower = text
-            .trim()
-            .to_ascii_lowercase()
-            .replace([' ', '_', '-'], "");
+        let lower = lower_joined(text);
         let numbered = |prefixes: &[&str]| {
             prefixes.iter().find_map(|prefix| {
                 lower
                     .strip_prefix(prefix)
-                    .and_then(|rest| rest.parse::<u16>().ok())
+                    .and_then(|rest| rest.parse::<u32>().ok())
             })
         };
-        if let Some(characters) = numbered(&["text", "string", "str", "char", "ascii"]) {
-            let registers = characters.div_ceil(2).clamp(1, 120);
-            return Some(DataType::Text(registers as u8));
+        if let Some(characters) = numbered(&TEXT_WORDS) {
+            return DataType::text(characters.div_ceil(2).clamp(1, MOST_TEXT_REGISTERS));
         }
         if let Some(bit) = numbered(&["bit"]).filter(|bit| *bit < 16) {
             return Some(DataType::Bit(bit as u8));
