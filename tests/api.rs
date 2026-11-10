@@ -510,6 +510,57 @@ async fn a_site_file_is_checked_whole_before_anything_of_it_is_kept() {
 }
 
 #[tokio::test]
+async fn writes_over_one_another_are_put_back_newest_first() {
+    let app = app();
+    let key = drive_on_site(&app).await;
+    call(
+        &app,
+        "POST",
+        "/api/session",
+        Some(json!({ "unlocked": true })),
+    )
+    .await;
+    // the two ramps, 300 each: written as one 32-bit value, then the second register alone
+    let raw = |address: u16, kind: &str, value: &str| {
+        let place = json!({ "area": "holding_register", "address": address, "type": kind });
+        json!({ "key": key, "raw": place, "confirm_raw": true, "value": value })
+    };
+    let (status, both) = call(&app, "POST", "/api/write", Some(raw(2, "u32", "458761"))).await;
+    assert_eq!(
+        (status, &both["after"]),
+        (StatusCode::OK, &json!([7, 9])),
+        "{both}"
+    );
+    let (status, second) = call(&app, "POST", "/api/write", Some(raw(3, "u16", "50"))).await;
+    assert_eq!(
+        (status, &second["before"]),
+        (StatusCode::OK, &json!([9])),
+        "{second}"
+    );
+    let (status, restored) = call(&app, "POST", "/api/restore", Some(json!({ "all": true }))).await;
+    assert_eq!(status, StatusCode::OK, "{restored}");
+    let results = restored["results"].as_array().expect("results");
+    assert_eq!(
+        (&results[0]["id"], &results[1]["id"]),
+        (&json!(2), &json!(1))
+    );
+    assert_eq!(
+        results[1]["entry"]["after"],
+        json!([300, 300]),
+        "{restored}"
+    );
+    let ramps = json!({ "key": key, "area": "holding_register", "start": 2, "count": 2 });
+    let (_, explored) = call(&app, "POST", "/api/explore", Some(ramps)).await;
+    let held: Vec<&Value> = explored["rows"]
+        .as_array()
+        .expect("rows")
+        .iter()
+        .map(|row| &row["value"])
+        .collect();
+    assert_eq!(held, [&json!(300), &json!(300)], "{explored}");
+}
+
+#[tokio::test]
 async fn a_write_from_the_command_line_beside_the_server_keeps_its_number() {
     let data = std::env::temp_dir().join(format!("modbusio-api-log-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&data);

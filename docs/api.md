@@ -155,7 +155,8 @@ is read, written or logged.
 `original_text` the same in words.
 
 `POST /api/restore` `{ids}` or `{all: true}` writes the old values of standing writes again, each
-logged as a write with `restores` → `{results: [{id, entry}|{id, error}]}`.
+logged as a write with `restores` → `{results: [{id, entry}|{id, error}]}`. The newest is put back
+first, as an undo: a write over part of an earlier one goes before it.
 
 `GET /api/journal.csv?offset=`, `GET /api/journal.xlsx?offset=`: the log; `offset` is the viewer's
 time zone in minutes east of UTC.

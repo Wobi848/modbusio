@@ -227,8 +227,10 @@ pub async fn restore(
                 )));
             }
         }
+        // the newest first, as an undo: a write over part of an earlier one has to go before it
         standing
             .into_iter()
+            .rev()
             .filter(|entry| request.all || request.ids.contains(&entry.id))
             .map(|entry| Ok((entry.id, journal.restoring(entry)?)))
             .collect::<Result<_, String>>()
