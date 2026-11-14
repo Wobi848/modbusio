@@ -57,6 +57,12 @@ impl Area {
         }
     }
 
+    fn of_read_function(function: u8) -> Option<Area> {
+        Area::ALL
+            .into_iter()
+            .find(|area| area.read_function() == function)
+    }
+
     /// The short name the trade uses: "HR", "IR", "coil", "DI".
     pub fn short(self) -> &'static str {
         match self {
@@ -379,6 +385,78 @@ pub fn decode_response(request: &Request, pdu: &[u8]) -> Result<Response, PduErr
     }
 }
 
+/// Decodes a request another master sent, as heard on a trunk; `None` for a function modbusio
+/// does not know or a request of the wrong form.
+pub fn decode_request(pdu: &[u8]) -> Option<Request> {
+    let (&function, body) = pdu.split_first()?;
+    let word = |at: usize| Some(u16::from_be_bytes([*body.get(at)?, *body.get(at + 1)?]));
+    let fixed = |length: usize| (body.len() == length).then_some(());
+    match function {
+        0x01..=0x04 => {
+            fixed(4)?;
+            Some(Request::Read {
+                area: Area::of_read_function(function)?,
+                address: word(0)?,
+                count: word(2)?,
+            })
+        }
+        0x05 => {
+            fixed(4)?;
+            let value = match word(2)? {
+                0xFF00 => true,
+                0x0000 => false,
+                _ => return None,
+            };
+            Some(Request::WriteCoil {
+                address: word(0)?,
+                value,
+            })
+        }
+        0x06 => {
+            fixed(4)?;
+            Some(Request::WriteRegister {
+                address: word(0)?,
+                value: word(2)?,
+            })
+        }
+        0x0F => {
+            let count = word(2)? as usize;
+            let data = body.get(5..)?;
+            (data.len() == *body.get(4)? as usize && data.len() == count.div_ceil(8))
+                .then_some(())?;
+            Some(Request::WriteCoils {
+                address: word(0)?,
+                values: unpack_bits(data, count),
+            })
+        }
+        0x10 => {
+            let count = word(2)? as usize;
+            let data = body.get(5..)?;
+            (data.len() == *body.get(4)? as usize && data.len() == count * 2).then_some(())?;
+            Some(Request::WriteRegisters {
+                address: word(0)?,
+                values: (0..count)
+                    .map(|index| word(5 + 2 * index))
+                    .collect::<Option<_>>()?,
+            })
+        }
+        0x2B => {
+            fixed(3)?;
+            (body[0] == 0x0E).then_some(())?;
+            Some(Request::Identify {
+                code: body[1],
+                object: body[2],
+            })
+        }
+        0x08 => {
+            fixed(4)?;
+            (word(0)? == 0).then_some(())?;
+            Some(Request::Echo { data: word(2)? })
+        }
+        _ => None,
+    }
+}
+
 fn decode_identity(pdu: &[u8]) -> Result<Identity, PduError> {
     let malformed = |reason: &str| Err(PduError::Malformed(reason.to_string()));
     if pdu.len() < 7 || pdu[1] != 0x0E {
@@ -608,6 +686,56 @@ mod tests {
             count: 2,
         };
         assert!(past_end.check().is_err());
+    }
+
+    #[test]
+    fn every_request_modbusio_sends_is_decoded_back() {
+        let requests = [
+            Request::Read {
+                area: Area::DiscreteInput,
+                address: 196,
+                count: 22,
+            },
+            Request::Read {
+                area: Area::InputRegister,
+                address: 8,
+                count: 1,
+            },
+            Request::WriteCoil {
+                address: 172,
+                value: true,
+            },
+            Request::WriteRegister {
+                address: 1,
+                value: 3,
+            },
+            Request::WriteCoils {
+                address: 19,
+                values: vec![
+                    true, false, true, true, false, false, true, true, true, false,
+                ],
+            },
+            Request::WriteRegisters {
+                address: 1,
+                values: vec![0x000A, 0x0102],
+            },
+            Request::Identify { code: 1, object: 0 },
+            Request::Echo { data: 0xA537 },
+        ];
+        for request in requests {
+            assert_eq!(decode_request(&request.encode()), Some(request));
+        }
+    }
+
+    #[test]
+    fn requests_of_another_form_are_not_decoded() {
+        // spec 6.5: a coil is written with FF00 or 0000 only
+        assert_eq!(decode_request(&[0x05, 0, 1, 0x12, 0x34]), None);
+        // a byte count that does not match the registers
+        assert_eq!(decode_request(&[0x10, 0, 1, 0, 2, 3, 0, 1, 0]), None);
+        assert_eq!(decode_request(&[0x03, 0, 1, 0]), None);
+        assert_eq!(decode_request(&[0x41, 0, 1]), None);
+        assert_eq!(decode_request(&[]), None);
     }
 
     #[test]
