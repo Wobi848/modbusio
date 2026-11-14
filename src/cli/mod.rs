@@ -1,5 +1,6 @@
 //! The command line (concept section 12, M1): the same logic as the web interface, as text.
 
+mod analyse;
 mod table;
 
 use std::net::Ipv4Addr;
@@ -77,6 +78,23 @@ pub enum Command {
         /// Seconds per setting
         #[arg(long, default_value_t = 1.5)]
         seconds: f64,
+    },
+    /// Analyse a trunk without sending: each exchange of its master, then a table per unit
+    Analyse {
+        /// Serial port of an adapter hung on the trunk in parallel
+        port: String,
+        /// Speed; found by listening when left out together with --frame
+        #[arg(long, requires = "frame")]
+        baud: Option<u32>,
+        /// Frame: 8E1, 8N1, 8N2, 8O1
+        #[arg(long, requires = "baud")]
+        frame: Option<String>,
+        /// End after this many seconds instead of at Ctrl+C
+        #[arg(long)]
+        seconds: Option<u64>,
+        /// Save the frames for Wireshark
+        #[arg(long, value_name = "FILE")]
+        pcap: Option<PathBuf>,
     },
     /// Read values, e.g.: read 10.0.0.5/1 ir 0 2 --type f32
     Read {
@@ -227,6 +245,16 @@ pub async fn run(command: Command, data_dir: Option<PathBuf>) -> anyhow::Result<
             }
         }
         Command::Listen { port, seconds } => listen_to(&port, seconds).await,
+        Command::Analyse {
+            port,
+            baud,
+            frame,
+            seconds,
+            pcap,
+        } => {
+            let given = baud.zip(frame.as_deref());
+            analyse::analyse(&port, given, seconds, pcap).await
+        }
         Command::Read { place, count, csv } => read(&links, &place, count, csv).await,
         Command::Explore {
             device,
