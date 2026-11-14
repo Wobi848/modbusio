@@ -54,15 +54,18 @@ fn mask(prefix_len: u8) -> u32 {
 
 pub async fn serial_ports(State(state): State<Shared>) -> Result<Json<Value>, ApiError> {
     let mut ports = crate::serial::ports().map_err(ApiError::internal)?;
-    // the browser tests' simulated line is a pseudo-terminal, which no system lists as a port
+    // the browser tests' simulated lines are pseudo-terminals, which no system lists as ports;
+    // several are named with commas between them
     if state.loopback
-        && let Some(name) = std::env::var_os("MODBUSIO_TEST_SERIAL")
+        && let Some(names) = std::env::var_os("MODBUSIO_TEST_SERIAL")
     {
-        ports.push(crate::serial::PortChoice {
-            name: name.to_string_lossy().into_owned(),
-            description: Some("simulated line".into()),
-            usb: false,
-        });
+        for name in names.to_string_lossy().split(',') {
+            ports.push(crate::serial::PortChoice {
+                name: name.to_string(),
+                description: Some("simulated line".into()),
+                usb: false,
+            });
+        }
     }
     Ok(Json(json!(ports)))
 }

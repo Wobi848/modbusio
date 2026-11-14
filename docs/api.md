@@ -189,10 +189,10 @@ read only; modbusio's own requests to it are refused until the analyser stops.
 state below. `409` while a search runs or the analyser listens already; `502` when nothing valid is
 heard at any setting or the port cannot be opened.
 
-`GET /api/analyser?frames=N&exchanges=M` → `{running, ended, port, settings, started, elapsed_ms,
+`GET /api/analyser?frames=N&exchanges=M` → `{running, ended, port, settings, started_ms, elapsed_ms,
 bus: {frames, damaged, bytes, broadcasts}, load, units, exchanges, frames}`, or `{running: false}`
 before the first start. `ended` says why listening ended: `stopped`, or the port's failure.
-`started` is in seconds since 1970, `load` the share of time the trunk carried bytes (0 to 1).
+`started_ms` is in milliseconds since 1970, `load` the share of time the trunk carried bytes (0 to 1).
 `frames` and `exchanges` hold what came after the numbers given, at most 500 of the newest.
 
 - `units`: `[{unit, requests, answers, no_answer, damaged, exceptions: {code: count}, writes,

@@ -53,12 +53,12 @@ const simulators = SIMULATORS.map(([example, address, ...rest]) =>
   spawn(path.join(root, `target/debug/examples/${example}${exe}`), [address, String(SIM_PORT), ...rest], { stdio: "ignore" }));
 
 /**
- * The RS-485 line on a pseudo-terminal (Linux only): modbusio lists the terminal it prints as a
- * serial port, through MODBUSIO_TEST_SERIAL.
+ * A simulator on a pseudo-terminal (Linux only), with the terminal's name it prints. modbusio lists
+ * the terminals as serial ports, through MODBUSIO_TEST_SERIAL.
  */
-async function startLineSimulator() {
-  if (process.platform !== "linux") return null;
-  const started = spawn(path.join(root, "target/debug/examples/simulated_rtu"), [], { stdio: ["ignore", "pipe", "inherit"] });
+async function startOnTerminal(example, args) {
+  if (process.platform !== "linux") return { started: null, terminal: null };
+  const started = spawn(path.join(root, `target/debug/examples/${example}`), args, { stdio: ["ignore", "pipe", "inherit"] });
   const terminal = await new Promise((found) => {
     let printed = "";
     started.stdout.on("data", (chunk) => {
@@ -68,14 +68,21 @@ async function startLineSimulator() {
     });
     started.once("exit", () => found(null));
   });
-  if (terminal) process.env.MODBUSIO_TEST_SERIAL = terminal;
-  return started;
+  return { started, terminal };
 }
-const lineSimulator = await startLineSimulator();
+// the line with its devices, for searching; the trunk with its own master, for the bus analyser
+const line = await startOnTerminal("simulated_rtu", []);
+const trunk = await startOnTerminal("simulated_trunk", ["--cycle-ms", "1000"]);
+if (line.terminal) process.env.MODBUSIO_TEST_SERIAL = line.terminal;
+if (trunk.terminal) process.env.MODBUSIO_TEST_TRUNK = trunk.terminal;
+const terminals = [line.terminal, trunk.terminal].filter(Boolean).join(",");
 
 /** Starts modbusio on `port` with the data folder `dir` and waits until its API answers. */
 async function launch(port, dir) {
-  const started = spawn(bin, ["--web-port", String(port), "--no-browser", "--data-dir", dir, "--test-loopback"], { stdio: "ignore" });
+  const started = spawn(bin, ["--web-port", String(port), "--no-browser", "--data-dir", dir, "--test-loopback"], {
+    stdio: "ignore",
+    env: { ...process.env, MODBUSIO_TEST_SERIAL: terminals },
+  });
   for (let attempt = 0; attempt < 100; attempt++) {
     try {
       await fetch(`http://127.0.0.1:${port}/api/info`);
@@ -154,6 +161,7 @@ for (const test of tests.filter((candidate) => candidate.name.includes(filter) |
 }
 await browser.close();
 for (const simulator of simulators) simulator.kill();
-lineSimulator?.kill();
+line.started?.kill();
+trunk.started?.kill();
 console.log(failed ? `${failed} failed` : "all tests passed");
 process.exit(failed ? 1 : 0);

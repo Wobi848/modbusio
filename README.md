@@ -19,7 +19,7 @@ browser (`--web-port`, `--no-browser`, `--data-dir` for the write log, profiles,
 recording backup). The interface is bacnetio's: a sidebar with the site and the search settings,
 a page head with the one next step, list and details side by side, a status bar, light and dark,
 the system's language (English or German; French, Italian and Spanish as drafts for review
-with `?lang=fr|it|es`), keys `1`–`6` for the areas, `7` for the settings, `/`
+with `?lang=fr|it|es`), keys `1`–`7` for the areas (`1`–`6` on Android), the next one for the settings, `/`
 to search the points, Escape to close.
 
 - **Search** (*Search settings* in the sidebar): a **network** (every address of the subnet asked

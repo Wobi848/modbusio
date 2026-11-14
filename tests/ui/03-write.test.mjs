@@ -38,12 +38,12 @@ export default {
     // the page stays (leaving it asks first while a value stands), only its size and language change
     await page.setViewportSize({ width: 390, height: 844 });
     await noSidewaysScroll(page);
-    await page.keyboard.press("7");
+    await page.keyboard.press("8");
     await page.selectOption("#language", "de");
     await page.keyboard.press("6");
     await page.waitForSelector(".row.mlog:has-text('Zurückschreiben')");
     await noSidewaysScroll(page);
-    await page.keyboard.press("7");
+    await page.keyboard.press("8");
     await page.selectOption("#language", "en");
     await page.keyboard.press("6");
     await page.setViewportSize({ width: 1500, height: 900 });

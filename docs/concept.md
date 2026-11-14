@@ -44,7 +44,7 @@ commission a drive or heat pump; document the points.
 
 The interface is bacnetio's (mbusio branch `ui-sidebar` as its origin): sidebar with the site and
 the connection, page head with the one next step, tree, table and details side by side, status bar,
-light and dark, the system's language, keys `1`–`6`, `/`, `?`. Principles: bacnetio
+light and dark, the system's language, keys `1`–`7`, `/`, `?`. Principles: bacnetio
 `docs/concept.md` section 3.1, taken over unchanged.
 
 ### 3.1 Layout
@@ -74,6 +74,7 @@ light and dark, the system's language, keys `1`–`6`, `/`, `?`. Principles: bac
 - **Registers:** the explorer for a device without a profile (section 5.3).
 - **Recording, Watch list:** as in bacnetio.
 - **Changed by you:** every write, with the value before it and *Restore* (section 7).
+- **Bus analyser:** a trunk's own traffic, heard without sending (`docs/concept-analyser.md`).
 - **Settings:** language, theme, capture for Wireshark, version check, help.
 
 ### 3.2 Functions and where they live
@@ -114,9 +115,14 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |
 | Language and theme, following the system | *Settings* | `tests/web/ui.test.js`, `ui/07-settings` |
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |
-| Keys `1`–`6`, `7`, `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5) |
+| Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
 | Only pages of this modbusio may use the API | server | `api.rs` (`foreign_pages_are_refused`) |
-| Command line: `interfaces`, `ports`, `scan`, `listen`, `read`, `explore`, `write`, `changed`, `restore`; exit code 1 when nothing could be read | terminal | `cli.rs` (output and exit code), tried against the simulators; the logic below it is tested above |
+| Bus analyser: listen to a trunk without sending, settings found by listening, the port refused to modbusio's own requests meanwhile (`docs/concept-analyser.md`) | *Bus analyser*, *Start listening* | `analyser/port.rs`, `link.rs` (held line), `api.rs` (analyser), `ui/08-analyser` |
+| Frames found in chunked bytes, requests and answers paired: no answer, exceptions, damaged answers, broadcasts, answer times | *Bus analyser*, *Exchanges* | `analyser/frames.rs`, `analyser/exchanges.rs`, `tests/analyser.rs` |
+| Per unit: requests, answers, problems, answer times, poll cycle; a unit added to the site | *Bus analyser*, *Units* | `analyser/units.rs`, `tests/analyser.rs`, `ui/08-analyser` |
+| Exchanges filtered by unit, problems, writes; their bytes with the parts named | *Bus analyser*, *Exchanges* | `tests/web/ui.test.js`, `ui/08-analyser` |
+| Pause, clear, save for Wireshark; listening goes on when the page is left | *Bus analyser*, status bar | `api.rs` (analyser), `ui/08-analyser` |
+| Command line: `interfaces`, `ports`, `scan`, `listen`, `analyse`, `read`, `explore`, `write`, `changed`, `restore`; exit code 1 when nothing could be read | terminal | `cli.rs` (output and exit code), tried against the simulators; the logic below it is tested above |
 
 ## 4. Scope
 
