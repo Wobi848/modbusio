@@ -1007,3 +1007,45 @@ async fn the_search_at_other_settings_sends_nothing_while_another_master_talks()
     .await;
     assert_eq!(status, StatusCode::BAD_REQUEST);
 }
+
+#[tokio::test]
+async fn a_whole_line_leaves_the_site_and_the_others_stay() {
+    let app = app();
+    for key in [
+        "serial:COM3:9600:8E1/1",
+        "serial:COM3:9600:8E1/2",
+        "serial:COM3:19200:8N2/5",
+    ] {
+        let (status, _) = call(
+            &app,
+            "POST",
+            "/api/devices/add",
+            Some(json!({ "key": key })),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+    }
+    let (status, site) = call(
+        &app,
+        "POST",
+        "/api/devices/remove-line",
+        Some(json!({ "line": "COM3 9600 8E1" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{site}");
+    let keys: Vec<&str> = site["devices"]
+        .as_array()
+        .expect("devices")
+        .iter()
+        .filter_map(|device| device["key"].as_str())
+        .collect();
+    assert_eq!(keys, ["serial:COM3:19200:8N2/5"]);
+    let (status, _) = call(
+        &app,
+        "POST",
+        "/api/devices/remove-line",
+        Some(json!({ "line": "COM3 9600 8E1" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

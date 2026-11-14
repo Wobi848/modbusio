@@ -43,6 +43,10 @@ First version.
   exchanges and registers as CSV and Excel; a draft profile from the registers the master uses;
   capture files (pcapng or pcap, also from other tools) opened into the same views; on the
   command line `analyse`, and `analyse --file` for a saved capture. The keys count up: the bus analyser is `7`, *Settings* now `8`.
+- A line in the tree can be chosen: the list shows its devices, and the whole line can be removed
+  from the site at once, after a question.
+- Serial ports without a chip behind them (Linux lists `ttyS0` to `ttyS3` on every PC) are left
+  out of the port lists.
 - Sidebar, tree and details as wide as you drag them (or move their border with the arrow keys),
   kept in this browser; a double-click gives the width back to the window.
 - Lists sorted by a click on a column head, and their columns as wide as you drag them: devices,

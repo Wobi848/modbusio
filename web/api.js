@@ -55,6 +55,7 @@ export const api = {
   addDevice: (key, name) => call("POST", "/api/devices/add", { key, name }),
   updateDevice: (change) => call("POST", "/api/devices/update", change),
   removeDevice: (key) => call("POST", "/api/devices/remove", { key }),
+  removeLine: (line) => call("POST", "/api/devices/remove-line", { line }),
   identify: (key) => call("POST", "/api/devices/identify", { key }),
   read: (key, points) => call("POST", "/api/devices/read", points ? { key, points } : { key }),
   values: (items) => call("POST", "/api/values", { items }),

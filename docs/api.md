@@ -106,6 +106,10 @@ either way. `409` when the device is on it already.
 
 `POST /api/devices/remove` `{key}` → the site. Nothing changes in the device.
 
+`POST /api/devices/remove-line` `{line}` removes every device of one line (`line` as the site gives
+it, `COM3 9600 8E1`) → the site; `404` when no device is on that line. Nothing changes in the
+devices.
+
 `POST /api/devices/identify` `{key}` asks Read Device Identification (43/14) →
 `{objects: [{id, text}]}` and keeps vendor, product and version; `502` when the device does not
 offer it.

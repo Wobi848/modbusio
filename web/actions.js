@@ -18,6 +18,7 @@ export async function loadSite() {
   state.sites = sites;
   state.profiles = profiles;
   if (state.selected && !site.devices.some((device) => device.key === state.selected)) state.selected = null;
+  if (state.selectedLine && !site.devices.some((device) => device.line === state.selectedLine)) state.selectedLine = null;
 }
 
 export async function loadJournal() {
@@ -128,6 +129,7 @@ const pointOf = (name) => state.readings[state.selected]?.points.find((point) =>
 /** Chooses a device of the site, or none; the next render shows it. */
 function selectDevice(key) {
   state.selected = key;
+  state.selectedLine = null;
   state.selectedPoint = null;
   state.deviceDetailOpen = false;
   state.pointFilter = "";
@@ -237,6 +239,24 @@ export const actions = {
     render();
   },
   "ask-remove-device": () => { state.asking = { kind: "remove-device" }; render(); },
+  "select-line": (element) => {
+    state.selected = null;
+    state.selectedLine = element.dataset.line;
+    state.asking = null;
+    remember();
+    render();
+  },
+  "ask-remove-line": () => { state.asking = { kind: "remove-line" }; render(); },
+  "remove-line": async () => {
+    const line = state.selectedLine;
+    const site = await attempt(() => api.removeLine(line));
+    if (!site) return;
+    state.site = site;
+    state.selectedLine = null;
+    state.asking = null;
+    toast(t("dev.lineRemoved", { line }));
+    render();
+  },
   "remove-device": async () => {
     const site = await attempt(() => api.removeDevice(state.selected));
     if (!site) return;
