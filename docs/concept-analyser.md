@@ -1,7 +1,8 @@
 # Concept: bus analyser for Modbus RTU
 
-Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 3 of the building order are
-built (branches `concept-analyser`, `analyser-server`). Mockup:
+Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 4 of the building order are
+built (branches `concept-analyser`, `analyser-server`, `analyser-page`). In the units table, no
+answer, damaged answers and exceptions share one column *Problems*, so damaged answers show too. Mockup:
 [mockup/analyser.html](mockup/analyser.html).
 
 ## Why

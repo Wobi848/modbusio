@@ -31,8 +31,9 @@ First version.
 - Bus analyser for RS-485 trunks, listening without ever sending through an adapter hung on the
   trunk in parallel: each request of the trunk's master paired with its answer, answer times, poll
   cycle, no answers, damaged answers and exceptions per unit, the frames for Wireshark. While it
-  listens, modbusio sends nothing on that port. For now on the command line (`analyse`) and in the
-  web API.
+  listens, modbusio sends nothing on that port. A page of its own (*Bus analyser*) with the units
+  and the exchanges, filters, the bytes of each frame, and units added to the site; on the
+  command line `analyse`. The keys count up: the bus analyser is `7`, *Settings* now `8`.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.
 - Android app with the same interface, Modbus TCP only.
