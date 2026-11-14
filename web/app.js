@@ -3,16 +3,23 @@
 
 import { api } from "./api.js";
 import { actions, loadJournal, loadSite, onChange, onField, pollScan, readDevice } from "./actions.js";
+import { loadPorts, pollAnalyser } from "./analyser-actions.js";
 import { dialogHtml, nextbarHtml, sideHtml, statusHtml } from "./shell.js";
 import { importHtml } from "./profiles.js";
 import { AREAS, areaOfHash, attempt, go, recall, registerFrame, render, selectedDevice, state } from "./store.js";
 import "./workspace.js";
 import "./explorer.js";
 import "./pages.js";
+import "./analyser.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 
 state.areas = AREAS;
+
+/** The bus analyser needs a serial port, which Android gives no program (concept section 10). */
+function areasOf(info) {
+  return AREAS.filter((area) => area !== "analyser" || info?.serial);
+}
 registerFrame({
   side: sideHtml,
   nextbar: nextbarHtml,
@@ -57,7 +64,7 @@ document.addEventListener("input", (event) => {
   if (onField(element)) render();
 });
 
-/** Keys as in bacnetio: 1–6 the areas, 7 the settings, Escape closes, / the point filter. */
+/** Keys as in bacnetio: 1 to n the areas, the next one the settings, Escape closes, / the point filter. */
 document.addEventListener("keydown", (event) => {
   const typing = event.target.closest("input, select, textarea");
   if (event.key === "Escape") {
@@ -75,8 +82,8 @@ document.addEventListener("keydown", (event) => {
   }
   if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
   const number = Number(event.key);
-  if (number >= 1 && number <= AREAS.length) go(AREAS[number - 1]);
-  else if (number === AREAS.length + 1) go("settings");
+  if (number >= 1 && number <= state.areas.length) go(state.areas[number - 1]);
+  else if (number === state.areas.length + 1) go("settings");
   else if (event.key === "/" && document.getElementById("point-filter")) {
     event.preventDefault();
     document.getElementById("point-filter").focus();
@@ -143,6 +150,7 @@ async function tick() {
         if (state.area === "recording" ? !sameRecording(held, latest) : held.running !== latest.running) render();
       }
     }
+    if (state.area === "analyser" || state.analyser.heard?.running) await pollAnalyser();
     if (state.capture.running && ticks % 2 === 0) {
       state.capture = await api.capture();
       render();
@@ -161,6 +169,8 @@ async function start() {
   render();
   const info = await attempt(api.info);
   state.info = info;
+  state.areas = areasOf(info);
+  if (!state.areas.includes(state.area) && state.area !== "settings") state.area = "workspace";
   await attempt(loadSite);
   await attempt(loadJournal);
   const [session, recording, capture, scan] = await Promise.all([attempt(api.session), attempt(api.recording), attempt(api.capture), attempt(api.scan)]);
@@ -171,6 +181,8 @@ async function start() {
   if (!state.explorer.key && state.site.devices.length) state.explorer.key = state.site.devices[0].key;
   render();
   if (scan && !scan.finished) attempt(pollScan);
+  await attempt(pollAnalyser);
+  attempt(loadPorts);
   setInterval(tick, 1000);
   checkForUpdate();
 }

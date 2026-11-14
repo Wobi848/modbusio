@@ -3,7 +3,7 @@
 
 import { codeText, t } from "./i18n.js";
 
-export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed"];
+export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed", "analyser"];
 const MEMORY_KEY = "modbusio.memory";
 
 export const state = {
@@ -42,6 +42,11 @@ export const state = {
   journal: { entries: [], standing: 0 },
   unlocked: false,
   capture: { running: false, frames: null, kept: null },
+  /** The bus analyser: the start's choices, what the server heard (`heard`), the page's view. */
+  analyser: {
+    port: "", speed: "listen", frame: "8E1", heard: null, busy: false, paused: false,
+    view: "units", chosen: null, unitFilter: "", problemsOnly: false, writesOnly: false,
+  },
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,
@@ -56,6 +61,7 @@ export function remember() {
     localStorage.setItem(MEMORY_KEY, JSON.stringify({
       area: state.area, selected: state.selected, search: state.search, watch: state.watch,
       explorer: { key: state.explorer.key, area: state.explorer.area, start: state.explorer.start, count: state.explorer.count, order: state.explorer.order },
+      analyser: { port: state.analyser.port, speed: state.analyser.speed, frame: state.analyser.frame },
     }));
   } catch {
     // without storage the page starts fresh after a reload
@@ -70,6 +76,7 @@ export function recall() {
     Object.assign(state.search, memory.search ?? {});
     state.watch = Array.isArray(memory.watch) ? memory.watch : [];
     Object.assign(state.explorer, memory.explorer ?? {});
+    Object.assign(state.analyser, memory.analyser ?? {});
   } catch {
     // a broken memory is ignored
   }

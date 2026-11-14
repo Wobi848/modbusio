@@ -5,6 +5,7 @@ import { api } from "./api.js";
 import { codeText, setLanguage, t } from "./i18n.js";
 import { attempt, deviceName, go, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
+import { analyserActions, analyserField } from "./analyser-actions.js";
 import { refreshSession } from "./session.js";
 import { setUpdateCheck } from "./update.js";
 
@@ -112,6 +113,7 @@ function selectDevice(key) {
 
 export const actions = {
   ...profileActions,
+  ...analyserActions,
   go: (element) => go(element.dataset.area),
   "close-menu": () => { state.menu = null; render(); },
   "site-menu": () => { state.menu = state.menu === "sites" ? null : "sites"; render(); },
@@ -335,6 +337,7 @@ export function onField(element) {
   const { dataset } = element;
   if (dataset.search) { state.search[dataset.search] = element.value; remember(); return false; }
   if (dataset.searchCheck) { state.search[dataset.searchCheck] = element.checked; remember(); return false; }
+  if (dataset.analyser) return analyserField(element);
   if (element.id === "point-filter") { state.pointFilter = element.value; return true; }
   if (element.id === "write-value" && state.asking) { state.asking.value = element.value; return false; }
   if (element.id === "add-key") { state.addKey = element.value; return false; }

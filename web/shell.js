@@ -12,6 +12,7 @@ const AREA_ICONS = {
   watch: ICON('<path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="2.5"/>'),
   recording: ICON('<path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/>'),
   changed: ICON('<path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12 7l5 5"/>'),
+  analyser: ICON('<path d="M2 12h3.5l2.5-6 4 12 3-9 2 3h5"/>'),
 };
 const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/>');
 const SLIDERS_ICON = ICON('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>');
@@ -23,6 +24,7 @@ function badge(state, area) {
   if (area === "watch") return `<span class="n">${state.watch.length || ""}</span>`;
   if (area === "recording") return `<span class="n">${state.recording.running ? "●" : ""}</span>`;
   if (area === "changed") return `<span class="n warn">${state.journal.standing || ""}</span>`;
+  if (area === "analyser") return `<span class="n">${state.analyser.heard?.running ? "●" : ""}</span>`;
   return "";
 }
 
@@ -86,11 +88,12 @@ export function statusHtml(state) {
   const changed = state.journal.standing
     ? `<button type="button" class="chip warn" data-act="go" data-area="changed">${t("chip.changed", { n: state.journal.standing })}</button>` : "";
   const recording = state.recording.running ? `<button type="button" class="chip accent" data-act="go" data-area="recording">● ${t("chip.recording")}</button>` : "";
+  const analyser = state.analyser.heard?.running ? `<button type="button" class="chip accent" data-act="go" data-area="analyser">● ${t("chip.analyser", { port: h(state.analyser.heard.port) })}</button>` : "";
   const capture = state.capture.running ? `<button type="button" class="chip accent" data-act="go" data-area="settings">● ${t("chip.capture", { n: state.capture.frames ?? 0 })}</button>` : "";
   const unlocked = state.unlocked ? `<button type="button" class="chip warn" data-act="lock">${t("chip.unlocked")}</button>` : "";
   return `<span class="state"><span class="dot ${busy ? "busy" : "on"}"></span>${h(activity(state))}</span>
     ${!state.scan.finished ? `<button type="button" class="quiet" data-act="stop-search">${t("stop")}</button>` : ""}
-    <span class="chips">${unlocked}${changed}${recording}${capture}</span>`;
+    <span class="chips">${unlocked}${changed}${recording}${analyser}${capture}</span>`;
 }
 
 const field = (id, label, input, hint = "") => `<dt><label for="${id}">${label}</label></dt><dd>${input}</dd>${hint ? `<dd class="hint">${hint}</dd>` : ""}`;

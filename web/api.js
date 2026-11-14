@@ -74,6 +74,13 @@ export const api = {
   recordStart: (interval) => call("POST", "/api/recording/start", { interval }),
   recordStop: () => call("POST", "/api/recording/stop"),
   recordClear: () => call("POST", "/api/recording/clear"),
+  analyser: (exchanges, frames) => {
+    const after = [exchanges === undefined ? "" : `exchanges=${exchanges}`, frames === undefined ? "" : `frames=${frames}`].filter(Boolean).join("&");
+    return call("GET", after ? `/api/analyser?${after}` : "/api/analyser");
+  },
+  analyserStart: (request) => call("POST", "/api/analyser/start", request),
+  analyserStop: () => call("POST", "/api/analyser/stop"),
+  analyserClear: () => call("POST", "/api/analyser/clear"),
   capture: () => call("GET", "/api/capture"),
   captureStart: () => call("POST", "/api/capture/start"),
   captureStop: () => call("POST", "/api/capture/stop"),

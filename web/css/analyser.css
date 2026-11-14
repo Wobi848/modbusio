@@ -1,0 +1,28 @@
+/* The bus analyser (web/analyser.js): start card with the wiring, units and exchanges. */
+
+.analyser-page { flex: 0 0 auto; }
+.analyser-page .cards { grid-template-columns: minmax(0, 720px); }
+.analyser-start .wiring { margin: 8px 0; padding: 10px 12px; overflow-x: auto; border-radius: 8px; background: var(--sunken); font-family: var(--mono); font-size: 12px; line-height: 1.4; }
+.analyser-start .start-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 12px; align-items: end; margin: 8px 0; }
+.analyser-start .port-field { display: flex; align-items: end; gap: 8px; grid-column: 1 / -1; }
+.analyser-start .port-field .form-field { flex: 1 1 auto; max-width: 360px; }
+
+.row.aunits { grid-template-columns: minmax(110px, 1.4fr) 84px 92px minmax(140px, 1.6fr) 84px 64px; min-height: 32px; }
+.row.aexch { grid-template-columns: 104px 44px minmax(120px, 1.2fr) minmax(140px, 2fr) 60px; min-height: 30px; }
+.row.aunits .num, .row.aexch .num { text-align: right; }
+.pen { color: var(--warn); font-weight: 700; }
+.hint.pad { padding: 12px 20px; }
+
+.bytes { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0 10px; font-size: 12.5px; }
+.bytes span { display: inline-flex; flex-direction: column; align-items: center; max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+.bytes small { font-family: system-ui, sans-serif; font-size: 10.5px; color: var(--muted); }
+.detail .values { overflow-wrap: anywhere; font-size: 12.5px; }
+
+@media (max-width: 999px) {
+  .row.aunits { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .row.aunits > :nth-child(2), .row.aunits > :nth-child(3), .row.aunits > :nth-child(6) { display: none; }
+  .row.aexch { grid-template-columns: 34px minmax(0, 1fr) auto; row-gap: 2px; padding-block: 5px; }
+  .row.aexch > :nth-child(1), .row.aexch > :nth-child(5) { display: none; }
+  .row.aexch > :nth-child(4) { grid-column: 2 / -1; }
+}
+.row.aunits > .chips { display: flex; flex-wrap: wrap; gap: 4px; }
