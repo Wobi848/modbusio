@@ -145,6 +145,7 @@ export default {
     "an.startTitle": "Ascoltare una linea senza trasmettere",
     "an.startLead": "Collegare un adattatore USB RS-485 in parallelo alla linea. modbusio legge soltanto e mostra cosa chiede il master dell'impianto e cosa rispondono i dispositivi.",
     "an.wiringLabel": "Cablaggio: l'adattatore in parallelo su A, B e GND, terminazione e polarizzazione disattivate",
+    "an.howToConnect": "Come collegare",
     "an.swapped": "Niente di leggibile? A e B sono spesso invertiti: i produttori li etichettano in modo diverso.",
     "an.heldHint": "Durante l'ascolto modbusio stesso non trasmette nulla su questa porta.",
     "an.findSpeed": "Trovare ascoltando",

@@ -134,8 +134,7 @@ export function wiringSvg() {
 /** Before anything was heard: how to connect, the fields, opening a capture. */
 function startCard(state) {
   return `<div class="page analyser-page"><div class="cards"><section class="card analyser-start"><h2>${t("an.startTitle")}</h2><p>${t("an.startLead")}</p>
-    ${wiringSvg()}
-    <p class="hint">${t("an.swapped")}</p>
+    <details class="wiring-fold"><summary>${t("an.howToConnect")}</summary>${wiringSvg()}<p class="hint">${t("an.swapped")}</p></details>
     <div class="start-fields">${startFields(state)}</div>
     <p class="hint">${t("an.heldHint")}</p>
     <div class="actions"><button type="button" class="quiet" data-act="analyser-open-file">${t("an.openFile")}</button></div>
