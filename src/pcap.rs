@@ -10,7 +10,7 @@ use std::time::UNIX_EPOCH;
 use crate::capture::{Direction, Frame};
 
 const LINKTYPE_IPV4: u16 = 228;
-const LINKTYPE_USER0: u16 = 147;
+pub(crate) const LINKTYPE_USER0: u16 = 147;
 const INTERFACE_TCP: u32 = 0;
 const INTERFACE_RTU: u32 = 1;
 
