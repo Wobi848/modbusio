@@ -12,7 +12,10 @@ export default {
     await page.waitForTimeout(2500);
     assert.ok(await port.evaluate((element) => element.isConnected), "the port's list was drawn anew");
     await page.selectOption("#analyser-port", trunk);
+    // finding the speed by listening finds the frame too: the frame says so instead of a choice
+    assert.equal(await page.textContent("#analyser-frame"), "found by listening too");
     await page.selectOption("#analyser-speed", "19200");
+    assert.equal(await page.inputValue("#analyser-frame"), "8E1");
     assert.equal(await page.textContent("#next"), "Start listening");
     await page.click("#next");
     await page.waitForSelector(".status .chip:has-text('Listening on')");
