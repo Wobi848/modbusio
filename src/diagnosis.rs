@@ -42,6 +42,47 @@ pub enum Note {
     NoHoles,
     /// A device wants 06 for single registers.
     SingleWrites,
+    /// Bus analyser: a unit leaves some of the master's requests unanswered.
+    MissesAnswers {
+        unit: u8,
+        missing: u64,
+        requests: u64,
+        percent: u32,
+    },
+    /// Bus analyser: … and nearly always right after a request to another unit.
+    MissesAfter {
+        unit: u8,
+        missing: u64,
+        requests: u64,
+        percent: u32,
+        after: u8,
+    },
+    /// Bus analyser: the master asks a unit that never answers.
+    NeverAnswers { unit: u8, requests: u64 },
+    /// Bus analyser: the same request is refused with the same exception every time.
+    RefusedEveryTime {
+        unit: u8,
+        area: String,
+        first: u16,
+        last: u16,
+        exception: String,
+    },
+    /// Bus analyser: a unit answers slowly at times.
+    SlowAnswers {
+        unit: u8,
+        max_ms: u64,
+        median_ms: u64,
+    },
+    /// Bus analyser: damaged answers come from one unit only.
+    DamagedFromOne { unit: u8, count: u64 },
+    /// Bus analyser: the master asks, nothing answers at all.
+    MasterUnanswered { line: String },
+    /// Bus analyser: answers without their request: another master on the trunk.
+    TwoMasters { line: String, count: u64 },
+    /// Bus analyser: the master writes to unit 0, which every unit takes and none answers.
+    Broadcasts { count: u64 },
+    /// Bus analyser: the trunk carries bytes most of the time.
+    BusBusy { percent: u32 },
 }
 
 impl fmt::Display for Note {
@@ -96,6 +137,67 @@ impl fmt::Display for Note {
             Note::SingleWrites => {
                 f.write_str("The device wants function 06 for single registers; writing so.")
             }
+            Note::MissesAnswers {
+                unit,
+                missing,
+                requests,
+                percent,
+            } => write!(
+                f,
+                "Unit {unit} does not answer {missing} of {requests} requests ({percent} %): check its wiring and power, and whether the master waits long enough."
+            ),
+            Note::MissesAfter {
+                unit,
+                missing,
+                requests,
+                percent,
+                after,
+            } => write!(
+                f,
+                "Unit {unit} does not answer {missing} of {requests} requests ({percent} %), nearly always right after a request to unit {after}: unit {unit} may need more time after its neighbour."
+            ),
+            Note::NeverAnswers { unit, requests } => write!(
+                f,
+                "The master asks unit {unit}, which never answered ({requests} requests): a device missing, switched off or at another address."
+            ),
+            Note::RefusedEveryTime {
+                unit,
+                area,
+                first,
+                last,
+                exception,
+            } => write!(
+                f,
+                "The master reads {area} {first}–{last} of unit {unit}; the device answers exception {exception} every time: the master's register list does not match the device."
+            ),
+            Note::SlowAnswers {
+                unit,
+                max_ms,
+                median_ms,
+            } => write!(
+                f,
+                "Unit {unit} answers after up to {max_ms} ms (usually {median_ms} ms): a master waiting less counts these as failures."
+            ),
+            Note::DamagedFromOne { unit, count } => write!(
+                f,
+                "{count} answers of unit {unit} arrived damaged, the master's requests did not: check the wiring at unit {unit}."
+            ),
+            Note::MasterUnanswered { line } => write!(
+                f,
+                "The master asks on {line}, but no unit answers: the master's speed or parity, or the trunk behind this point."
+            ),
+            Note::TwoMasters { line, count } => write!(
+                f,
+                "{count} answers on {line} came without their request: a second master seems to share this trunk, and their requests collide."
+            ),
+            Note::Broadcasts { count } => write!(
+                f,
+                "The master wrote {count} times to all units at once (unit 0): every unit takes it, none answers."
+            ),
+            Note::BusBusy { percent } => write!(
+                f,
+                "The trunk is busy {percent} % of the time: polling slower or a higher speed leaves room."
+            ),
         }
     }
 }

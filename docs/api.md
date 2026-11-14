@@ -190,9 +190,9 @@ state below. `409` while a search runs or the analyser listens already; `502` wh
 heard at any setting or the port cannot be opened.
 
 `GET /api/analyser?frames=N&exchanges=M` → `{running, ended, port, settings, started_ms, elapsed_ms,
-bus: {frames, damaged, bytes, broadcasts}, load, units, exchanges, frames}`, or `{running: false}`
+bus: {frames, damaged, bytes, broadcasts}, load, notes, units, exchanges, frames}`, or `{running: false}`
 before the first start. `ended` says why listening ended: `stopped`, or the port's failure.
-`started_ms` is in milliseconds since 1970, `load` the share of time the trunk carried bytes (0 to 1).
+`notes` are the analysis in words, as the search's (`{code, …, text}`). `started_ms` is in milliseconds since 1970, `load` the share of time the trunk carried bytes (0 to 1).
 `frames` and `exchanges` hold what came after the numbers given, at most 500 of the newest.
 
 - `units`: `[{unit, requests, answers, no_answer, damaged, exceptions: {code: count}, writes,

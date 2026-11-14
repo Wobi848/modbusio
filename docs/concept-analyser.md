@@ -1,7 +1,9 @@
 # Concept: bus analyser for Modbus RTU
 
-Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 5 of the building order are
-built (branches `concept-analyser`, `analyser-server`, `analyser-page`, `analyser-views`). In the units table, no
+Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 6 of the building order are
+built (branches `concept-analyser`, `analyser-server`, `analyser-page`, `analyser-views`,
+`analyser-notes`). A foreign answer while a request waits (a late one, or a second master's)
+counts as an answer without request and leaves the wait standing. In the units table, no
 answer, damaged answers and exceptions share one column *Problems*, so damaged answers show too. Mockup:
 [mockup/analyser.html](mockup/analyser.html).
 

@@ -9,7 +9,7 @@ use tokio::io::{AsyncWrite, AsyncWriteExt};
 pub struct Options {
     /// No faults: every unit answers in time, nothing damaged.
     pub clean: bool,
-    /// Another master asks unit 1 in between.
+    /// Another master asks unit 1 while unit 5's answer is due.
     pub second_master: bool,
     pub cycle: Duration,
 }
@@ -186,14 +186,13 @@ fn cycle_steps(cycle: u32, options: &Options) -> Vec<Step> {
         });
     }
     if options.second_master {
-        steps.insert(
-            1,
-            Step {
-                request: read(1, 0x03, 40, 2),
-                answer: Some(registers(1, 0x03, &[0, 1])),
-                wait: millis(19),
-            },
-        );
+        // another master asks unit 1 while the room controller's answer is due: both requests
+        // pass, then both answers, as when two masters collide on one trunk
+        let room = &mut steps[1];
+        room.request.extend(read(1, 0x03, 40, 2));
+        if let Some(answer) = room.answer.as_mut() {
+            answer.extend(registers(1, 0x03, &[0, 1]));
+        }
     }
     steps
 }

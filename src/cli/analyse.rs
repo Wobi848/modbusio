@@ -68,6 +68,14 @@ pub async fn analyse(
     print_new_of(&analysis, &mut printed);
     println!();
     print_units(&analysis);
+    let elapsed = started.elapsed().as_micros().max(1) as f64;
+    let load = (analysis.bus.bytes as f64
+        * modbusio::protocol::rtu::character_micros(settings.baud) as f64
+        / elapsed)
+        .min(1.0);
+    for note in modbusio::analyser::notes::notes(&analysis, port, load) {
+        println!("{note}");
+    }
     if let Some(path) = pcap {
         let frames: Vec<_> = analysis
             .frames()

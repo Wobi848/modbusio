@@ -149,6 +149,11 @@ impl Pairer {
             if answers(&waiting.frame, frame) {
                 return vec![answered(waiting, frame)];
             }
+            // another unit's answer (a late one, or a second master's) does not end the wait
+            if frame.as_answer && !frame.as_request {
+                self.waiting = Some(waiting);
+                return self.request_or_answer(frame);
+            }
             let mut done = vec![finished(waiting, Outcome::NoAnswer)];
             done.extend(self.request_or_answer(frame));
             return done;
@@ -361,6 +366,25 @@ mod tests {
         let exchanges = play(&[registers(1, &[3]), read(1, 0, 1), registers(1, &[3])]);
         assert_eq!(exchanges[0].outcome, Outcome::AnswerOnly);
         assert!(matches!(exchanges[1].outcome, Outcome::Registers { .. }));
+    }
+
+    #[test]
+    fn a_late_answer_of_another_unit_does_not_end_the_wait() {
+        let exchanges = play(&[
+            read(12, 100, 2),
+            read(7, 0, 1),
+            registers(12, &[1, 2]),
+            registers(7, &[3]),
+        ]);
+        assert_eq!(exchanges[0].outcome, Outcome::NoAnswer);
+        assert_eq!(
+            (exchanges[1].unit, &exchanges[1].outcome),
+            (12, &Outcome::AnswerOnly)
+        );
+        assert_eq!(
+            (exchanges[2].unit, &exchanges[2].outcome),
+            (7, &Outcome::Registers { values: vec![3] })
+        );
     }
 
     #[test]

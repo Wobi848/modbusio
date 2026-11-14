@@ -3,7 +3,7 @@
 // analyser-actions.js.
 
 import { h } from "./html.js";
-import { codeText, localNumber, t } from "./i18n.js";
+import { codeText, localNumber, noteText, t } from "./i18n.js";
 import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
@@ -15,6 +15,8 @@ export const KEPT = 2000;
 /** Rows drawn at most: the newest. */
 const SHOWN = 300;
 const VALUES_SHOWN = 6;
+/** Notes that inform rather than warn. */
+const INFO_NOTES = ["slow_answers", "broadcasts", "bus_busy"];
 
 /** The page's lists with what the server answered after them; a new analysis replaces them. */
 export function takeHeard(held, answer) {
@@ -220,7 +222,10 @@ function heardHtml(state) {
   const views = [["units", t("an.units", { n: analyser.heard.units.length })], ["exchanges", t("an.exchanges")], ["registers", t("an.registers")], ["frames", t("an.frames")]].map(([view, label]) =>
     `<button type="button" data-act="analyser-view" data-view="${view}" aria-pressed="${analyser.view === view}">${label}</button>`).join("");
   const ended = !analyser.heard.running && analyser.heard.ended !== "stopped"
-    ? `<div class="strips"><div class="strip err">${t("an.endedBy", { reason: h(analyser.heard.ended) })}</div></div>` : "";
+    ? `<div class="strip err">${t("an.endedBy", { reason: h(analyser.heard.ended) })}</div>` : "";
+  const notes = (analyser.heard.notes ?? []).map((note) =>
+    `<div class="strip ${INFO_NOTES.includes(note.code) ? "info" : "warn"}">${h(noteText(note))}</div>`).join("");
+  const strips = ended || notes ? `<div class="strips analyser-notes">${ended}${notes}</div>` : "";
   const toolbar = `<div class="toolbar"><span class="seg" role="group" aria-label="${t("an.views")}">${views}</span>
     <div class="end">${analyser.heard.running ? `<button type="button" class="quiet" data-act="analyser-pause">${analyser.paused ? t("an.resume") : t("an.pause")}</button>` : ""}
     <button type="button" class="quiet" data-act="analyser-clear">${t("an.clear")}</button>
@@ -228,7 +233,7 @@ function heardHtml(state) {
     <a class="button quiet" href="/api/analyser.pcapng" download>${t("an.savePcap")}</a></div></div>`;
   const bodies = { units: unitsHtml, exchanges: exchangesHtml, registers: registersHtml, frames: framesHtml };
   const body = (bodies[analyser.view] ?? unitsHtml)(state);
-  return `<div class="split"><section class="listwrap">${ended}${toolbar}${body}</section>${detailHtml(state)}</div>`;
+  return `<div class="split"><section class="listwrap">${strips}${toolbar}${body}</section>${detailHtml(state)}</div>`;
 }
 
 export function viewAnalyser(state) {
