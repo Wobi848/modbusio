@@ -4,6 +4,7 @@
 import { h } from "./html.js";
 import { noteText, t } from "./i18n.js";
 import { askHtml } from "./asking.js";
+import { resizeHandle } from "./panels.js";
 
 const ICON = (path) => `<svg class="nav-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 const AREA_ICONS = {
@@ -65,7 +66,8 @@ export function sideHtml(state) {
     </section></div>
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}</nav>
-    <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${state.areas.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>`;
+    <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${state.areas.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>
+    ${resizeHandle("side")}`;
 }
 
 /** Title, one sentence and the one next step: every page says where you are. */

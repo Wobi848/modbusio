@@ -220,6 +220,7 @@ export default {
     "an.draftSource": "bus analyser: the registers its master used",
     "an.leadStopped": "Stopped · {port} · {settings} · {frames} frames heard; listen again with the fields below",
     "an.frameByListening": "found by listening too",
+    "panel.resize": "Drag to change the width, double-click for the automatic width",
     "search.lineTools": "Check the line",
     "search.finding": "Trying speeds and frames: {done} of {total} settings …",
     "search.foundNext": "Speed and frame are set to {settings}: Search now asks every unit there.",

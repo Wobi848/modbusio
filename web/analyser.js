@@ -3,6 +3,7 @@
 // analyser-actions.js.
 
 import { h } from "./html.js";
+import { detailBorder } from "./panels.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
 import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
@@ -277,7 +278,7 @@ function heardHtml(state) {
     <a class="button quiet" href="/api/analyser.pcapng" download>${t("an.savePcap")}</a></div></div>`;
   const bodies = { units: unitsHtml, exchanges: exchangesHtml, registers: registersHtml, frames: framesHtml };
   const body = (bodies[analyser.view] ?? unitsHtml)(state);
-  return `<div class="split"><section class="listwrap">${strips}${toolbar}${body}</section>${detailHtml(state)}</div>`;
+  return `<div class="split"><section class="listwrap">${detailBorder()}${strips}${toolbar}${body}</section>${detailHtml(state)}</div>`;
 }
 
 export function viewAnalyser(state) {
