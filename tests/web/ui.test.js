@@ -15,6 +15,8 @@ const { heldUntil, sameRecording, withNewSamples } = await import("../../web/rec
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
 const { listenedHtml } = await import("../../web/shell.js");
+const { askedText, bytesHtml, filteredExchanges, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
+const { startRequest } = await import("../../web/analyser-actions.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -35,7 +37,7 @@ test("every language has every key, note, error and code of English, with the sa
 test("every key the interface uses exists in English", () => {
   const used = new Set(sources.flatMap((source) => [...source.matchAll(/\bt\("([^"]+)"/g)].map((match) => match[1])));
   for (const key of used) assert.ok(key in LANGUAGE_FILES.en.texts, `${key} is used but not in en.js`);
-  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "phase.hosts", "phase.units", "phase.settings", "phase.identify",
+  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "tab.analyser", "phase.hosts", "phase.units", "phase.settings", "phase.identify",
     "area.holding_register", "area.input_register", "area.coil", "area.discrete_input", "conv.zero_based", "conv.one_based", "conv.reference",
     "search.lead.tcp", "search.lead.gateway", "search.lead.serial"]) {
     assert.ok(prefix in LANGUAGE_FILES.en.texts, `${prefix} is built in code but not in en.js`);
@@ -240,4 +242,55 @@ test("listening names the unit IDs that talked on the line", () => {
   const busy = listenedHtml({ listened: heard([trial("9600 8N1", 0, []), trial("9600 8E1", 6, [12, 2, 5])], "9600 8E1") });
   assert.match(busy, /Unit IDs in the traffic heard: 2, 5, 12\./);
   assert.doesNotMatch(listenedHtml({ listened: heard([trial("9600 8E1", 0, [])], null) }), /Unit IDs/);
+});
+
+const exchange = (number, unit, outcome, asked = { area: "holding_register", address: 100, count: 2, write: false }) =>
+  ({ number, at: number * 1000, unit, function: 3, asked, outcome, answer_micros: 20000, request: "", answer: "" });
+
+test("the analyser's lists take what is new and start again for a new analysis", () => {
+  const first = takeHeard(null, { running: true, started_ms: 1, units: [], exchanges: [exchange(0, 1, { kind: "written" })], frames: [] });
+  const more = takeHeard(first, { running: true, started_ms: 1, units: [], exchanges: [exchange(1, 1, { kind: "written" })], frames: [] });
+  assert.deepEqual(more.exchanges.map((item) => item.number), [0, 1]);
+  const other = takeHeard(more, { running: true, started_ms: 2, units: [], exchanges: [exchange(5, 1, { kind: "written" })], frames: [] });
+  assert.deepEqual(other.exchanges.map((item) => item.number), [5]);
+  const many = Array.from({ length: KEPT + 10 }, (_, number) => exchange(number, 1, { kind: "written" }));
+  assert.equal(takeHeard(null, { running: true, started_ms: 3, units: [], exchanges: many, frames: [] }).exchanges.length, KEPT);
+  assert.equal(takeHeard(null, { running: false }), null);
+});
+
+test("an exchange is said in words, in German too", () => {
+  setLanguage("en");
+  assert.equal(askedText(exchange(0, 1, { kind: "written" })), "HR 100, 2 values");
+  assert.equal(askedText({ ...exchange(0, 1, {}), asked: { area: "coil", address: 3, count: 1, write: true } }), "write coil 3");
+  assert.equal(askedText({ ...exchange(0, 1, {}), asked: null, function: 0x41 }), "function 41");
+  assert.equal(resultText(exchange(0, 1, { kind: "registers", values: [1, 2, 3, 4, 5, 6, 7] })), "1 2 3 4 5 6 …");
+  assert.equal(resultText(exchange(0, 1, { kind: "exception", code: 2 })), "exception 02: no data at this address");
+  setLanguage("de");
+  assert.equal(askedText(exchange(0, 1, {})), "HR 100, 2 Werte");
+  assert.equal(resultText(exchange(0, 1, { kind: "no_answer" })), "keine Antwort");
+  assert.match(resultText(exchange(0, 1, { kind: "exception", code: 11 })), /^Ausnahme 0B: /);
+  setLanguage("en");
+});
+
+test("the exchanges are filtered by unit, problems and writes, newest first", () => {
+  const write = { area: "holding_register", address: 1, count: 1, write: true };
+  const heard = { exchanges: [exchange(0, 1, { kind: "registers", values: [1] }), exchange(1, 12, { kind: "no_answer" }), exchange(2, 12, { kind: "written" }, write)] };
+  const numbers = (filters) => filteredExchanges({ heard, unitFilter: "", problemsOnly: false, writesOnly: false, ...filters }).map((item) => item.number);
+  assert.deepEqual(numbers({}), [2, 1, 0]);
+  assert.deepEqual(numbers({ unitFilter: "12" }), [2, 1]);
+  assert.deepEqual(numbers({ problemsOnly: true }), [1]);
+  assert.deepEqual(numbers({ writesOnly: true }), [2]);
+});
+
+test("the analyser starts with a port, and with speed and frame unless it finds them by listening", () => {
+  assert.ok(startRequest({ port: "", speed: "listen", frame: "8E1" }).error);
+  assert.deepEqual(startRequest({ port: "COM3", speed: "listen", frame: "8E1" }).body, { port: "COM3" });
+  assert.deepEqual(startRequest({ port: "COM3", speed: "19200", frame: "8N1" }).body, { port: "COM3", baud: 19200, frame: "8N1" });
+});
+
+test("a frame's bytes are shown with unit, function, data and CRC", () => {
+  const html = bytesHtml("0C 03 00 64 00 02 84 C9");
+  assert.match(html, /0C<small>Unit<\/small>/);
+  assert.match(html, /00 64 00 02<small>Data<\/small>/);
+  assert.match(html, /84 C9<small>CRC<\/small>/);
 });
