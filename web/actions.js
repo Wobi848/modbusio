@@ -5,6 +5,7 @@ import { api } from "./api.js";
 import { codeText, setLanguage, t } from "./i18n.js";
 import { attempt, deviceName, go, pickFile, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
+import { portOf } from "./workspace.js";
 import { analyserActions, analyserField } from "./analyser-actions.js";
 import { refreshSession } from "./session.js";
 import { setUpdateCheck } from "./update.js";
@@ -18,7 +19,7 @@ export async function loadSite() {
   state.sites = sites;
   state.profiles = profiles;
   if (state.selected && !site.devices.some((device) => device.key === state.selected)) state.selected = null;
-  if (state.selectedLine && !site.devices.some((device) => device.line === state.selectedLine)) state.selectedLine = null;
+  if (state.selectedLine && !site.devices.some((device) => portOf(device) === state.selectedLine)) state.selectedLine = null;
 }
 
 export async function loadJournal() {
@@ -246,10 +247,17 @@ export const actions = {
     remember();
     render();
   },
+  "toggle-line": (element) => {
+    state.collapsed[element.dataset.line] = !state.collapsed[element.dataset.line];
+    render();
+  },
   "ask-remove-line": () => { state.asking = { kind: "remove-line" }; render(); },
   "remove-line": async () => {
     const line = state.selectedLine;
-    const site = await attempt(() => api.removeLine(line));
+    // every setting the devices on this wire were found at is a line of its own on the server
+    const settings = [...new Set(state.site.devices.filter((device) => portOf(device) === line).map((device) => device.line))];
+    let site = null;
+    for (const each of settings) site = (await attempt(() => api.removeLine(each))) ?? site;
     if (!site) return;
     state.site = site;
     state.selectedLine = null;

@@ -20,7 +20,7 @@ export default {
     "set.renamed": "Installation nommée {name}",
     "pts.readAt": "lu à {time}",
     "chip.changed": "{n} modifiés par vous", "chip.recording": "Enregistrement", "chip.capture": "Capture : {n} trames", "chip.unlocked": "Écriture déverrouillée",
-    "tree.label": "Installation", "ws.lead": "{n} appareils dans cette installation. En choisir un pour voir ses points.",
+    "tree.label": "Installation", "tree.otherSettings": "réglé autrement que la plupart des appareils sur ce port", "tree.open": "Déplier", "tree.close": "Replier", "ws.lead": "{n} appareils dans cette installation. En choisir un pour voir ses points.",
     "ws.leadProfile": "profil {profile}, {n} points", "ws.leadProfileOne": "profil {profile}, 1 point", "ws.leadEmpty": "Pas encore d'appareils : les chercher ou en ajouter un à la main.",
     "ws.leadOne": "1 appareil dans cette installation. Le choisir pour voir ses points.", "dev.details": "Appareil …",
     "col.device": "Appareil", "col.line": "Ligne", "col.unit": "Unité", "col.profile": "Profil", "col.vendor": "Fabricant",

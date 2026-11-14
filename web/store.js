@@ -29,6 +29,8 @@ export const state = {
   selected: null,
   /** A line chosen in the tree instead of a device: the list shows its devices. */
   selectedLine: null,
+  /** Wires folded shut in the tree, by their name. */
+  collapsed: {},
   readings: {},
   pointFilter: "",
   selectedPoint: null,
