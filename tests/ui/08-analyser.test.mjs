@@ -40,6 +40,24 @@ export default {
     await page.click(".row.aexch:not(.head) >> nth=0");
     await page.waitForSelector(".detail.open .bytes");
 
+    // the master's write of the drive's set frequency, with the value it read before
+    await page.uncheck("text=only problems");
+    await page.check("text=only writes");
+    await page.waitForSelector(".row.aexch:has-text('write HR 1')", { timeout: 20000 });
+
+    // what the master reads at the meter, register by register, and a register's changes
+    await page.click("[data-act=analyser-view][data-view=registers]");
+    await page.selectOption("#analyser-registers-unit", "1");
+    await page.waitForSelector(".row.aregs[data-place='holding_register:1']");
+    await headsOverValues(page, "aregs");
+    await page.click(".row.aregs[data-place='holding_register:1']");
+    await page.waitForSelector(".detail.open .facts.pairs");
+    await page.waitForSelector(".detail.open .chart path[d^='M']", { timeout: 10000 });
+
+    await page.click("[data-act=analyser-view][data-view=frames]");
+    await page.waitForSelector(".row.aframes:has-text('01 03 00 00 00 08 44 0C')");
+    await headsOverValues(page, "aframes");
+
     // the areas count up: the analyser is 7, the settings 8
     await page.keyboard.press("8");
     await page.waitForSelector("h1:has-text('Settings')");

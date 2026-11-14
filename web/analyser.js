@@ -3,7 +3,8 @@
 // analyser-actions.js.
 
 import { h } from "./html.js";
-import { codeText, currentLocale, localNumber, t } from "./i18n.js";
+import { codeText, localNumber, t } from "./i18n.js";
+import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
 
@@ -49,7 +50,11 @@ export function resultText(exchange) {
       return outcome.values.length > VALUES_SHOWN ? `${shown} …` : shown;
     }
     case "bits": return outcome.values.map((on) => (on ? "1" : "0")).join("");
-    case "written": return t("an.written");
+    case "written": {
+      const after = exchange.asked?.values?.join(" ");
+      if (!after) return t("an.written");
+      return exchange.before ? t("an.writtenFrom", { before: exchange.before.join(" "), after }) : t("an.writtenValues", { after });
+    }
     case "exception": {
       const code = outcome.code.toString(16).padStart(2, "0");
       return t("an.exception", { code: code.toUpperCase(), text: codeText(`exception_${code}`) });
@@ -76,11 +81,6 @@ export function filteredExchanges(analyser) {
 
 const millis = (value) => localNumber(String(Math.round(value)));
 
-/** Wall-clock time of something heard `at` microseconds after the start, to the millisecond. */
-export function heardTime(heard, at) {
-  const time = new Date(heard.started_ms + at / 1000);
-  return `${time.toLocaleTimeString(currentLocale(), { hour12: false })}.${String(time.getMilliseconds()).padStart(3, "0")}`;
-}
 
 function startCard(state) {
   const analyser = state.analyser;
@@ -177,7 +177,9 @@ function unitDetail(state, number) {
       <dt>${t("an.exceptions")}</dt><dd>${exceptions}</dd><dt>${t("an.writes")}</dt><dd>${unit.writes}</dd>
       <dt>${t("an.answerTime")}</dt><dd>${times(unit.answer_ms, 1, 0)}</dd><dt>${t("an.cycle")}</dt><dd>${times(unit.cycle_ms, 1000, 1)}</dd>
       ${unit.answer_only ? `<dt>${t("an.answerOnlyCount")}</dt><dd>${unit.answer_only}</dd>` : ""}</dl>
-    <div class="actions"><button type="button" class="quiet" data-act="analyser-unit-exchanges" data-unit="${unit.unit}">${t("an.showExchanges")}</button>${add}</div>`;
+    <div class="actions"><button type="button" class="quiet" data-act="analyser-unit-exchanges" data-unit="${unit.unit}">${t("an.showExchanges")}</button>
+      <button type="button" class="quiet" data-act="analyser-unit-registers" data-unit="${unit.unit}">${t("an.showRegisters")}</button>${add}</div>
+    <h3>${t("an.answerTime")}</h3>${answerChart(state, unit.unit) || `<p class="hint">–</p>`}`;
 }
 
 function exchangeDetail(state, number) {
@@ -197,23 +199,35 @@ function exchangeDetail(state, number) {
 }
 
 function detailHtml(state) {
-  const chosen = state.analyser.chosen;
-  const inner = !chosen ? "" : chosen[0] === "u" ? unitDetail(state, Number(chosen.slice(1))) : exchangeDetail(state, Number(chosen.slice(1)));
+  const analyser = state.analyser;
+  const chosen = analyser.chosen;
+  let inner = "";
+  if (analyser.view === "registers") inner = registerDetail(state);
+  else if (chosen) inner = chosen[0] === "u" ? unitDetail(state, Number(chosen.slice(1))) : exchangeDetail(state, Number(chosen.slice(1)));
   if (!inner) return `<aside class="detail"><p class="hint">${t("an.choose")}</p></aside>`;
-  return `<aside class="detail open" data-keep="analyser-detail"><button type="button" class="quiet back" data-act="analyser-choose" data-chosen="">← ${t("back")}</button>${inner}</aside>`;
+  return `<aside class="detail open" data-keep="analyser-detail"><button type="button" class="quiet back" data-act="analyser-back">← ${t("back")}</button>${inner}</aside>`;
+}
+
+/** CSV of the table in view (the exchanges for the frames), and all tables as one Excel file. */
+function exportLinks(view) {
+  const offset = -new Date().getTimezoneOffset();
+  const table = view === "frames" ? "exchanges" : view;
+  return `<a class="button quiet" href="/api/analyser.csv?table=${table}&offset=${offset}" download>CSV</a><a class="button quiet" href="/api/analyser.xlsx?offset=${offset}" download>Excel</a>`;
 }
 
 function heardHtml(state) {
   const analyser = state.analyser;
-  const views = [["units", t("an.units", { n: analyser.heard.units.length })], ["exchanges", t("an.exchanges")]].map(([view, label]) =>
+  const views = [["units", t("an.units", { n: analyser.heard.units.length })], ["exchanges", t("an.exchanges")], ["registers", t("an.registers")], ["frames", t("an.frames")]].map(([view, label]) =>
     `<button type="button" data-act="analyser-view" data-view="${view}" aria-pressed="${analyser.view === view}">${label}</button>`).join("");
   const ended = !analyser.heard.running && analyser.heard.ended !== "stopped"
     ? `<div class="strips"><div class="strip err">${t("an.endedBy", { reason: h(analyser.heard.ended) })}</div></div>` : "";
   const toolbar = `<div class="toolbar"><span class="seg" role="group" aria-label="${t("an.views")}">${views}</span>
     <div class="end">${analyser.heard.running ? `<button type="button" class="quiet" data-act="analyser-pause">${analyser.paused ? t("an.resume") : t("an.pause")}</button>` : ""}
     <button type="button" class="quiet" data-act="analyser-clear">${t("an.clear")}</button>
+    ${exportLinks(analyser.view)}
     <a class="button quiet" href="/api/analyser.pcapng" download>${t("an.savePcap")}</a></div></div>`;
-  const body = analyser.view === "exchanges" ? exchangesHtml(state) : unitsHtml(state);
+  const bodies = { units: unitsHtml, exchanges: exchangesHtml, registers: registersHtml, frames: framesHtml };
+  const body = (bodies[analyser.view] ?? unitsHtml)(state);
   return `<div class="split"><section class="listwrap">${ended}${toolbar}${body}</section>${detailHtml(state)}</div>`;
 }
 

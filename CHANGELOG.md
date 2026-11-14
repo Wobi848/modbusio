@@ -32,7 +32,10 @@ First version.
   trunk in parallel: each request of the trunk's master paired with its answer, answer times, poll
   cycle, no answers, damaged answers and exceptions per unit, the frames for Wireshark. While it
   listens, modbusio sends nothing on that port. A page of its own (*Bus analyser*) with the units
-  and the exchanges, filters, the bytes of each frame, and units added to the site; on the
+  and the exchanges, filters, the bytes of each frame, and units added to the site; the registers
+  the master uses with every reading, the profile's points and their changes as a chart; the
+  master's writes with the value before them; the raw frames; answer times as a chart; units,
+  exchanges and registers as CSV and Excel; on the
   command line `analyse`. The keys count up: the bus analyser is `7`, *Settings* now `8`.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.

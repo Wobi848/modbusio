@@ -122,6 +122,10 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Per unit: requests, answers, problems, answer times, poll cycle; a unit added to the site | *Bus analyser*, *Units* | `analyser/units.rs`, `tests/analyser.rs`, `ui/08-analyser` |
 | Exchanges filtered by unit, problems, writes; their bytes with the parts named | *Bus analyser*, *Exchanges* | `tests/web/ui.test.js`, `ui/08-analyser` |
 | Pause, clear, save for Wireshark; listening goes on when the page is left | *Bus analyser*, status bar | `api.rs` (analyser), `ui/08-analyser` |
+| Registers the master uses per unit: reads, writes, changes, last, min–max, every reading, the profile's points, changes over time as a chart | *Bus analyser*, *Registers* | `analyser/registers.rs`, `api.rs` (analyser), `tests/web/ui.test.js`, `ui/08-analyser` |
+| The master's writes marked, with the value read before them | *Bus analyser*, *Exchanges* | `analyser/mod.rs`, `tests/web/ui.test.js`, `ui/08-analyser` |
+| The raw frames with their gap and kind; answer times over time per unit | *Bus analyser*, *Frames*, unit details | `ui/08-analyser` |
+| Units, exchanges and registers as CSV and Excel | *Bus analyser*, *CSV*, *Excel* | `analyser/tables.rs`, `api.rs` (analyser) |
 | Command line: `interfaces`, `ports`, `scan`, `listen`, `analyse`, `read`, `explore`, `write`, `changed`, `restore`; exit code 1 when nothing could be read | terminal | `cli.rs` (output and exit code), tried against the simulators; the logic below it is tested above |
 
 ## 4. Scope

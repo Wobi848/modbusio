@@ -14,31 +14,44 @@ pub struct Asked {
     pub address: u16,
     pub count: u16,
     pub write: bool,
+    /// What a write writes: registers, or coils as 0 and 1.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub values: Vec<u16>,
 }
 
 impl Asked {
     fn of(request: &Request) -> Option<Asked> {
-        let (area, address, count, write) = match request {
+        let bits = |values: &[bool]| values.iter().map(|on| u16::from(*on)).collect::<Vec<_>>();
+        let (area, address, values) = match request {
             Request::Read {
                 area,
                 address,
                 count,
-            } => (*area, *address, *count, false),
-            Request::WriteCoil { address, .. } => (Area::Coil, *address, 1, true),
-            Request::WriteRegister { address, .. } => (Area::HoldingRegister, *address, 1, true),
-            Request::WriteCoils { address, values } => {
-                (Area::Coil, *address, values.len() as u16, true)
+            } => {
+                return Some(Asked {
+                    area: *area,
+                    address: *address,
+                    count: *count,
+                    write: false,
+                    values: Vec::new(),
+                });
             }
+            Request::WriteCoil { address, value } => (Area::Coil, *address, bits(&[*value])),
+            Request::WriteRegister { address, value } => {
+                (Area::HoldingRegister, *address, vec![*value])
+            }
+            Request::WriteCoils { address, values } => (Area::Coil, *address, bits(values)),
             Request::WriteRegisters { address, values } => {
-                (Area::HoldingRegister, *address, values.len() as u16, true)
+                (Area::HoldingRegister, *address, values.clone())
             }
             Request::Identify { .. } | Request::Echo { .. } => return None,
         };
         Some(Asked {
             area,
             address,
-            count,
-            write,
+            count: values.len() as u16,
+            write: true,
+            values,
         })
     }
 }
@@ -57,6 +70,9 @@ pub struct Exchange {
     pub outcome: Outcome,
     /// From the request's last byte to the answer's first, as the adapter delivered them.
     pub answer_micros: Option<u64>,
+    /// For a write: the values last read at those addresses before it, where all were seen.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub before: Option<Vec<u16>>,
     /// The frames as heard, unit to CRC; empty where none was heard.
     #[serde(skip)]
     pub request_bytes: Vec<u8>,
@@ -161,6 +177,7 @@ impl Pairer {
                 asked: None,
                 outcome: Outcome::AnswerOnly,
                 answer_micros: None,
+                before: None,
                 request_bytes: Vec::new(),
                 answer_bytes: frame.bytes.clone(),
             }];
@@ -216,6 +233,7 @@ fn finished(waiting: Waiting, outcome: Outcome) -> Exchange {
         request: waiting.request,
         outcome,
         answer_micros: None,
+        before: None,
         request_bytes: waiting.frame.bytes,
         answer_bytes: Vec::new(),
     }
@@ -276,7 +294,8 @@ mod tests {
                 area: Area::HoldingRegister,
                 address: 100,
                 count: 2,
-                write: false
+                write: false,
+                values: Vec::new(),
             })
         );
     }

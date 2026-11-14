@@ -210,6 +210,20 @@ before the first start. `ended` says why listening ended: `stopped`, or the port
 `GET /api/analyser.pcapng` → the frames kept, for Wireshark (RTU as in the capture below); `409`
 before the first start.
 
+`GET /api/analyser/unit?unit=N` → `{unit, order, registers, points, answer_times}`: the registers
+the master read or wrote at this unit, each `{area, reads, writes, changes, min, max, last_at,
+reading}` with `reading` as a row of the explorer (`{address, value, hex, signed, text, pairs}`);
+`order` the word order that makes floats plausible, or `null`; `points` the points of the profile
+the site gives this unit on the analyser's port whose registers were all heard, `{name, group,
+area, address, count, text}`; `answer_times` `[[at, micros]]`. `404` for a unit not heard.
+
+`GET /api/analyser/register?unit=N&area=holding_register&address=A` → `{history: [[at, value]]}`:
+the first value heard and each change, at most 500.
+
+`GET /api/analyser.csv?table=units|exchanges|registers&offset=M` → that table as CSV (exchanges
+when left out), times at the offset from UTC in minutes. `GET /api/analyser.xlsx?offset=M` → the
+three tables as sheets of one Excel file.
+
 ## Capture for Wireshark
 
 `GET /api/capture` → `{running, frames, kept}`. `POST /api/capture/start`, `POST
