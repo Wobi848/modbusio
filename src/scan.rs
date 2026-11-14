@@ -39,6 +39,9 @@ pub struct Report {
     pub settings: Option<String>,
     /// Seconds the search may take at most, for a serial line.
     pub estimate_seconds: Option<u64>,
+    /// The search for devices at other settings: where each unit answered.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub other_settings: Vec<crate::other_settings::UnitSettings>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -52,7 +55,7 @@ pub struct Found {
 }
 
 impl Found {
-    fn new(target: Target) -> Found {
+    pub fn new(target: Target) -> Found {
         Found {
             key: target.key(),
             target,
@@ -83,11 +86,11 @@ impl Search {
         self.stop.load(Ordering::SeqCst)
     }
 
-    fn update(&self, change: impl FnOnce(&mut Report)) {
+    pub(crate) fn update(&self, change: impl FnOnce(&mut Report)) {
         change(&mut self.report.lock().expect("report lock"));
     }
 
-    fn note(&self, note: Note) {
+    pub(crate) fn note(&self, note: Note) {
         self.update(|report| {
             let view = NoteView::from(note);
             if !report.notes.contains(&view) {
@@ -96,7 +99,7 @@ impl Search {
         });
     }
 
-    fn found(&self, found: Found) {
+    pub(crate) fn found(&self, found: Found) {
         self.update(|report| {
             if !report.devices.iter().any(|device| device.key == found.key) {
                 report.devices.push(found);
@@ -119,7 +122,7 @@ fn probe() -> Request {
 
 /// What one probe of a unit showed.
 #[derive(Debug, PartialEq)]
-enum Probed {
+pub(crate) enum Probed {
     Answered,
     /// A gateway answered that the unit is not reached.
     Gateway,
@@ -140,7 +143,12 @@ pub async fn unanswered(links: &Links, target: &Target, timeout: Duration) -> Op
     }
 }
 
-async fn probe_unit(links: &Links, target: &Target, timeout: Duration, retries: u8) -> Probed {
+pub(crate) async fn probe_unit(
+    links: &Links,
+    target: &Target,
+    timeout: Duration,
+    retries: u8,
+) -> Probed {
     let mut last = Probed::Silent;
     for _ in 0..=retries {
         last = match links.exchange(target, &probe(), timeout).await {

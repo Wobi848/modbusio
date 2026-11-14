@@ -957,3 +957,46 @@ async fn a_capture_file_opens_in_the_analyser_and_other_files_are_refused() {
     assert_eq!(status, StatusCode::BAD_REQUEST);
     assert_eq!(refused["error"], json!("not a pcapng or pcap file"));
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn the_search_at_other_settings_sends_nothing_while_another_master_talks() {
+    let port = common::played_trunk(common::sim::trunk::Options {
+        clean: true,
+        cycle: Duration::from_millis(300),
+        ..Default::default()
+    });
+    let app = app();
+    let (status, started) = call(
+        &app,
+        "POST",
+        "/api/scan/other-settings",
+        Some(json!({ "port": port, "baud": 19200, "frame": "8E1", "to": 10 })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{started}");
+    assert!(started["estimate_seconds"].as_u64() > Some(0));
+    let mut report = json!({});
+    for _ in 0..300 {
+        report = call(&app, "GET", "/api/scan", None).await.1;
+        if report["finished"] == json!(true) {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    }
+    assert_eq!(report["finished"], json!(true), "{report}");
+    assert_eq!(
+        report["notes"][0]["code"],
+        json!("other_master"),
+        "{report}"
+    );
+    assert_eq!(report["devices"], json!([]));
+    let (status, _) = call(
+        &app,
+        "POST",
+        "/api/scan/other-settings",
+        Some(json!({ "port": port, "baud": 19200, "frame": "8X1" })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+}

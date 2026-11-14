@@ -284,10 +284,44 @@ pub fn room_controller() -> Device {
     device
 }
 
+/// The speed and stop bits the other side of a pseudo-terminal set; a pseudo-terminal carries
+/// these, not the parity.
+pub type LineSettings = Arc<dyn Fn() -> Option<(u32, u8)> + Send + Sync>;
+
+/// The settings of the line's devices for `simulated_rtu --settings`: the trunk runs 19200 with
+/// one stop bit; the drive (unit 2) was left at 9600, the room controller (unit 5) at two stop bits.
+pub const OWN_SETTINGS: [(u8, u32, u8); 3] = [(1, 19200, 1), (2, 9600, 1), (5, 19200, 2)];
+
+/// What the other side of the pseudo-terminal `ours` set, read at each request: the terminal's
+/// settings through its descriptor (`TCGETS2`, the speed as a number), as `serialport` reads them
+/// on Linux. The descriptor stays valid as long as the server holds `ours`.
+#[cfg(target_os = "linux")]
+pub fn line_settings(ours: &tokio_serial::SerialStream) -> LineSettings {
+    use std::os::fd::AsRawFd;
+    let descriptor = ours.as_raw_fd();
+    Arc::new(move || {
+        // SAFETY: a zeroed termios2 is a valid value for the ioctl to fill; the descriptor is the
+        // server's open terminal
+        let mut termios: libc::termios2 = unsafe { std::mem::zeroed() };
+        if unsafe { libc::ioctl(descriptor, libc::TCGETS2, &mut termios) } != 0 {
+            return None;
+        }
+        let stop_bits = if termios.c_cflag & libc::CSTOPB != 0 {
+            2
+        } else {
+            1
+        };
+        Some((termios.c_ospeed, stop_bits))
+    })
+}
+
 /// Devices by unit ID, shared between connections; values drift so live views change.
 #[derive(Clone)]
 pub struct Units {
     devices: Arc<Mutex<HashMap<u8, Device>>>,
+    /// Devices set to a speed and stop bits of their own answer only when the line has them.
+    own_settings: HashMap<u8, (u32, u8)>,
+    line: Option<LineSettings>,
     /// Answers every unit ID with the device of the first (a direct TCP device does).
     any_unit: bool,
     /// Answers units it does not have with exception 0B after this time (a gateway does).
@@ -299,6 +333,8 @@ impl Units {
     pub fn new(devices: Vec<(u8, Device)>) -> Units {
         Units {
             devices: Arc::new(Mutex::new(devices.into_iter().collect())),
+            own_settings: HashMap::new(),
+            line: None,
             any_unit: false,
             gateway_delay: None,
             started: Instant::now(),
@@ -307,6 +343,17 @@ impl Units {
 
     pub fn answering_any_unit(mut self) -> Units {
         self.any_unit = true;
+        self
+    }
+
+    /// Gives devices a speed and stop bits of their own: `(unit, baud, stop bits)`. Other devices
+    /// answer at any setting, as on a pseudo-terminal without speed.
+    pub fn with_own_settings(mut self, line: LineSettings, settings: &[(u8, u32, u8)]) -> Units {
+        self.line = Some(line);
+        self.own_settings = settings
+            .iter()
+            .map(|(unit, baud, stop_bits)| (*unit, (*baud, *stop_bits)))
+            .collect();
         self
     }
 
@@ -336,6 +383,12 @@ impl Units {
         unit: u8,
         request: Request<'static>,
     ) -> (Duration, Option<Result<Response, ExceptionCode>>) {
+        if let (Some(line), Some(own)) = (&self.line, self.own_settings.get(&unit))
+            && line() != Some(*own)
+        {
+            // set otherwise: the request is noise to this device
+            return (Duration::ZERO, None);
+        }
         let mut devices = self.devices.lock().expect("devices lock");
         let key = if self.any_unit {
             devices.keys().next().copied()

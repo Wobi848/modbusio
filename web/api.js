@@ -42,6 +42,7 @@ export const api = {
   scanTcp: (request) => call("POST", "/api/scan/tcp", request),
   scanUnits: (request) => call("POST", "/api/scan/units", request),
   findSettings: (request) => call("POST", "/api/scan/settings", request),
+  otherSettings: (request) => call("POST", "/api/scan/other-settings", request),
   stopScan: () => call("POST", "/api/scan/stop"),
   listen: (port, seconds) => call("POST", "/api/listen", { port, seconds }),
   site: () => call("GET", "/api/site"),

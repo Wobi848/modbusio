@@ -716,6 +716,7 @@ dependencies = [
  "calamine",
  "clap",
  "if-addrs",
+ "libc",
  "mime_guess",
  "rust-embed",
  "rust_xlsxwriter",

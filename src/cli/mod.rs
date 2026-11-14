@@ -1,6 +1,7 @@
 //! The command line (concept section 12, M1): the same logic as the web interface, as text.
 
 mod analyse;
+mod other_settings;
 mod table;
 
 use std::net::Ipv4Addr;
@@ -58,6 +59,13 @@ pub enum Command {
         /// Find the speed and frame first, trying units 1 to 10
         #[arg(long)]
         find: bool,
+        /// Find devices at settings other than the trunk's (--baud, --frame): every unit at every
+        /// setting, after listening first; the plant's master must be stopped
+        #[arg(long, requires = "serial", conflicts_with = "find")]
+        other_settings: bool,
+        /// With --other-settings: also 1200, 2400, 4800 and 57600
+        #[arg(long, requires = "other_settings")]
+        all_speeds: bool,
         /// First unit ID to ask
         #[arg(long, default_value_t = 1)]
         from: u8,
@@ -210,6 +218,8 @@ pub async fn run(command: Command, data_dir: Option<PathBuf>) -> anyhow::Result<
             baud,
             frame,
             find,
+            other_settings,
+            all_speeds,
             from,
             to,
             timeout,
@@ -219,7 +229,9 @@ pub async fn run(command: Command, data_dir: Option<PathBuf>) -> anyhow::Result<
             if from > to {
                 bail!("--from {from} is above --to {to}");
             }
-            if let Some(port) = serial {
+            if let Some(port) = serial.clone().filter(|_| other_settings) {
+                other_settings::scan(links, port, (baud, &frame), (from, to), all_speeds).await
+            } else if let Some(port) = serial {
                 scan_serial(
                     links,
                     port,

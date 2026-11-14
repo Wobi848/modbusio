@@ -73,6 +73,18 @@ pub fn trunk() -> String {
     name
 }
 
+/// The trunk of `simulated_rtu --settings`: its devices answer only at settings of their own.
+#[cfg(target_os = "linux")]
+pub fn trunk_with_own_settings() -> String {
+    use tokio_serial::SerialPort;
+    let (ours, theirs) = tokio_serial::SerialStream::pair().expect("a pseudo-terminal");
+    let name = theirs.name().expect("a name");
+    std::mem::forget(theirs);
+    let units = gateway_units().with_own_settings(sim::line_settings(&ours), &sim::OWN_SETTINGS);
+    tokio::spawn(tokio_modbus::server::rtu::Server::new(ours).serve_forever(units));
+    name
+}
+
 /// The simulated trunk with its master (`examples/sim/trunk.rs`) on a pseudo-terminal; returns
 /// the terminal's name.
 #[cfg(unix)]

@@ -97,7 +97,7 @@ fn running(search: &Option<Arc<Search>>) -> bool {
 }
 
 /// A new search, unless one runs; refused while one does.
-fn begin(state: &Shared) -> Result<Arc<Search>, ApiError> {
+pub(super) fn begin(state: &Shared) -> Result<Arc<Search>, ApiError> {
     let mut current = state.search.lock().expect("search lock");
     if running(&current) {
         return Err(ApiError::conflict(RUNNING));
@@ -117,7 +117,7 @@ pub(super) fn refuse_while_searching(state: &Shared) -> Result<(), ApiError> {
 }
 
 /// Refuses to send on a line the bus analyser listens to: modbusio would be a second master there.
-fn refuse_held(state: &Shared, endpoint: &Endpoint) -> Result<(), ApiError> {
+pub(super) fn refuse_held(state: &Shared, endpoint: &Endpoint) -> Result<(), ApiError> {
     if state.links.is_held(endpoint) {
         return Err(ApiError::conflict(crate::links::held_text(endpoint)));
     }
@@ -158,7 +158,11 @@ fn keep_found(state: &Shared, search: &Search) {
     }
 }
 
-fn run(state: &Shared, search: Arc<Search>, work: impl Future<Output = ()> + Send + 'static) {
+pub(super) fn run(
+    state: &Shared,
+    search: Arc<Search>,
+    work: impl Future<Output = ()> + Send + 'static,
+) {
     let state = state.clone();
     tokio::spawn(async move {
         work.await;
@@ -167,7 +171,7 @@ fn run(state: &Shared, search: Arc<Search>, work: impl Future<Output = ()> + Sen
     });
 }
 
-fn timeout(milliseconds: Option<u64>, default: u64) -> Result<Duration, ApiError> {
+pub(super) fn timeout(milliseconds: Option<u64>, default: u64) -> Result<Duration, ApiError> {
     let milliseconds = milliseconds.unwrap_or(default);
     if !TIMEOUTS.contains(&milliseconds) {
         return Err(ApiError::bad_request(format!(

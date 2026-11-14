@@ -11,6 +11,7 @@ mod profiles;
 mod recording;
 mod running;
 mod scanning;
+mod settings_search;
 mod sites;
 mod state;
 mod views;
@@ -51,6 +52,7 @@ pub fn router(state: Shared) -> Router {
         .route("/api/scan/tcp", post(scanning::scan_tcp))
         .route("/api/scan/units", post(scanning::scan_units))
         .route("/api/scan/settings", post(scanning::find_settings))
+        .route("/api/scan/other-settings", post(settings_search::start))
         .route("/api/scan/stop", post(scanning::stop))
         .route("/api/listen", post(scanning::listen))
         .route("/api/site", get(sites::site))

@@ -3,6 +3,7 @@
 
 import { h } from "./html.js";
 import { noteText, t } from "./i18n.js";
+import { askHtml } from "./asking.js";
 
 const ICON = (path) => `<svg class="nav-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 const AREA_ICONS = {
@@ -143,17 +144,50 @@ function gatewayFields(state) {
     ${rangeFields(state, "500")}`;
 }
 
-/** The settings search in the dialog: how far it is with a stop, then what it found. */
+/** Notes of a search that tell good news rather than a fault. */
+const GOOD_NOTES = ["settings_found", "all_at_trunk"];
+
+/** How far a search in the dialog is, by its phase. */
+function progressText(scan) {
+  const counts = { done: scan.done ?? 0, total: scan.total ?? 0 };
+  if (scan.phase === "listening") return t("search.listeningFirst");
+  if (scan.phase === "other_settings") return t("search.askingSettings", counts);
+  if (scan.phase === "identify") return t("search.identifying", counts);
+  return t("search.finding", counts);
+}
+
+/** Where each unit answered, after the search at other settings. */
+function otherSettingsHtml(units) {
+  if (!units?.length) return "";
+  const rows = units.map((unit) => `<li><b>${t("an.unitTitle", { unit: unit.unit })}</b>: ${unit.answers_at.length ? h(unit.answers_at.join(", ")) : "–"}${unit.damaged_at.length ? ` <span class="chip err">${t("search.damagedAt", { settings: h(unit.damaged_at.join(", ")) })}</span>` : ""}</li>`).join("");
+  return `<details open><summary>${t("search.whereAnswered")}</summary><ul class="plain">${rows}</ul></details>`;
+}
+
+/** A search that keeps the dialog open (speed and frame, devices at other settings): how far it
+ * is with a stop, then what it found. */
 export function findingHtml(state) {
   if (!state.findingSettings) return "";
   const scan = state.scan;
   if (!scan.finished) {
-    return `<div class="strip info finding">${t("search.finding", { done: scan.done ?? 0, total: scan.total ?? 0 })}
+    return `<div class="strip info finding">${progressText(scan)}
       <button type="button" class="quiet" data-act="stop-search">${t("stop")}</button></div>`;
   }
-  const notes = (scan.notes ?? []).map((note) => `<div class="strip ${note.code === "settings_found" ? "info" : "warn"}">${h(noteText(note))}</div>`).join("");
+  const notes = (scan.notes ?? []).map((note) => `<div class="strip ${GOOD_NOTES.includes(note.code) ? "info" : "warn"}">${h(noteText(note))}</div>`).join("");
   const next = scan.settings ? `<p class="hint">${t("search.foundNext", { settings: h(scan.settings) })}</p>` : "";
-  return `${notes}${next}`;
+  const joined = scan.other_settings?.length ? `<p class="hint">${t("search.joinedAtTheirs")}</p>` : "";
+  return `${notes}${otherSettingsHtml(scan.other_settings)}${joined}${next}`;
+}
+
+/** The question before the search at other settings: what it sends, how long, the master stopped. */
+function otherSettingsAskHtml(state) {
+  if (state.asking?.kind !== "other-settings") return "";
+  const asking = state.asking;
+  const speeds = `<label class="check"><input type="checkbox" id="search-all-speeds" data-search-check="allSpeeds"${state.search.allSpeeds ? " checked" : ""}> ${t("search.allSpeeds")}</label>`;
+  return askHtml(
+    t("search.otherSettingsTitle"),
+    `${t("search.otherSettingsWhy", { from: h(state.search.from || "1"), to: h(state.search.to || "247"), settings: asking.settings, minutes: asking.minutes, trunk: h(`${state.search.baud} ${state.search.frame}`) })}${speeds}`,
+    [["other-settings", t("search.otherSettingsNow")]],
+  );
 }
 
 /** What listening heard: the note, the unit IDs that talked, each setting's count behind a fold. */
@@ -183,12 +217,12 @@ export function dialogHtml(state) {
   if (state.menu !== "search") return "";
   const mode = state.search.mode;
   const fields = mode === "serial" ? serialFields(state) : mode === "gateway" ? gatewayFields(state) : tcpFields(state);
-  const serialTools = mode === "serial" ? `<button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button>` : "";
+  const serialTools = mode === "serial" ? `<button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button><button type="button" class="tonal" data-act="other-settings-ask">${t("search.otherSettings")}</button>` : "";
   return `<div class="modal"><div class="modal-box search-settings" data-keep="search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
     <h2 id="search-title">${t("search.title")}</h2>
     <p class="sub">${t(`search.lead.${mode}`)}</p>
     <dl class="facts">${modeChoice(state)}${fields}</dl>
-    ${mode === "serial" ? listenedHtml(state) + findingHtml(state) : ""}
+    ${mode === "serial" ? listenedHtml(state) + otherSettingsAskHtml(state) + findingHtml(state) : ""}
     <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button>${serialTools}<button type="button" data-act="search">${t("search.start")}</button></div>
   </div></div>`;
 }

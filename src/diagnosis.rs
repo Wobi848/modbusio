@@ -83,6 +83,18 @@ pub enum Note {
     Broadcasts { count: u64 },
     /// Bus analyser: the trunk carries bytes most of the time.
     BusBusy { percent: u32 },
+    /// Other settings: a unit answers only at settings other than the trunk's.
+    AtOtherSettings {
+        unit: u8,
+        found: String,
+        trunk: String,
+    },
+    /// Other settings: a unit's answers arrive damaged at the trunk's setting.
+    DamagedAtTrunk { unit: u8, trunk: String },
+    /// Other settings: a unit answers that the master never asks, while units it asks are silent.
+    MeantAs { unit: u8, silent: String },
+    /// Other settings: every unit found answers at the trunk's setting.
+    AllAtTrunk { count: usize, trunk: String },
 }
 
 impl fmt::Display for Note {
@@ -158,7 +170,7 @@ impl fmt::Display for Note {
             ),
             Note::NeverAnswers { unit, requests } => write!(
                 f,
-                "The master asks unit {unit}, which never answered ({requests} requests): a device missing, switched off or at another address."
+                "The master asks unit {unit}, which never answered ({requests} requests): a device missing, switched off, at another address or at other serial settings (Search settings, Serial line, Find devices at other settings)."
             ),
             Note::RefusedEveryTime {
                 unit,
@@ -180,7 +192,7 @@ impl fmt::Display for Note {
             ),
             Note::DamagedFromOne { unit, count } => write!(
                 f,
-                "{count} answers of unit {unit} arrived damaged, the master's requests did not: check the wiring at unit {unit}."
+                "{count} answers of unit {unit} arrived damaged, the master's requests did not: check the wiring at unit {unit}, or its parity and stop bits."
             ),
             Note::MasterUnanswered { line } => write!(
                 f,
@@ -197,6 +209,22 @@ impl fmt::Display for Note {
             Note::BusBusy { percent } => write!(
                 f,
                 "The trunk is busy {percent} % of the time: polling slower or a higher speed leaves room."
+            ),
+            Note::AtOtherSettings { unit, found, trunk } => write!(
+                f,
+                "Unit {unit} answers only at {found}; the trunk runs {trunk}: set unit {unit} to {trunk}, or the master cannot reach it."
+            ),
+            Note::DamagedAtTrunk { unit, trunk } => write!(
+                f,
+                "Answers of unit {unit} arrive damaged at {trunk}: its parity or stop bits may differ, or its wiring."
+            ),
+            Note::MeantAs { unit, silent } => write!(
+                f,
+                "Unit {unit} answers at the trunk's setting, but the master never asks it; units the master asks stay silent ({silent}): is unit {unit} one of them at another address?"
+            ),
+            Note::AllAtTrunk { count, trunk } => write!(
+                f,
+                "All {count} units found answer at {trunk}, the trunk's setting."
             ),
         }
     }

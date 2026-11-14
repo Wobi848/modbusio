@@ -14,6 +14,7 @@ pub mod interfaces;
 pub mod link;
 pub mod links;
 pub mod listen;
+pub mod other_settings;
 pub mod pcap;
 pub mod pcap_read;
 pub mod plan;
