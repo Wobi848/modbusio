@@ -96,6 +96,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Read Device Identification (43/14) | search; device details, *Ask who it is* | `link.rs` (identification), `scan.rs` |
 | Add a device by hand by its line and unit; chosen, and asked once whether it answers (TCP only) | workspace, *Add device …* | `api.rs` (asked whether it answers), `ui/01-search` |
 | Device names, profile chosen, removed from the site | device details | `api.rs`, `ui/03-write` |
+| A line chosen in the tree: its devices in the list, the whole line removed from the site after a question | tree, line heading | `api.rs` (a whole line leaves), `ui/01-search` |
 | What a device refused learnt and kept (registers per request, no holes, 06) | device details, *Learnt* | `read.rs` (gaps, limits, silence), `api.rs` |
 | Read a device's points by its profile, grouped, filtered, live | workspace | `api.rs` (read), `ui/02-explore`, `tests/web/ui.test.js` |
 | A point's value, address, type, order, scaling, raw registers, states | point details | `profile.rs`, `ui/03-write` |
