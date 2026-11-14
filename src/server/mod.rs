@@ -202,6 +202,8 @@ async fn info(
     Json(json!({
         "program": "modbusio",
         "version": env!("CARGO_PKG_VERSION"),
+        // the commit built from (build.rs); the version alone stays for comparing with releases
+        "commit": env!("MODBUSIO_COMMIT"),
         "serial": cfg!(not(target_os = "android")),
         "data_dir": state.data_dir.as_ref().map(|dir| dir.display().to_string()),
         "problems": *state.load_problems.lock().expect("problems lock"),

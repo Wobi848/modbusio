@@ -14,6 +14,7 @@ const { bounds, byUnit, pathData } = await import("../../web/chart.js");
 const { heldUntil, sameRecording, withNewSamples } = await import("../../web/recording.js");
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
+const { versionText } = await import("../../web/pages.js");
 const { listenedHtml } = await import("../../web/shell.js");
 const { askedText, bytesHtml, filteredExchanges, heardChanged, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
 const { startRequest } = await import("../../web/analyser-actions.js");
@@ -345,4 +346,10 @@ test("the analyser's page is drawn anew only when something changed", () => {
   assert.equal(heardChanged(running, { ...running }), false);
   assert.equal(heardChanged(running, { ...running, frames: [{ number: 1 }] }), true);
   assert.equal(heardChanged(running, { ...running, running: false, ended: "stopped" }), true);
+});
+
+test("the version names the commit it was built from", () => {
+  assert.equal(versionText({ version: "0.1.0", commit: "3f6d90e" }), "0.1.0 · 3f6d90e");
+  assert.equal(versionText({ version: "0.1.0", commit: "" }), "0.1.0");
+  assert.equal(versionText(null), "");
 });
