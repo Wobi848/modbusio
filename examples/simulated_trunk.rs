@@ -13,6 +13,7 @@
 
 mod sim;
 
+#[cfg(unix)]
 fn options() -> sim::trunk::Options {
     let mut options = sim::trunk::Options::default();
     let mut args = std::env::args().skip(1);
