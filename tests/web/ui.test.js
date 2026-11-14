@@ -17,6 +17,7 @@ const { pairHtml } = await import("../../web/explorer.js");
 const { listenedHtml } = await import("../../web/shell.js");
 const { askedText, bytesHtml, filteredExchanges, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
 const { startRequest } = await import("../../web/analyser-actions.js");
+const { registersUnit, stepSamples } = await import("../../web/analyser-registers.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -37,7 +38,7 @@ test("every language has every key, note, error and code of English, with the sa
 test("every key the interface uses exists in English", () => {
   const used = new Set(sources.flatMap((source) => [...source.matchAll(/\bt\("([^"]+)"/g)].map((match) => match[1])));
   for (const key of used) assert.ok(key in LANGUAGE_FILES.en.texts, `${key} is used but not in en.js`);
-  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "tab.analyser", "phase.hosts", "phase.units", "phase.settings", "phase.identify",
+  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "tab.analyser", "an.role.request", "an.role.answer", "phase.hosts", "phase.units", "phase.settings", "phase.identify",
     "area.holding_register", "area.input_register", "area.coil", "area.discrete_input", "conv.zero_based", "conv.one_based", "conv.reference",
     "search.lead.tcp", "search.lead.gateway", "search.lead.serial"]) {
     assert.ok(prefix in LANGUAGE_FILES.en.texts, `${prefix} is built in code but not in en.js`);
@@ -293,4 +294,22 @@ test("a frame's bytes are shown with unit, function, data and CRC", () => {
   assert.match(html, /0C<small>Unit<\/small>/);
   assert.match(html, /00 64 00 02<small>Data<\/small>/);
   assert.match(html, /84 C9<small>CRC<\/small>/);
+});
+
+test("a register's changes are drawn as steps up to now", () => {
+  assert.deepEqual(stepSamples([[0, 4200], [2000000, 4500]], 1000, 5000), [[1000, 4200], [3000, 4200], [3000, 4500], [5000, 4500]]);
+  assert.deepEqual(stepSamples([], 1000, 5000), []);
+});
+
+test("the registers show the unit chosen, else the first heard", () => {
+  const heard = { units: [{ unit: 1 }, { unit: 12 }] };
+  assert.equal(registersUnit({ heard, registersUnit: "" }), 1);
+  assert.equal(registersUnit({ heard, registersUnit: "12" }), 12);
+  assert.equal(registersUnit({ heard: { units: [] }, registersUnit: "" }), null);
+});
+
+test("a write of the master names the value before it where it was read", () => {
+  const write = { area: "holding_register", address: 1, count: 1, write: true, values: [4500] };
+  assert.equal(resultText({ ...exchange(0, 12, { kind: "written" }, write), before: [4200] }), "written: 4200 → 4500");
+  assert.equal(resultText(exchange(0, 12, { kind: "written" }, write)), "written: 4500");
 });
