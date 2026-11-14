@@ -26,7 +26,7 @@
 
 .row.aunits { grid-template-columns: minmax(110px, 1.4fr) 84px 92px minmax(140px, 1.6fr) 84px 64px; min-height: 32px; }
 .row.aexch { grid-template-columns: 104px 44px minmax(120px, 1.2fr) minmax(140px, 2fr) 60px; min-height: 30px; }
-.row.aregs { grid-template-columns: 76px minmax(90px, 1.4fr) 76px 104px 84px minmax(80px, 1fr) minmax(90px, 1fr); min-height: 30px; }
+.row.aregs { grid-template-columns: 72px minmax(100px, 1.4fr) 76px 106px 84px 78px 88px; min-height: 30px; }
 .row.aframes { grid-template-columns: 104px 64px 90px minmax(0, 1fr); min-height: 28px; }
 .row.aframes .bytes-cell { white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
 .row.aunits .num, .row.aexch .num, .row.aregs .num, .row.aframes .num { text-align: right; }
@@ -52,3 +52,9 @@
   .row.aframes > :nth-child(1), .row.aframes > :nth-child(2) { display: none; }
 }
 .row.aunits > .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+/* the narrow number columns: a head with its sorting arrow wraps instead of running into the next */
+.row.aunits.head > *, .row.aexch.head > *, .row.aregs.head > * { min-width: 0; }
+.row.aunits.head button.sort, .row.aexch.head button.sort, .row.aregs.head button.sort { height: auto; min-height: 24px; max-width: 100%; white-space: normal; line-height: 1.25; text-align: inherit; }
+/* right-aligned number columns next to each other need more room between them than text does */
+.row.aunits { column-gap: 18px; }
+.row.aregs { column-gap: 10px; }
