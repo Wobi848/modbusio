@@ -123,6 +123,13 @@ async fn info_names_the_program() {
     let (status, info) = call(&app(), "GET", "/api/info", None).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(info["program"], "modbusio");
+    // built from a git checkout: the version stays a release number, the commit stands beside it
+    assert_eq!(info["version"], env!("CARGO_PKG_VERSION"));
+    let commit = info["commit"].as_str().expect("commit");
+    assert!(
+        commit.len() == 7 && commit.chars().all(|c| c.is_ascii_hexdigit()),
+        "{commit}"
+    );
 }
 
 #[tokio::test]

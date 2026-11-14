@@ -7,7 +7,7 @@ mod cli;
 
 #[derive(Parser)]
 #[command(
-    version,
+    version = concat!(env!("CARGO_PKG_VERSION"), " ", env!("MODBUSIO_COMMIT")),
     about = "Modbus browser. Without a command it opens in the browser."
 )]
 struct Cli {

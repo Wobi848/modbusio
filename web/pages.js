@@ -122,6 +122,12 @@ function updateText(state) {
   return t("update.current");
 }
 
+/** The version with the commit it was built from: builds between two releases differ there. */
+export function versionText(info) {
+  if (!info?.version) return "";
+  return info.commit ? `${info.version} · ${info.commit}` : info.version;
+}
+
 function viewSettings(state) {
   const languages = [["auto", t("set.system")], ...LANGUAGES].map(([code, name]) => `<option value="${code}"${languageChoice() === code ? " selected" : ""}>${h(name)}</option>`).join("");
   let theme = "auto";
@@ -148,7 +154,7 @@ function viewSettings(state) {
       <section class="card"><h2>${t("set.writing")}</h2><p>${state.unlocked ? t("set.unlocked") : t("set.locked")}</p>
         <div class="actions">${state.unlocked ? `<button type="button" class="tonal" data-act="lock">${t("set.lock")}</button>` : ""}</div></section>
       <section class="card"><h2>${t("cap.title")}</h2><p>${t("cap.lead")}</p><p class="hint">${t("cap.rtuHint")}</p><div class="actions">${captureButtons}</div></section>
-      <section class="card"><h2>${t("set.about")}</h2><dl class="facts"><dt>${t("set.version")}</dt><dd class="mono">${h(state.info?.version ?? "")}</dd>
+      <section class="card"><h2>${t("set.about")}</h2><dl class="facts"><dt>${t("set.version")}</dt><dd class="mono">${h(versionText(state.info))}</dd>
         <dt>${t("update.title")}</dt><dd>${updateText(state)}</dd>
         <dt>${t("set.dataDir")}</dt><dd class="mono cut">${h(state.info?.data_dir ?? t("set.noDataDir"))}</dd></dl>${problems}
         <label class="check"><input type="checkbox" id="update-check"${updateCheckOn() ? " checked" : ""}> ${t("update.switch")}</label>
