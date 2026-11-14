@@ -17,6 +17,9 @@ const STORAGE_KEY = "modbusio.language";
 const ERROR_PATTERNS = [
   [/^a search is running; stop it first$/, "searchRunning"],
   [/^the bus analyser listens on (.+); stop it first$/, "analyserListens"],
+  [/^not a pcapng or pcap file$/, "notCapture"],
+  [/^(.+) holds no RTU frames \((\d+) packets of other kinds\)$/, "noRtuFrames"],
+  [/^the file is cut off$/, "captureCut"],
   [/^writing is locked: unlock it for this session first$/, "locked"],
   [/^this device has no profile yet: .*$/, "noProfile"],
   [/^(.+) is not a number$/, "notNumber"],

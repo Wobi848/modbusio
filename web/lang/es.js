@@ -220,6 +220,12 @@ export default {
     "an.role": "Tipo",
     "an.bytes": "Bytes",
     "an.timesNote": "Las horas son cuando el adaptador USB entregó los bytes (hasta 16 ms después con un chip FTDI de fábrica), no el momento en la línea.",
+    "an.openFile": "Abrir una captura …",
+    "an.openFileHint": "Un archivo pcapng o pcap de tramas RTU, guardado aquí o con otra herramienta: las mismas vistas, en la oficina.",
+    "an.leadFile": "{file} · {frames} tramas, abierto desde un archivo",
+    "an.intoProfile": "En un perfil …",
+    "an.draftName": "Unit {unit} de la línea",
+    "an.draftSource": "análisis de bus: los registros que usó su maestro",
   },
   notes: {
     misses_answers: "La unit {unit} no responde a {missing} de {requests} peticiones ({percent} %): revisar su cableado y alimentación, y si el maestro espera lo suficiente.",
@@ -251,6 +257,9 @@ export default {
   errors: {
     searchRunning: "Hay una búsqueda en curso; detenerla primero.",
     analyserListens: "El análisis de bus escucha en $1; detenerlo primero.",
+    notCapture: "no es un archivo pcapng ni pcap",
+    noRtuFrames: "$1 no contiene tramas RTU ($2 paquetes de otro tipo)",
+    captureCut: "el archivo está cortado",
     locked: "La escritura está bloqueada: desbloquearla primero para esta sesión.",
     noProfile: "Este equipo aún no tiene perfil: elegir uno o crearlo en el explorador.",
     notNumber: "$1 no es un número",
