@@ -193,3 +193,37 @@ async fn devices_at_other_settings_are_named_and_joined_at_theirs() {
     );
     assert_eq!(report.other_settings.len(), 3);
 }
+
+#[tokio::test]
+async fn a_line_that_cannot_be_opened_is_said_once_with_why() {
+    use modbusio::endpoint::{Endpoint, Parity, SerialSettings};
+    let endpoint = Endpoint::Serial(SerialSettings {
+        port: "modbusio-no-such-port".into(),
+        baud: 9600,
+        parity: Parity::Even,
+        stop_bits: 1,
+    });
+    let search = Arc::new(Search::default());
+    scan::search_units(
+        Arc::new(common::links()),
+        endpoint,
+        1,
+        3,
+        Duration::from_millis(50),
+        0,
+        search.clone(),
+    )
+    .await;
+    let notes: Vec<Note> = search
+        .report
+        .lock()
+        .expect("report")
+        .notes
+        .iter()
+        .map(|view| view.note.clone())
+        .collect();
+    assert!(
+        matches!(&notes[..], [Note::LineFailed { line, reason }] if line.starts_with("modbusio-no-such-port") && reason.starts_with("cannot open")),
+        "{notes:?}"
+    );
+}

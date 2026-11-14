@@ -227,6 +227,7 @@ export default {
     "an.draftSource": "análisis de bus: los registros que usó su maestro",
     "an.leadStopped": "Terminada · {port} · {settings} · {frames} tramas escuchadas; escuchar de nuevo con los campos de abajo",
     "an.frameByListening": "también se averigua escuchando",
+    "search.lineTools": "Comprobar la línea",
     "search.finding": "Probando velocidades y tramas: {done} de {total} ajustes …",
     "search.foundNext": "Velocidad y trama están en {settings}: Buscar consulta ahora cada unit así.",
     "search.otherSettings": "Encontrar equipos con otros ajustes",
@@ -246,6 +247,7 @@ export default {
     "an.wiringOff": "terminación y polar.: OFF",
   },
   notes: {
+    line_failed: "La consulta en {line} se detuvo: {reason}.",
     all_at_trunk: "Las {count} units encontradas responden todas con {trunk}, el ajuste de la línea.",
     meant_as: "La unit {unit} responde con el ajuste de la línea, pero el maestro nunca la consulta; units que el maestro consulta siguen mudas ({silent}): ¿es la unit {unit} una de ellas con otra dirección?",
     damaged_at_trunk: "Las respuestas de la unit {unit} llegan dañadas con {trunk}: quizá su paridad o bits de parada son distintos, o su cableado.",

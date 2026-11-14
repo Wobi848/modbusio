@@ -203,8 +203,9 @@ pub async fn search(links: Arc<Links>, asking: Asking, search: Arc<Search>) {
             }
         }
         Err(error) => {
-            search.note(Note::NothingAnswered {
-                line: format!("{port}: {error}"),
+            search.note(Note::LineFailed {
+                line: port,
+                reason: error.to_string(),
             });
             return;
         }
@@ -242,8 +243,9 @@ pub async fn search(links: Arc<Links>, asking: Asking, search: Arc<Search>) {
                     this.damaged.insert(unit);
                 }
                 Probed::Failed(error) => {
-                    search.note(Note::NothingAnswered {
-                        line: format!("{port}: {error}"),
+                    search.note(Note::LineFailed {
+                        line: port,
+                        reason: error.to_string(),
                     });
                     return;
                 }

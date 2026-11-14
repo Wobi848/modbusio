@@ -100,5 +100,9 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 /* the ways to search side by side in one row (two parts on Android, three elsewhere); a long name
    breaks inside its own part only when the row has no room for it */
 .search-settings .seg { display: flex; width: 100%; }
+.search-settings .line-tools { display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.search-settings .line-tools .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.search-settings .line-tools .tools button { height: auto; min-height: 38px; padding: 6px 10px; white-space: normal; line-height: 1.25; justify-content: center; text-align: center; }
+@media (max-width: 600px) { .search-settings .line-tools .tools { grid-template-columns: minmax(0, 1fr); } }
 .search-settings .seg button { flex: 1 1 auto; }
 .search-settings .seg button { height: auto; min-height: 30px; padding: 4px 6px; white-space: normal; line-height: 1.2; justify-content: center; text-align: center; }
