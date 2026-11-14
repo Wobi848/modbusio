@@ -17,6 +17,7 @@ use crate::analyser::port::{self, ReadOnly};
 use crate::analyser::units::{TimesSummary, UnitStats};
 use crate::analyser::{Analysis, Numbered, Seen};
 use crate::capture::Frame;
+use crate::diagnosis::NoteView;
 use crate::endpoint::{Endpoint, SerialSettings};
 use crate::protocol::rtu;
 
@@ -164,6 +165,14 @@ fn view(state: &Shared, after: &After) -> Json<Value> {
         "elapsed_ms": elapsed.as_millis() as u64,
         "bus": analysis.bus,
         "load": load(analysis.bus.bytes, listening.settings.baud, elapsed),
+        "notes": crate::analyser::notes::notes(
+            &analysis,
+            &listening.settings.port,
+            load(analysis.bus.bytes, listening.settings.baud, elapsed),
+        )
+        .into_iter()
+        .map(NoteView::from)
+        .collect::<Vec<_>>(),
         "units": analysis.units.iter().map(|(unit, stats)| unit_view(*unit, stats)).collect::<Vec<_>>(),
         "exchanges": newest(analysis.exchanges(), after.exchanges).map(exchange_view).collect::<Vec<_>>(),
         "frames": newest(analysis.frames(), after.frames).map(frame_view).collect::<Vec<_>>(),

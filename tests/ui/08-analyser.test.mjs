@@ -18,6 +18,9 @@ export default {
     await page.waitForSelector(".row.aunits[data-chosen=u7] .chip:has-text('× 02')");
     await page.waitForSelector(".row.aunits[data-chosen=u12] .chip:has-text('no answer')", { timeout: 20000 });
     await headsOverValues(page, "aunits");
+    // and in words
+    await page.waitForSelector(".analyser-notes .strip:has-text('unit 9, which never answered')");
+    await page.waitForSelector(".analyser-notes .strip:has-text('exception 02 every time')");
     const heard = await api("analyser");
     assert.deepEqual(heard.units.map((unit) => unit.unit), [1, 5, 7, 9, 12]);
 
