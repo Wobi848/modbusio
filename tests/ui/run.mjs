@@ -73,9 +73,12 @@ async function startOnTerminal(example, args) {
 // the line with its devices, for searching; the trunk with its own master, for the bus analyser
 const line = await startOnTerminal("simulated_rtu", []);
 const trunk = await startOnTerminal("simulated_trunk", ["--cycle-ms", "1000"]);
+// devices with settings of their own, for finding devices at other settings
+const settings = await startOnTerminal("simulated_rtu", ["--settings"]);
 if (line.terminal) process.env.MODBUSIO_TEST_SERIAL = line.terminal;
 if (trunk.terminal) process.env.MODBUSIO_TEST_TRUNK = trunk.terminal;
-const terminals = [line.terminal, trunk.terminal].filter(Boolean).join(",");
+if (settings.terminal) process.env.MODBUSIO_TEST_SETTINGS = settings.terminal;
+const terminals = [line.terminal, trunk.terminal, settings.terminal].filter(Boolean).join(",");
 
 /** Starts modbusio on `port` with the data folder `dir` and waits until its API answers. */
 async function launch(port, dir) {
@@ -163,5 +166,6 @@ await browser.close();
 for (const simulator of simulators) simulator.kill();
 line.started?.kill();
 trunk.started?.kill();
+settings.started?.kill();
 console.log(failed ? `${failed} failed` : "all tests passed");
 process.exit(failed ? 1 : 0);
