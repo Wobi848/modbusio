@@ -226,6 +226,7 @@ export default {
     "an.intoProfile": "En un perfil …",
     "an.draftName": "Unit {unit} de la línea",
     "an.draftSource": "análisis de bus: los registros que usó su maestro",
+    "an.leadStopped": "Terminada · {port} · {settings} · {frames} tramas escuchadas; escuchar de nuevo con los campos de abajo",
   },
   notes: {
     misses_answers: "La unit {unit} no responde a {missing} de {requests} peticiones ({percent} %): revisar su cableado y alimentación, y si el maestro espera lo suficiente.",
