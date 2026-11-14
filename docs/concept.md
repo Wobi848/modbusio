@@ -126,6 +126,8 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | The master's writes marked, with the value read before them | *Bus analyser*, *Exchanges* | `analyser/mod.rs`, `tests/web/ui.test.js`, `ui/08-analyser` |
 | The raw frames with their gap and kind; answer times over time per unit | *Bus analyser*, *Frames*, unit details | `ui/08-analyser` |
 | Units, exchanges and registers as CSV and Excel | *Bus analyser*, *CSV*, *Excel* | `analyser/tables.rs`, `api.rs` (analyser) |
+| A draft profile from the registers the master uses at a unit, opened in the profile editor | *Bus analyser*, *Registers*, *Into a profile …* | `tests/web/ui.test.js`, `ui/08-analyser` |
+| Open a capture file (pcapng or pcap, also from other tools) into the analyser; `analyse --file` | *Bus analyser*, *Open a capture …*; terminal | `pcap_read.rs`, `analyser/mod.rs` (saved and opened again), `api.rs` (capture file), `ui/08-analyser` |
 | Notes in words on the trunk: missed answers (after a neighbour), a silent unit, a block refused every time, slow answers, damage from one unit or everywhere, nothing answering, a second master, broadcasts, a busy trunk | *Bus analyser*, strips; `analyse` at the end | `analyser/notes.rs` (one test each), `tests/analyser.rs`, `ui/08-analyser` |
 | Command line: `interfaces`, `ports`, `scan`, `listen`, `analyse`, `read`, `explore`, `write`, `changed`, `restore`; exit code 1 when nothing could be read | terminal | `cli.rs` (output and exit code), tried against the simulators; the logic below it is tested above |
 
