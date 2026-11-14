@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="de" data-theme="light" data-accent="blue" data-background="white">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bus analyser mockup</title>
+<!-- Mockup for docs/concept-analyser.md: static data, nothing talks to a device. -->
+<link rel="stylesheet" href="../../web/css/tokens.css">
+<link rel="stylesheet" href="../../web/css/app.css">
+<link rel="stylesheet" href="../../web/css/bars.css">
+<link rel="stylesheet" href="../../web/css/list.css">
+<link rel="stylesheet" href="../../web/css/pages.css">
+<link rel="stylesheet" href="../../web/css/layout.css">
+<link rel="stylesheet" href="../../web/css/modbus.css">
+<style>
+  .row.aunits { grid-template-columns: minmax(140px, 1.6fr) 76px 76px 76px minmax(90px, 1fr) 76px 64px; min-height: 32px; }
+  @media (max-width: 720px) { .row.aunits, .row.aexch, .row.aregs { grid-template-columns: minmax(0, 1fr) auto; } .row.aunits > :nth-child(n+3):not(:nth-child(4)), .row.aexch > :nth-child(-n+2), .row.aexch > :nth-child(5), .row.aregs > :nth-child(n+3):not(:nth-child(5)) { display: none; } }
+  .row.aexch { grid-template-columns: 92px 44px minmax(120px, 1.2fr) minmax(140px, 2fr) 64px; min-height: 30px; }
+  .row.aregs { grid-template-columns: 70px minmax(110px, 1.4fr) 70px 70px 90px 120px; min-height: 30px; }
+  .row.aframes { grid-template-columns: 92px 56px 72px minmax(0, 1fr) 64px; min-height: 28px; font-family: var(--mono); font-size: 12px; }
+  .row .num { text-align: right; }
+  .mockbar { display: flex; gap: 8px; align-items: center; padding: 6px 12px; font: 600 12px system-ui; color: var(--muted); background: var(--sunken); border-bottom: 1px solid var(--line); }
+  .mockbar button { height: 24px; padding: 0 8px; font-size: 12px; }
+  .bytes { font-family: var(--mono); font-size: 12px; display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 6px 0 12px; }
+  .bytes span { display: inline-flex; flex-direction: column; align-items: center; }
+  .bytes small { font-family: system-ui; font-size: 10.5px; color: var(--muted); }
+  .wiring { font-family: var(--mono); font-size: 12px; line-height: 1.35; background: var(--sunken); border-radius: 8px; padding: 10px 12px; overflow-x: auto; }
+  .start-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 14px; margin: 12px 0; }
+  .listen-only { display: inline-flex; gap: 6px; align-items: center; }
+  .spark { width: 100%; height: 90px; }
+  .spark path { fill: none; stroke: var(--series-1); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .pen { color: var(--warn); font-weight: 700; }
+</style>
+</head>
+<body>
+<aside class="side" id="side">
+  <a class="brand" href="#"><span class="brand-name">modbusio</span></a>
+  <div class="head-more open"><div class="side-card"><section class="side-part site-group"><span class="cap">Anlage</span>
+    <div class="menu-host site-host"><button type="button" class="quiet site-switch"><span class="site-now">Heizzentrale</span></button></div>
+    <div class="side-meta"><span class="side-detail"><span class="state"><span class="dot on"></span>4 Geräte</span></span></div>
+  </section></div></div>
+  <nav class="tabs" aria-label="Bereiche">
+    <a href="#"><span>Arbeitsbereich</span><span class="n">4</span></a>
+    <a href="#"><span>Register</span></a>
+    <a href="#"><span>Profile</span><span class="n">2</span></a>
+    <a href="#"><span>Beobachten</span><span class="n"></span></a>
+    <a href="#"><span>Aufzeichnung</span><span class="n"></span></a>
+    <a href="#"><span>Von dir geändert</span><span class="n warn"></span></a>
+    <a href="#" aria-current="page" title="Busanalyse (7)"><span>Busanalyse</span><span class="n" id="side-dot">●</span></a>
+  </nav>
+  <a class="quiet settings-link" href="#" title="Einstellungen (8)"><span class="side-label">Einstellungen</span></a>
+</aside>
+<div class="content">
+  <div class="mockbar">Entwurf · Zustand: <span class="seg" role="group">
+    <button type="button" data-mock="idle" aria-pressed="false">Leer</button>
+    <button type="button" data-mock="running" aria-pressed="true">Hört mit</button></span></div>
+  <div class="nextbar" id="nextbar"></div>
+  <main class="work" id="work"></main>
+  <footer class="bar status" id="status"></footer>
+</div>
+<script>
+// Static data only: a trunk with a master polling units 1, 5, 7, 12 at 19200 8E1.
+const UNITS = [
+  { unit: 1, name: "Wärmezähler Heizgruppe 1", requests: 412, answers: 412, missing: 0, exceptions: "", ms: "18–24", cycle: "2,0" },
+  { unit: 5, name: "Raumregler Büro", requests: 412, answers: 410, missing: 2, exceptions: "", ms: "22–95", cycle: "2,0", damaged: 9 },
+  { unit: 7, name: "", requests: 824, answers: 412, missing: 0, exceptions: "412 × 02", ms: "19–22", cycle: "2,0" },
+  { unit: 12, name: "Frequenzumrichter Pumpe", requests: 380, answers: 366, missing: 14, exceptions: "", ms: "40–310", cycle: "2,2" },
+];
+const EXCHANGES = [
+  { time: "12:04:31.210", unit: 1, what: "HR 0, 8 Register", result: "1234,5 kWh · 88,21 m³ · …", ms: 19 },
+  { time: "12:04:31.402", unit: 5, what: "IR 0, 4 Register", result: "21,4 °C · 22,0 °C · …", ms: 31 },
+  { time: "12:04:31.611", unit: 7, what: "HR 0, 10 Register", result: "Werte erhalten", ms: 20 },
+  { time: "12:04:31.808", unit: 7, what: "HR 100, 21 Register", result: "Ausnahme 02: das Gerät hat an dieser Adresse keine Daten", ms: 21, problem: true },
+  { time: "12:04:32.020", unit: 12, what: "HR 100, 2 Register", result: "keine Antwort", ms: null, problem: true },
+  { time: "12:04:32.913", unit: 12, what: "HR 1 schreiben", result: "Sollfrequenz 42,00 → 45,00 Hz, bestätigt", ms: 44, write: true },
+  { time: "12:04:33.210", unit: 1, what: "HR 0, 8 Register", result: "1234,6 kWh · 88,21 m³ · …", ms: 21 },
+];
+const REGISTERS = [
+  { address: "HR 0", name: "Wärmeenergie", reads: 412, last: "1234,6 kWh", changes: 37, range: "1230,1–1234,6" },
+  { address: "HR 4", name: "Volumen", reads: 412, last: "88,21 m³", changes: 5, range: "88,02–88,21" },
+  { address: "HR 10", name: "Vorlauftemperatur", reads: 412, last: "63,2 °C", changes: 211, range: "61,8–64,0" },
+  { address: "HR 12", name: "Rücklauftemperatur", reads: 412, last: "41,0 °C", changes: 198, range: "40,2–42,3" },
+];
+const FRAMES = [
+  ["12:04:31.808", "—", "Anfrage", "07 03 00 64 00 15 C5 BC", "gut"],
+  ["12:04:31.829", "21 ms", "Antwort", "07 83 02 20 F0", "gut"],
+  ["12:04:32.020", "191 ms", "Anfrage", "0C 03 00 64 00 02 84 C9", "gut"],
+  ["12:04:32.413", "393 ms", "?", "0C 03 04 42 1F", "beschädigt"],
+  ["12:04:32.913", "500 ms", "Anfrage", "0C 06 00 01 11 94 D4 E8", "gut"],
+  ["12:04:32.957", "44 ms", "Antwort", "0C 06 00 01 11 94 D4 E8", "gut"],
+];
+const VIEWS = [["units", "Geräte", 4], ["exchanges", "Abfragen", null], ["registers", "Register", null], ["frames", "Rahmen", null]];
+const state = { mode: "running", view: "units", chosen: null, paused: false };
+
+const unitName = (unit) => UNITS.find((item) => item.unit === unit)?.name || `Unit ${unit}`;
+
+function strips() {
+  return `<div class="strips">
+    <div class="strip warn">Unit 12 antwortet auf 14 von 380 Anfragen nicht (4 %), immer direkt nach einer Anfrage an Unit 5: Unit 12 braucht nach einem Nachbarn vielleicht mehr Zeit. <button type="button" class="quiet" data-view="exchanges">Abfragen zeigen</button></div>
+    <div class="strip warn">Der Master liest bei Unit 7 jeden Zyklus HR 100–120; das Gerät antwortet jedes Mal mit Ausnahme 02: die Registerliste des Masters passt nicht zum Gerät.</div>
+    <div class="strip info">Antworten von Unit 5 kommen beschädigt an (9), die Anfragen des Masters nicht: Verdrahtung bei Unit 5 prüfen.</div>
+  </div>`;
+}
+
+function toolbar() {
+  const seg = VIEWS.map(([view, label, n]) => `<button type="button" data-view="${view}" aria-pressed="${state.view === view}">${label}${n ? ` ${n}` : ""}</button>`).join("");
+  return `<div class="toolbar"><span class="seg" role="group">${seg}</span>
+    <div class="end"><button type="button" class="quiet" data-act="pause">${state.paused ? "Weiter anzeigen" : "Anhalten"}</button>
+    <button type="button" class="quiet">Zurücksetzen</button>
+    <button type="button" class="quiet">CSV</button><button type="button" class="quiet">Excel</button><button type="button" class="quiet">Als pcapng sichern</button></div></div>`;
+}
+
+function rows() {
+  if (state.view === "units") {
+    return `<div class="row aunits head"><span>Gerät</span><span class="num">Anfragen</span><span class="num">Antworten</span><span class="num">Ohne Antwort</span><span>Ausnahmen</span><span class="num">Antwort ms</span><span class="num">Zyklus s</span></div>` +
+      UNITS.map((u) => `<div class="row aunits${state.chosen === `u${u.unit}` ? " active" : ""}" data-choose="u${u.unit}"><span class="cut"><b>${u.unit}</b> · ${u.name || '<span class="hint">neu, nicht in der Anlage</span>'}</span><span class="num mono">${u.requests}</span><span class="num mono">${u.answers}</span><span class="num mono">${u.missing ? `<span class="chip err">${u.missing}</span>` : "0"}</span><span class="mono">${u.exceptions ? `<span class="chip err">${u.exceptions}</span>` : "—"}</span><span class="num mono">${u.ms}</span><span class="num mono">${u.cycle}</span></div>`).join("");
+  }
+  if (state.view === "exchanges") {
+    return `<div class="toolbar"><label class="form-field inline">Gerät<select><option>alle</option>${UNITS.map((u) => `<option>${u.unit}</option>`).join("")}</select></label>
+      <label class="check"><input type="checkbox"> nur Probleme</label><label class="check"><input type="checkbox"> nur Schreiben</label></div>` +
+      `<div class="row aexch head"><span>Zeit</span><span>Unit</span><span>Anfrage</span><span>Ergebnis</span><span class="num">ms</span></div>` +
+      EXCHANGES.map((e, i) => `<div class="row aexch${state.chosen === `e${i}` ? " active" : ""}" data-choose="e${i}"><span class="mono">${e.time.slice(0, 8)}</span><span class="mono">${e.unit}</span><span class="cut">${e.write ? '<span class="pen">✎</span> ' : ""}${e.what}</span><span class="cut">${e.problem ? `<span class="chip err">${e.result}</span>` : e.result}</span><span class="num mono">${e.ms ?? "—"}</span></div>`).join("");
+  }
+  if (state.view === "registers") {
+    return `<div class="toolbar"><label class="form-field inline">Gerät<select><option>1 · Wärmezähler Heizgruppe 1</option><option>7</option><option>12 · Frequenzumrichter Pumpe</option></select></label>
+      <div class="end"><button type="button" class="tonal">In ein Profil …</button></div></div>` +
+      `<div class="row aregs head"><span>Adresse</span><span>Datenpunkt</span><span class="num">gelesen</span><span class="num">geändert</span><span class="num">zuletzt</span><span class="num">min–max</span></div>` +
+      REGISTERS.map((r, i) => `<div class="row aregs${state.chosen === `r${i}` ? " active" : ""}" data-choose="r${i}"><span class="mono">${r.address}</span><span class="cut">${r.name}</span><span class="num mono">${r.reads}</span><span class="num mono">${r.changes}</span><span class="num mono">${r.last}</span><span class="num mono">${r.range}</span></div>`).join("");
+  }
+  return `<div class="row aframes head"><span>Zeit</span><span>Abstand</span><span>Art</span><span>Bytes</span><span>CRC</span></div>` +
+    FRAMES.map(([time, gap, kind, bytes, crc]) => `<div class="row aframes"><span>${time.slice(3)}</span><span>${gap}</span><span>${kind}</span><span class="cut">${bytes}</span><span>${crc === "gut" ? crc : `<span class="chip err">${crc}</span>`}</span></div>`).join("") +
+    `<div class="strip info">Zeiten sind die Ankunft beim USB-Adapter (Latenz 16 ms, auf 1 ms senkbar), nicht der Moment auf der Leitung.</div>`;
+}
+
+function detail() {
+  const back = `<button type="button" class="quiet back" data-choose="">← Zurück</button>`;
+  const id = state.chosen;
+  if (!id) return `<aside class="detail"><p class="hint">Eine Zeile wählen.</p></aside>`;
+  if (id[0] === "u") {
+    const u = UNITS.find((item) => `u${item.unit}` === id);
+    return `<aside class="detail open">${back}<div class="dhead"><b>Unit ${u.unit}</b><span class="sub">${u.name || "nicht in der Anlage"}</span></div>
+      <dl class="facts"><dt>Anfragen</dt><dd>${u.requests}</dd><dt>Ohne Antwort</dt><dd>${u.missing}</dd><dt>Beschädigt</dt><dd>${u.damaged ?? 0}</dd><dt>Antwortzeit</dt><dd>min 40 · Median 52 · 95 % 240 · max 310 ms</dd><dt>Zyklus</dt><dd>${u.cycle} s</dd>
+      <dt>Funktionen</dt><dd>03 HR 100–101 · 06 HR 1</dd></dl>
+      <h3>Antwortzeit über die Zeit</h3><svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 34 L10 33 L20 30 L30 34 L40 12 L50 33 L60 31 L70 5 L80 32 L90 33 L100 30"/></svg>
+      ${u.name ? "" : '<div class="actions"><button type="button" class="tonal">Zur Anlage hinzufügen</button></div>'}</aside>`;
+  }
+  if (id[0] === "e") {
+    const e = EXCHANGES[Number(id.slice(1))];
+    return `<aside class="detail open">${back}<div class="dhead"><b>${e.what}</b><span class="sub">Unit ${e.unit} · ${unitName(e.unit)} · ${e.time}</span></div>
+      <h3>Anfrage</h3><div class="bytes"><span>0C<small>Unit</small></span><span>03<small>Funktion</small></span><span>00 64<small>Adresse 100</small></span><span>00 02<small>Anzahl 2</small></span><span>84 C9<small>CRC gut</small></span></div>
+      <h3>Antwort</h3><p>${e.problem ? `<span class="chip err">${e.result}</span>` : e.result}</p>
+      ${e.write ? '<p class="hint">Geschrieben vom Master der Anlage, nicht von modbusio. Alter Wert: zuletzt gelesen um 12:04:30.' : ""}</aside>`;
+  }
+  const r = REGISTERS[Number(id.slice(1))];
+  return `<aside class="detail open">${back}<div class="dhead"><b class="mono">${r.address}</b><span class="sub">${r.name} · aus Profil «Sensus PolluCom»</span></div>
+    <dl class="facts"><dt>Zuletzt</dt><dd>${r.last}</dd><dt>Roh</dt><dd class="mono">0x449A 0x5333</dd><dt>Gelesen</dt><dd>${r.reads} × vom Master</dd></dl>
+    <h3>Mit dem nächsten Register</h3><dl class="facts pairs"><dt class="mono in-use">ABCD</dt><dd class="mono">1234,6</dd><dt class="mono">CDAB</dt><dd class="mono dim">3,9e-8</dd></dl>
+    <h3>Wert über die Zeit</h3><svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none"><path d="M0 36 L20 32 L40 26 L60 18 L80 11 L100 4"/></svg>
+    <p class="hint">Aus den Antworten, die vorbeikamen. modbusio hat nichts gefragt.</p></aside>`;
+}
+
+function idle() {
+  return `<div class="split single"><section class="listwrap"><div class="empty" style="text-align:left;max-width:640px">
+    <h2>Den Bus mithören, ohne zu senden</h2>
+    <p>Einen USB-RS-485-Adapter parallel an den Strang hängen. modbusio liest nur und zeigt, was der Master der Anlage fragt und was die Geräte antworten.</p>
+    <pre class="wiring">  Master ────┬──────── Gerät 1 ──── Gerät 12 ──┤ 120 Ω
+             │  A, B und GND parallel
+       [ USB-Adapter ]   Abschluss und Bias: AUS</pre>
+    <p class="hint">Kommt nichts Lesbares an, sind A und B oft vertauscht: die Hersteller beschriften sie verschieden.</p>
+    <div class="start-form">
+      <label class="form-field">Anschluss<select><option>COM3 · USB Serial (FTDI)</option></select></label>
+      <label class="form-field">Geschwindigkeit<select><option>Durch Hören herausfinden</option><option>9600 8E1</option><option>19200 8E1</option></select></label>
+    </div>
+    <p class="hint">Solange die Analyse läuft, fragt modbusio selbst nichts über diesen Anschluss.</p>
+    <p><button type="button" class="tonal">Datei öffnen …</button> <span class="hint">eine pcapng-Datei mit RTU-Rahmen, auch von einem anderen Werkzeug</span></p>
+  </div></section></div>`;
+}
+
+function render() {
+  const running = state.mode === "running";
+  document.getElementById("side-dot").textContent = running ? "●" : "";
+  document.getElementById("nextbar").innerHTML = `<div class="pagehead"><h1>Busanalyse</h1><p class="lead">${running
+    ? 'COM3 · 19200 8E1 · <span class="listen-only">hört nur mit, sendet nichts</span> · läuft seit 12:04'
+    : "Was auf einem RS-485-Strang passiert, ohne selbst zu senden."}</p></div>
+    <button type="button" id="next" data-mock="${running ? "idle" : "running"}">${running ? "Mithören beenden" : "Mithören starten"}</button>`;
+  document.getElementById("status").innerHTML = running
+    ? '<span class="state"><span class="dot on"></span>Hört mit · COM3 19200 8E1 · 31 204 Rahmen · 9 beschädigt · Busauslastung 38 %</span>'
+    : '<span class="state"><span class="dot on"></span>Bereit</span>';
+  document.getElementById("work").innerHTML = running
+    ? `<div class="split"><section class="listwrap">${strips()}${toolbar()}<div class="rows" role="listbox">${rows()}</div></section>${detail()}</div>`
+    : idle();
+  document.querySelectorAll(".mockbar [data-mock]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mock === state.mode)));
+}
+
+document.addEventListener("click", (event) => {
+  const target = event.target.closest("[data-mock], [data-view], [data-choose], [data-act]");
+  if (!target) return;
+  if (target.dataset.mock) state.mode = target.dataset.mock;
+  if (target.dataset.view) { state.view = target.dataset.view; state.chosen = null; }
+  if (target.dataset.choose !== undefined) state.chosen = target.dataset.choose || null;
+  if (target.dataset.act === "pause") state.paused = !state.paused;
+  render();
+});
+render();
+</script>
+</body>
+</html>

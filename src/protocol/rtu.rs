@@ -4,14 +4,21 @@ use super::pdu;
 
 /// CRC-16/MODBUS (polynomial 0xA001 reflected, start 0xFFFF), sent low byte first.
 pub fn crc(bytes: &[u8]) -> u16 {
-    bytes.iter().fold(0xFFFF, |crc, &byte| {
-        (0..8).fold(crc ^ u16::from(byte), |crc, _| {
-            if crc & 1 != 0 {
-                (crc >> 1) ^ 0xA001
-            } else {
-                crc >> 1
-            }
-        })
+    bytes
+        .iter()
+        .fold(CRC_START, |crc, &byte| crc_step(crc, byte))
+}
+
+pub const CRC_START: u16 = 0xFFFF;
+
+/// The CRC after one more byte, for searching a frame's end byte by byte.
+pub fn crc_step(crc: u16, byte: u8) -> u16 {
+    (0..8).fold(crc ^ u16::from(byte), |crc, _| {
+        if crc & 1 != 0 {
+            (crc >> 1) ^ 0xA001
+        } else {
+            crc >> 1
+        }
     })
 }
 

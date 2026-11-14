@@ -91,6 +91,10 @@ To try it without a plant, start the simulators on loopback addresses:
   RTU frames over TCP instead.
 - `cargo run --example simulated_rtu` (Linux) the same three devices on a pseudo-terminal; it prints
   the terminal's name (`/dev/pts/7`), which modbusio opens like a USB RS-485 adapter.
+- `cargo run --example simulated_trunk` (Linux) a whole trunk for the bus analyser: a master
+  polling units 1, 5, 7, 9 and 12 on a pseudo-terminal, with a silent unit, a refused block, slow
+  and missing answers, damaged frames, writes and broadcasts; `--clean` without the faults,
+  `--second-master`, `--cycle-ms 2000`.
 
 ### New versions
 
