@@ -227,6 +227,7 @@ export default {
     "an.draftSource": "análisis de bus: los registros que usó su maestro",
     "an.leadStopped": "Terminada · {port} · {settings} · {frames} tramas escuchadas; escuchar de nuevo con los campos de abajo",
     "an.frameByListening": "también se averigua escuchando",
+    "panel.resize": "Arrastrar para cambiar el ancho, doble clic para el ancho automático",
     "search.lineTools": "Comprobar la línea",
     "search.finding": "Probando velocidades y tramas: {done} de {total} ajustes …",
     "search.foundNext": "Velocidad y trama están en {settings}: Buscar consulta ahora cada unit así.",

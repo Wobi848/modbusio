@@ -2,6 +2,7 @@
 // import of a vendor's register list with a preview that reads the first points from a device.
 
 import { h } from "./html.js";
+import { detailBorder } from "./panels.js";
 import { askHtml } from "./asking.js";
 import { codeText, counted, localNumber, t } from "./i18n.js";
 import { ORDERS, TYPES } from "./explorer.js";
@@ -29,10 +30,10 @@ function listHtml(state) {
   const importing = state.profileDraft ? `<button type="button" class="quiet" data-act="import-list">${t("prof.import")}</button>` : "";
   const toolbar = `<div class="toolbar"><div class="end"><button type="button" class="tonal" data-act="new-profile">${t("prof.new")}</button>${importing}</div></div>`;
   if (!state.profiles.length) {
-    return `<section class="listwrap">${toolbar}<div class="empty"><h2>${t("prof.emptyTitle")}</h2><p>${t("prof.emptyLead")}</p></div></section>`;
+    return `<section class="listwrap">${detailBorder()}${toolbar}<div class="empty"><h2>${t("prof.emptyTitle")}</h2><p>${t("prof.emptyLead")}</p></div></section>`;
   }
   const head = `<div class="row mprofiles head"><span>${t("col.name")}</span><span>${t("col.vendor")}</span><span class="num">${t("prof.points")}</span><span></span></div>`;
-  return `<section class="listwrap">${toolbar}<div class="rows" data-keep="profiles" role="listbox">${head}${rows}</div></section>`;
+  return `<section class="listwrap">${detailBorder()}${toolbar}<div class="rows" data-keep="profiles" role="listbox">${head}${rows}</div></section>`;
 }
 
 const select = (id, data, options, chosen) => `<select id="${id}" ${data}>${options.map(([value, label]) => `<option value="${h(value)}"${String(value) === String(chosen ?? "") ? " selected" : ""}>${h(label)}</option>`).join("")}</select>`;
@@ -56,7 +57,7 @@ function editorHtml(state) {
     ${draft.id ? `<button type="button" class="quiet" data-act="ask-delete-profile">${t("prof.delete")}</button>` : ""}</div></div>`;
   const deleting = state.asking?.kind === "delete-profile" ? askHtml(t("prof.deleteAsk", { name: draft.name }), t("prof.deleteWhy"), [["delete-profile", t("prof.delete")]]) : "";
   const closing = state.asking?.kind === "close-profile" ? askHtml(t("prof.closeAsk"), t("prof.closeWhy"), [["discard-profile", t("prof.discard")]]) : "";
-  return `<section class="listwrap">${head}${tools}${deleting}${closing}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
+  return `<section class="listwrap">${detailBorder()}${head}${tools}${deleting}${closing}<div class="rows" data-keep="profile-points" role="listbox">${tableHead}${rows || `<div class="empty"><p>${t("prof.noPoints")}</p></div>`}</div></section>`;
 }
 
 function pointFormHtml(state) {

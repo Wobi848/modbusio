@@ -2,6 +2,7 @@
 // mean, and taking what was found into the device's profile.
 
 import { h } from "./html.js";
+import { detailBorder } from "./panels.js";
 import { askHtml, unlockHtml } from "./asking.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
 import { deviceName, registerView } from "./store.js";
@@ -118,7 +119,7 @@ export function viewExplorer(state) {
     title: t("tab.explorer"),
     lead: t("ex.lead"),
     next: null,
-    html: `<div class="split"><section class="listwrap">${formHtml(state)}${tableHtml(state)}</section>${detailHtml(state)}</div>`,
+    html: `<div class="split"><section class="listwrap">${detailBorder()}${formHtml(state)}${tableHtml(state)}</section>${detailHtml(state)}</div>`,
   };
 }
 

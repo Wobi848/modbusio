@@ -2,6 +2,7 @@
 // (the device list, or a device's points from its profile) and the details beside it.
 
 import { h } from "./html.js";
+import { listBorders } from "./panels.js";
 import { codeText, counted, localNumber, noteText, t } from "./i18n.js";
 import { askHtml, writeHtml } from "./asking.js";
 import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
@@ -74,11 +75,11 @@ function devicesHtml(state) {
     <span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span></div></div>
     ${state.menu === "add-device" ? addDeviceHtml(state) : ""}`;
   if (!devices.length) {
-    return `<section class="listwrap">${toolbar}${strips}<div class="empty"><h2>${t("dev.emptyTitle")}</h2><p>${t("dev.emptyLead")}</p>
+    return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="empty"><h2>${t("dev.emptyTitle")}</h2><p>${t("dev.emptyLead")}</p>
       <div class="actions"><button type="button" class="tonal" data-act="add-device-menu">${t("dev.addByHand")}</button></div></div></section>`;
   }
   const head = `<div class="row mdevices head" role="row"><span>${t("col.device")}</span><span>${t("col.line")}</span><span class="num">${t("col.unit")}</span><span>${t("col.profile")}</span><span>${t("col.vendor")}</span></div>`;
-  return `<section class="listwrap">${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${devices.map((device) => deviceRow(state, device)).join("")}</div></section>`;
+  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${devices.map((device) => deviceRow(state, device)).join("")}</div></section>`;
 }
 
 function exportMenu(state) {
@@ -157,11 +158,11 @@ function pointRow(state, point) {
 function pointsHtml(state, device) {
   const reading = state.readings[device.key];
   if (!device.profile) {
-    return `<section class="listwrap"><div class="empty"><h2>${t("pts.noProfileTitle")}</h2><p>${t("pts.noProfileLead")}</p>
+    return `<section class="listwrap">${listBorders()}<div class="empty"><h2>${t("pts.noProfileTitle")}</h2><p>${t("pts.noProfileLead")}</p>
       <div class="actions"><button type="button" data-act="explore-device">${t("dev.explore")}</button><button type="button" class="tonal" data-act="import-for-device">${t("dev.importList")}</button></div></div></section>`;
   }
   if (!reading) {
-    return `<section class="listwrap"><div class="empty"><h2>${t("pts.notReadTitle")}</h2><p>${counted("pts.notReadLead", device.points)}</p>
+    return `<section class="listwrap">${listBorders()}<div class="empty"><h2>${t("pts.notReadTitle")}</h2><p>${counted("pts.notReadLead", device.points)}</p>
       <div class="actions"><button type="button" data-act="read-device">${t("dev.read")}</button></div></div></section>`;
   }
   const points = filterPoints(reading.points, state.pointFilter);
@@ -174,7 +175,7 @@ function pointsHtml(state, device) {
   const head = `<div class="row mpoints head" role="row"><span>${t("col.name")}</span><span>${t("col.address")}</span><span class="num">${t("col.value")}</span><span></span></div>`;
   const rows = groupPoints(points).map(([group, members]) =>
     `${group ? `<div class="row group" role="presentation"><span class="name">${h(group)}</span><span class="hint">${members.length}</span></div>` : ""}${members.map((point) => pointRow(state, point)).join("")}`).join("");
-  return `<section class="listwrap">${toolbar}${strips}<div class="rows" data-keep="points" role="listbox">${head}${rows || `<div class="empty"><p>${t("pts.none")}</p></div>`}</div></section>`;
+  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="points" role="listbox">${head}${rows || `<div class="empty"><p>${t("pts.none")}</p></div>`}</div></section>`;
 }
 
 function pointDetailHtml(state, device) {

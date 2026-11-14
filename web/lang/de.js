@@ -221,6 +221,7 @@ export default {
     "an.draftSource": "Busanalyse: die Register, die ihr Master benutzte",
     "an.leadStopped": "Beendet · {port} · {settings} · {frames} Rahmen gehört; mit den Feldern darunter neu mithören",
     "an.frameByListening": "wird mitgefunden",
+    "panel.resize": "Ziehen, um die Breite zu ändern; Doppelklick für die automatische Breite",
     "search.lineTools": "Leitung prüfen",
     "search.finding": "Probiere Geschwindigkeiten und Frames: {done} von {total} Einstellungen …",
     "search.foundNext": "Geschwindigkeit und Frame stehen auf {settings}: Suchen fragt jetzt jede Unit damit ab.",
