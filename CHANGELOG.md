@@ -44,7 +44,8 @@ First version.
   capture files (pcapng or pcap, also from other tools) opened into the same views; on the
   command line `analyse`, and `analyse --file` for a saved capture. The keys count up: the bus analyser is `7`, *Settings* now `8`.
 - The tree groups devices by their wire (serial port or TCP address), folds open and shut, and marks a
-  device set to other serial settings than most on its wire.
+  device set to other serial settings than most on its wire; a wire whose devices are not all set alike
+  shows it as a fault, in the tree and above its device list.
 - A line in the tree can be chosen: the list shows its devices, and the whole line can be removed
   from the site at once, after a question.
 - Serial ports without a chip behind them (Linux lists `ttyS0` to `ttyS3` on every PC) are left

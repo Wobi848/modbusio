@@ -31,5 +31,11 @@ export default {
     for (const key of [`serial:${port}:19200:8E1/1`, `serial:${port}:9600:8E1/2`, `serial:${port}:19200:8N2/5`]) {
       assert.ok(keys.includes(key), `${key} in ${keys}`);
     }
+    // the wire says clearly that its devices are not set alike: in the tree and above the list
+    await page.click("[data-act=close-menu]");
+    await page.waitForSelector(`.tree .node.port[data-line="${port}"] .chip.err:has-text('2')`);
+    await page.click(`.tree .node.port[data-line="${port}"] .label`);
+    await page.waitForSelector(".strip.err:has-text('are not all set alike')");
+    assert.equal(await page.locator(".row.mdevices .chip.warn:has-text('set otherwise')").count(), 2);
   },
 };

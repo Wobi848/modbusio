@@ -19,7 +19,7 @@ export default {
     "set.renamed": "Site named {name}",
     "pts.readAt": "read {time}",
     "chip.changed": "{n} changed by you", "chip.recording": "Recording", "chip.capture": "Capture: {n} frames", "chip.unlocked": "Writing unlocked",
-    "tree.label": "Site", "tree.otherSettings": "set otherwise than most devices on this wire", "tree.open": "Open", "tree.close": "Close", "ws.lead": "{n} devices on this site. Choose one to see its points.", "ws.leadProfile": "profile {profile}, {n} points", "ws.leadProfileOne": "profile {profile}, 1 point", "ws.leadEmpty": "No devices yet: search for them or add one by hand.", "ws.leadOne": "1 device on this site. Choose it to see its points.", "dev.details": "Device …",
+    "tree.label": "Site", "tree.mixed": "devices on this wire are not all set alike", "dev.setOtherwise": "set otherwise", "dev.mixedSettings": "The devices on {line} are not all set alike: {list}. A master reaches only those set as it is: bring them all to one setting.", "tree.otherSettings": "set otherwise than most devices on this wire", "tree.open": "Open", "tree.close": "Close", "ws.lead": "{n} devices on this site. Choose one to see its points.", "ws.leadProfile": "profile {profile}, {n} points", "ws.leadProfileOne": "profile {profile}, 1 point", "ws.leadEmpty": "No devices yet: search for them or add one by hand.", "ws.leadOne": "1 device on this site. Choose it to see its points.", "dev.details": "Device …",
     "col.device": "Device", "col.line": "Line", "col.unit": "Unit", "col.profile": "Profile", "col.vendor": "Vendor",
     "col.name": "Name", "col.address": "Address", "col.value": "Value",
     export: "Export", "export.devicesCsv": "Device list (CSV)", "export.siteXlsx": "Whole site (Excel, reads every device)",
