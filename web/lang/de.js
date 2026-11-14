@@ -137,6 +137,7 @@ export default {
   },
   errors: {
     searchRunning: "Eine Suche läuft; zuerst stoppen.",
+    analyserListens: "Die Busanalyse hört auf $1 mit; zuerst beenden.",
     locked: "Schreiben ist gesperrt: zuerst für diese Sitzung freischalten.",
     noProfile: "Dieses Gerät hat noch kein Profil: eines wählen oder im Explorer anlegen.",
     notNumber: "$1 ist keine Zahl",

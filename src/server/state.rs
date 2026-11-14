@@ -44,6 +44,8 @@ pub struct AppState {
     /// Writing is allowed in this session (concept section 7).
     pub unlocked: AtomicBool,
     pub recording: Mutex<Recording>,
+    /// The bus analyser, running or the last one ended.
+    pub analyser: Mutex<Option<super::analysing::Listening>>,
     /// What listening to a serial port heard last, by port.
     pub listened: Mutex<HashMap<String, crate::listen::Listened>>,
     /// Problems with files at the start, shown once in the interface.

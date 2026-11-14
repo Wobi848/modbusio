@@ -704,3 +704,141 @@ fn base64(bytes: &[u8]) -> String {
     }
     text
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn the_analyser_hears_a_trunk_and_modbusio_sends_nothing_there_meanwhile() {
+    let port = common::played_trunk(common::sim::trunk::Options {
+        clean: true,
+        cycle: Duration::from_millis(500),
+        ..Default::default()
+    });
+    let app = app();
+    // no settings given: found by listening, the first that hears frames
+    let (status, started) = call(
+        &app,
+        "POST",
+        "/api/analyser/start",
+        Some(json!({ "port": port })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{started}");
+    assert_eq!(started["running"], json!(true));
+    assert_eq!(started["settings"], json!("9600 8E1"));
+    let (status, again) = call(
+        &app,
+        "POST",
+        "/api/analyser/start",
+        Some(json!({ "port": port })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT, "{again}");
+
+    let line = format!("serial:{port}:19200:8E1");
+    let (status, refused) = call(
+        &app,
+        "POST",
+        "/api/scan/units",
+        Some(json!({ "endpoint": line })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::CONFLICT);
+    assert_eq!(
+        refused["error"],
+        json!(format!("the bus analyser listens on {port}; stop it first"))
+    );
+    let (status, _) = call(&app, "POST", "/api/listen", Some(json!({ "port": port }))).await;
+    assert_eq!(status, StatusCode::CONFLICT);
+
+    tokio::time::sleep(Duration::from_millis(2500)).await;
+    let (_, heard) = call(&app, "GET", "/api/analyser", None).await;
+    let meter = heard["units"]
+        .as_array()
+        .and_then(|units| units.iter().find(|unit| unit["unit"] == json!(1)))
+        .expect("unit 1 heard")
+        .clone();
+    assert!(meter["answers"].as_u64() >= Some(2), "{meter}");
+    assert_eq!(meter["no_answer"], json!(0));
+    let exchanges = heard["exchanges"].as_array().expect("exchanges");
+    let read = exchanges
+        .iter()
+        .find(|exchange| exchange["unit"] == json!(1))
+        .expect("an exchange of unit 1");
+    assert_eq!(
+        read["asked"],
+        json!({ "area": "holding_register", "address": 0, "count": 8, "write": false })
+    );
+    assert_eq!(read["outcome"]["kind"], json!("registers"));
+    assert!(
+        read["request"]
+            .as_str()
+            .is_some_and(|hex| hex.starts_with("01 03 00 00 00 08"))
+    );
+    assert!(
+        heard["frames"]
+            .as_array()
+            .is_some_and(|frames| frames.len() >= 4)
+    );
+
+    // only what came after the last exchange the page has
+    let last = exchanges.last().expect("one")["number"]
+        .as_u64()
+        .expect("number");
+    let (_, newer) = call(
+        &app,
+        "GET",
+        &format!("/api/analyser?exchanges={last}&frames=999999"),
+        None,
+    )
+    .await;
+    assert!(
+        newer["exchanges"]
+            .as_array()
+            .expect("list")
+            .iter()
+            .all(|exchange| exchange["number"].as_u64() > Some(last))
+    );
+    assert_eq!(newer["frames"], json!([]));
+
+    let (status, _) = call(&app, "GET", "/api/analyser.pcapng", None).await;
+    assert_eq!(status, StatusCode::OK);
+
+    let (_, stopped) = call(&app, "POST", "/api/analyser/stop", None).await;
+    assert_eq!(stopped["running"], json!(false));
+    assert_eq!(stopped["ended"], json!("stopped"));
+    // the line is modbusio's again
+    let (status, _) = call(
+        &app,
+        "POST",
+        "/api/scan/units",
+        Some(json!({ "endpoint": line, "from": 1, "to": 1 })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK);
+    call(&app, "POST", "/api/scan/stop", None).await;
+}
+
+#[tokio::test]
+async fn the_analyser_wants_a_port_and_speed_with_frame() {
+    let app = app();
+    let (status, _) = call(
+        &app,
+        "POST",
+        "/api/analyser/start",
+        Some(json!({ "port": " " })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, _) = call(
+        &app,
+        "POST",
+        "/api/analyser/start",
+        Some(json!({ "port": "COM3", "baud": 9600 })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (_, idle) = call(&app, "GET", "/api/analyser", None).await;
+    assert_eq!(idle, json!({ "running": false }));
+    let (status, _) = call(&app, "GET", "/api/analyser.pcapng", None).await;
+    assert_eq!(status, StatusCode::CONFLICT);
+}

@@ -7,6 +7,8 @@ export default {
   },
   async run({ page, base, api }) {
     await open(page, base, { area: "settings" });
+    // typing before the page has its site would race the site's name arriving into the field
+    await page.waitForFunction(() => document.querySelector("#site-name")?.value === "Site");
     // what is typed survives a redraw, as when the page finishes starting or a live value comes in
     const redraw = () => page.evaluate(async () => (await import("/store.js")).render());
     await page.fill("#site-name", "Site A");

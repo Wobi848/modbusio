@@ -2,7 +2,7 @@
 //! often takes only one connection, and a serial line only one request at a time, so all requests
 //! to a line wait for each other here.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -26,6 +26,8 @@ type Slot = Arc<tokio::sync::Mutex<Option<Link>>>;
 
 pub struct Links {
     slots: Mutex<HashMap<String, Slot>>,
+    /// Serial lines the bus analyser listens to: modbusio sends nothing there meanwhile.
+    held: Mutex<HashSet<String>>,
     pub capture: Arc<Capture>,
     idle_close: Duration,
 }
@@ -40,6 +42,7 @@ impl Links {
     pub fn new(capture: Arc<Capture>) -> Links {
         Links {
             slots: Mutex::default(),
+            held: Mutex::default(),
             capture,
             idle_close: IDLE_CLOSE,
         }
@@ -68,6 +71,9 @@ impl Links {
         request: &Request,
         timeout: Duration,
     ) -> Result<Response, LinkError> {
+        if self.is_held(&target.endpoint) {
+            return Err(LinkError::NotSent(held_text(&target.endpoint)));
+        }
         let slot = self.slot(&target.endpoint);
         let mut open = slot.lock().await;
         let reused = open
@@ -111,6 +117,30 @@ impl Links {
         Ok(link)
     }
 
+    /// Closes modbusio's connection to `endpoint`'s line and sends nothing there until
+    /// [`Links::release`], so the bus analyser can open it and modbusio never becomes a second master.
+    pub async fn hold(&self, endpoint: &Endpoint) {
+        self.held
+            .lock()
+            .expect("held lock")
+            .insert(endpoint.line_key());
+        self.close(endpoint).await;
+    }
+
+    pub fn release(&self, endpoint: &Endpoint) {
+        self.held
+            .lock()
+            .expect("held lock")
+            .remove(&endpoint.line_key());
+    }
+
+    pub fn is_held(&self, endpoint: &Endpoint) -> bool {
+        self.held
+            .lock()
+            .expect("held lock")
+            .contains(&endpoint.line_key())
+    }
+
     /// Closes the connection to a line, so another program can use it.
     pub async fn close(&self, endpoint: &Endpoint) {
         let slot = self.slot(endpoint);
@@ -119,6 +149,15 @@ impl Links {
 }
 
 /// Closes the connection opened at `opened` once no request has used it for `idle`.
+/// Why nothing is sent on a line the bus analyser listens to.
+pub fn held_text(endpoint: &Endpoint) -> String {
+    let line = match endpoint {
+        Endpoint::Serial(settings) => settings.port.clone(),
+        other => other.to_string(),
+    };
+    format!("the bus analyser listens on {line}; stop it first")
+}
+
 async fn close_when_idle(slot: Slot, opened: Instant, idle: Duration) {
     loop {
         let mut open = slot.lock().await;

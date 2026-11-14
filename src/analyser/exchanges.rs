@@ -5,7 +5,43 @@
 use serde::Serialize;
 
 use super::frames::{Damaged, Frame};
-use crate::protocol::pdu::{self, PduError, Request, Response};
+use crate::protocol::pdu::{self, Area, PduError, Request, Response};
+
+/// What a request asked for, for the views: area, range, and whether it writes.
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct Asked {
+    pub area: Area,
+    pub address: u16,
+    pub count: u16,
+    pub write: bool,
+}
+
+impl Asked {
+    fn of(request: &Request) -> Option<Asked> {
+        let (area, address, count, write) = match request {
+            Request::Read {
+                area,
+                address,
+                count,
+            } => (*area, *address, *count, false),
+            Request::WriteCoil { address, .. } => (Area::Coil, *address, 1, true),
+            Request::WriteRegister { address, .. } => (Area::HoldingRegister, *address, 1, true),
+            Request::WriteCoils { address, values } => {
+                (Area::Coil, *address, values.len() as u16, true)
+            }
+            Request::WriteRegisters { address, values } => {
+                (Area::HoldingRegister, *address, values.len() as u16, true)
+            }
+            Request::Identify { .. } | Request::Echo { .. } => return None,
+        };
+        Some(Asked {
+            area,
+            address,
+            count,
+            write,
+        })
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Exchange {
@@ -17,6 +53,7 @@ pub struct Exchange {
     /// without its request.
     #[serde(skip)]
     pub request: Option<Request>,
+    pub asked: Option<Asked>,
     pub outcome: Outcome,
     /// From the request's last byte to the answer's first, as the adapter delivered them.
     pub answer_micros: Option<u64>,
@@ -121,6 +158,7 @@ impl Pairer {
                 unit: frame.unit(),
                 function: frame.function(),
                 request: None,
+                asked: None,
                 outcome: Outcome::AnswerOnly,
                 answer_micros: None,
                 request_bytes: Vec::new(),
@@ -174,6 +212,7 @@ fn finished(waiting: Waiting, outcome: Outcome) -> Exchange {
         at: waiting.frame.at,
         unit: waiting.frame.unit(),
         function: waiting.frame.function(),
+        asked: waiting.request.as_ref().and_then(Asked::of),
         request: waiting.request,
         outcome,
         answer_micros: None,
@@ -231,14 +270,15 @@ mod tests {
             }
         );
         assert_eq!(exchanges[0].answer_micros, Some(10_000));
-        assert!(matches!(
-            exchanges[0].request,
-            Some(Request::Read {
+        assert_eq!(
+            exchanges[0].asked,
+            Some(Asked {
+                area: Area::HoldingRegister,
                 address: 100,
                 count: 2,
-                ..
+                write: false
             })
-        ));
+        );
     }
 
     #[test]
