@@ -72,14 +72,17 @@ function treeHtml(state) {
       const active = device.key === state.selected;
       const failed = (state.readings[device.key]?.failed ?? 0) > 0 ? `<span class="chip err">${state.readings[device.key].failed}</span>` : "";
       // set otherwise than most devices on its wire: that is worth seeing at once
-      const other = settingsOf(device) !== group.settings ? `<span class="chip warn" title="${t("tree.otherSettings")}">${h(settingsOf(device))}</span>` : "";
+      // on a wire set unevenly every device says its setting; the ones off the usual stand out
+      const other = !group.mixed ? ""
+        : settingsOf(device) !== group.settings ? `<span class="chip warn" title="${t("tree.otherSettings")}">${h(settingsOf(device))}</span>`
+          : `<span class="hint mono">${h(settingsOf(device))}</span>`;
       const last = index === group.devices.length - 1 ? " last" : "";
       return `<div class="node level-3 branch${last}${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${other}${failed}<span class="count mono">${device.unit}</span></span></div>`;
     }).join("");
     const chosen = !state.selected && state.selectedLine === group.line;
     const mixed = group.mixed ? `<span class="chip err" title="${t("tree.mixed")}">⚠ ${group.others}</span>` : "";
     const toggle = `<button type="button" class="quiet twisty" data-act="toggle-line" data-line="${h(group.line)}" aria-expanded="${open}" aria-label="${open ? t("tree.close") : t("tree.open")}">${open ? "▾" : "▸"}</button>`;
-    return `<div class="node level-2 port${chosen ? " active" : ""}" role="treeitem" aria-expanded="${open}" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}">${toggle}<span class="label mono">${h(group.line)}</span><span class="end">${mixed}${group.settings ? `<span class="hint mono">${h(group.settings)}</span>` : ""}<span class="count">${group.devices.length}</span></span></div><div class="branches" role="group">${devices}</div>`;
+    return `<div class="node level-2 port${chosen ? " active" : ""}" role="treeitem" aria-expanded="${open}" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}">${toggle}<span class="label mono">${h(group.line)}</span><span class="end">${mixed || (group.settings ? `<span class="hint mono">${h(group.settings)}</span>` : "")}<span class="count">${group.devices.length}</span></span></div><div class="branches" role="group">${devices}</div>`;
   }).join("");
   return `<nav class="tree" role="tree" aria-label="${t("tree.label")}" data-keep="tree">${all}${groups}</nav>`;
 }
@@ -114,10 +117,13 @@ export function mixedStrips(devices) {
 
 function deviceRow(state, device, wires) {
   const active = device.key === state.selected ? " active" : "";
-  const other = settingsOf(device) !== wires.get(portOf(device)) ? ` <span class="chip warn" title="${t("tree.otherSettings")}">${t("dev.setOtherwise")}</span>` : "";
+  const settings = settingsOf(device);
+  const off = settings && settings !== wires.get(portOf(device));
+  // the wire, then its setting; a setting off the wire's usual one stands out
+  const line = settings ? `${h(portOf(device))} <span class="${off ? "set-otherwise" : ""}"${off ? ` title="${t("tree.otherSettings")}"` : ""}>${h(settings)}</span>` : h(device.line);
   const maker = [device.vendor, device.product].filter(Boolean).join(" ");
   return `<div class="row mdevices${active}" data-act="select-device" data-key="${h(device.key)}" role="option" aria-selected="${Boolean(active)}">
-    <span class="name">${h(deviceNameOnLine(device))}</span><span class="mono cut">${h(device.line)}<span class="narrow-only">/${device.unit}</span>${other}</span><span class="mono num">${device.unit}</span>
+    <span class="name">${h(deviceNameOnLine(device))}</span><span class="mono cut">${line}<span class="narrow-only">/${device.unit}</span></span><span class="mono num">${device.unit}</span>
     <span class="cut">${device.profile_name ? h(device.profile_name) : `<span class="chip">${t("dev.noProfile")}</span>`}</span><span class="cut">${h(maker)}</span></div>`;
 }
 

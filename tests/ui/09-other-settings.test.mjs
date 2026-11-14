@@ -36,6 +36,6 @@ export default {
     await page.waitForSelector(`.tree .node.port[data-line="${port}"] .chip.err:has-text('2')`);
     await page.click(`.tree .node.port[data-line="${port}"] .label`);
     await page.waitForSelector(".strip.err:has-text('are not all set alike')");
-    assert.equal(await page.locator(".row.mdevices .chip.warn:has-text('set otherwise')").count(), 2);
+    assert.equal(await page.locator(".row.mdevices .set-otherwise").count(), 2);
   },
 };
