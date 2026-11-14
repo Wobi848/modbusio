@@ -88,7 +88,8 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Search a subnet for port 502, then units 1, 255, 0; one device for every unit; gateways named | *Search settings*, *Network (TCP)* | `scan.rs` (subnet), `ui/01-search` |
 | Search the units behind a gateway, Modbus TCP or RTU over TCP | *Search settings*, *Gateway* | `api.rs` (search adds to site), `ui/01-search` |
 | Listen to a serial line without sending | *Search settings*, *Serial line*, *Listen first* | `scan.rs` (listening), `listen.rs`, `ui/05-serial` |
-| Find speed and frame of a serial line | *Search settings*, *Find speed and frame* | `scan.rs` (settings), `ui/05-serial` |
+| Find speed and frame of a serial line; progress and result in the open dialog | *Search settings*, *Find speed and frame* | `scan.rs` (settings), `ui/05-serial` |
+| Find devices at other serial settings: asked first with the time, listening first, every unit at every setting, named in words, joined at their setting (`docs/concept-other-settings.md`) | *Search settings*, *Serial line*, *Find devices at other settings*; `scan --other-settings` | `other_settings.rs` (verdict), `scan.rs` (simulated line with own settings), `api.rs` (refused while another master talks), `ui/09-other-settings` |
 | Search the units of a serial line, with retries and an estimate | *Search settings*, *Serial line* | `scan.rs`, `link.rs` (pseudo-terminal), `ui/05-serial` |
 | Stop a running search | status bar | `api.rs` (one search at a time) |
 | Diagnosis in words: notes of a search, of reading, of the explorer | strips above the tables | `diagnosis.rs`, `tests/web/ui.test.js` (German notes) |

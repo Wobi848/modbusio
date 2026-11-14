@@ -1,6 +1,7 @@
 # Concept: devices at other serial settings
 
-Status: **proposal**, 2026-11-14 (branch `concept-other-settings`).
+Status: **built on 2026-11-14** (branch `concept-other-settings`). The maintainer asked for the concept
+and its building in one go; the open questions were decided by their recommendations (at the end).
 
 ## Why
 
@@ -150,7 +151,11 @@ new route `POST /api/scan/other-settings`. `CHANGELOG.md`: the new search.
 3. Server route, command line.
 4. Dialog with its question, notes, the analyser's pointer; texts; browser test.
 
-## Open for the decision
+## Decided
+
+The maintainer asked to build it right after the concept; each recommendation was taken.
+The question in the dialog asks the server for the time (`check: true`), so the page does not
+repeat the server's arithmetic.
 
 1. **Speeds asked by default:** 9600, 19200, 38400, 115200 and the trunk's, slow and rare ones
    behind a checkbox? *Recommendation:* yes; all eight speeds take about three times as long

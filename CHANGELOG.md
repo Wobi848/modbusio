@@ -10,6 +10,9 @@ First version.
   every unit and gateways; the units behind a gateway, over Modbus TCP or RTU over TCP; the units
   on an RS-485 line over a USB adapter, with listening first (it names the unit IDs heard) and
   finding speed and frame.
+- Devices set to another speed, parity or stop bits than their trunk found by asking every unit
+  at every setting, after listening first and only while the plant's master is stopped; named in
+  plain words and added to the site at the setting they answer at (also `scan --other-settings`).
 - Read Device Identification (43/14) for vendor, product and version.
 - Profiles: what a device's registers mean, with types, word orders, scaling, scale registers,
   units, state texts and limits; import of vendor register lists from CSV and Excel with the

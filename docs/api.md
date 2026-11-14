@@ -55,6 +55,17 @@ settings, estimate_seconds}`. When a search ends, its devices join the open site
 
 `POST /api/scan/stop` ends the running search; what it found so far stays.
 
+`POST /api/scan/other-settings` `{port, baud, frame, from?, to?, timeout_ms?, all_speeds?, check?}`
+finds devices at other serial settings (`docs/concept-other-settings.md`): `baud` and `frame` are
+the trunk's setting; it listens first and sends nothing while another master talks (note
+`other_master`), then asks every unit at every setting (9600, 19200, 38400, 115200 and the trunk's
+speed, with `all_speeds` also 1200, 2400, 4800, 57600; frames 8E1, 8N1, 8N2, 8O1) → `{started,
+estimate_seconds}`. Without `timeout_ms` the wait suits each speed. With `check: true` nothing is
+sent → `{estimate_seconds, settings}`. The report (`GET /api/scan`) holds `other_settings: [{unit,
+answers_at, damaged_at}]` and notes `at_other_settings`, `damaged_at_trunk`, `meant_as`,
+`all_at_trunk`; devices join the site at the setting they answer at. `409` while a search runs or
+the bus analyser listens on the port.
+
 `POST /api/listen` `{port, seconds?}` listens to a serial port at each usual setting without
 sending → `{listened: {trials: [{settings, frames, stray_bytes, units}], active, quiet}, note}`.
 `409` while a search runs or the bus analyser listens on the port.

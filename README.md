@@ -28,7 +28,9 @@ to search the points, Escape to close.
   gateways in transparent mode), or a **serial line** over a USB RS-485 adapter (Windows and Linux):
   *Listen first* hears without sending whether another master is active and at which settings;
   *Find speed and frame* tries the usual ones; the search asks units 1–247 one by one. Devices found
-  join the open site with what they say about themselves (43/14 Read Device Identification).
+  join the open site with what they say about themselves (43/14 Read Device Identification). *Find devices at other settings* asks every unit at every
+  usual setting, after listening first and only while the plant's master is stopped, and names the
+  devices set to another speed, parity or stop bits than the trunk.
 - **Workspace**: the site's lines and devices as a tree, the device list, a device's points from
   its profile grouped by plant part, live every two seconds; the chosen point with its value, raw
   registers, type, word order and scaling. What a device refused is learnt and kept (registers per
@@ -71,6 +73,8 @@ modbusio scan --gateway 192.168.10.50 --to 32          the units behind a gatewa
 modbusio scan --gateway 192.168.10.50:4001 --rtu       … passing RTU over TCP
 modbusio scan --serial /dev/ttyUSB0 --baud 19200 --frame 8N1
 modbusio scan --serial COM3 --find           find speed and frame first, then the units
+modbusio scan --serial COM3 --baud 19200 --frame 8E1 --other-settings
+                                             devices set to another speed, parity or stop bits
 modbusio listen COM3                         listen without sending: another master?
 modbusio analyse COM3                        bus analyser: each exchange of the trunk's master
 modbusio analyse COM3 --baud 19200 --frame 8E1 --seconds 600 --pcap trunk.pcapng
@@ -112,6 +116,9 @@ To try it without a plant, start the simulators on loopback addresses:
   RTU frames over TCP instead.
 - `cargo run --example simulated_rtu` (Linux) the same three devices on a pseudo-terminal; it prints
   the terminal's name (`/dev/pts/7`), which modbusio opens like a USB RS-485 adapter.
+  `--settings` gives the devices settings of their own (the drive at 9600, the room controller
+  with two stop bits), for finding devices at other settings; a pseudo-terminal carries speed and
+  stop bits, not parity.
 - `cargo run --example simulated_trunk` (Linux) a whole trunk for the bus analyser: a master
   polling units 1, 5, 7, 9 and 12 on a pseudo-terminal, with a silent unit, a refused block, slow
   and missing answers, damaged frames, writes and broadcasts; `--clean` without the faults,
