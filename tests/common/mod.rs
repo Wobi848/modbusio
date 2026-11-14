@@ -74,7 +74,7 @@ pub fn trunk() -> String {
 }
 
 /// The trunk of `simulated_rtu --settings`: its devices answer only at settings of their own.
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 pub fn trunk_with_own_settings() -> String {
     use tokio_serial::SerialPort;
     let (ours, theirs) = tokio_serial::SerialStream::pair().expect("a pseudo-terminal");

@@ -32,6 +32,8 @@ tokio-serial = "5"
 tokio = { version = "1.54.1", features = ["test-util"] }
 tokio-modbus = { version = "0.17", default-features = false, features = ["tcp-server", "rtu-server", "rtu-over-tcp-server"] }
 tower = { version = "0.5", features = ["util"] }
+# the simulated line reads what modbusio set on its pseudo-terminal (examples/sim)
+libc = "0.2.191"
 
 [profile.release]
 lto = true

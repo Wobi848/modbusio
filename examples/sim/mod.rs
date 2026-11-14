@@ -292,18 +292,26 @@ pub type LineSettings = Arc<dyn Fn() -> Option<(u32, u8)> + Send + Sync>;
 /// one stop bit; the drive (unit 2) was left at 9600, the room controller (unit 5) at two stop bits.
 pub const OWN_SETTINGS: [(u8, u32, u8); 3] = [(1, 19200, 1), (2, 9600, 1), (5, 19200, 2)];
 
-/// What the other side of the pseudo-terminal `ours` set, read at each request.
-#[cfg(unix)]
+/// What the other side of the pseudo-terminal `ours` set, read at each request: the terminal's
+/// settings through its descriptor (`TCGETS2`, the speed as a number), as `serialport` reads them
+/// on Linux. The descriptor stays valid as long as the server holds `ours`.
+#[cfg(target_os = "linux")]
 pub fn line_settings(ours: &tokio_serial::SerialStream) -> LineSettings {
-    use tokio_serial::SerialPort;
-    let line = Mutex::new(ours.try_clone().expect("the terminal again"));
+    use std::os::fd::AsRawFd;
+    let descriptor = ours.as_raw_fd();
     Arc::new(move || {
-        let line = line.lock().expect("line lock");
-        let stop_bits = match line.stop_bits().ok()? {
-            tokio_serial::StopBits::One => 1,
-            tokio_serial::StopBits::Two => 2,
+        // SAFETY: a zeroed termios2 is a valid value for the ioctl to fill; the descriptor is the
+        // server's open terminal
+        let mut termios: libc::termios2 = unsafe { std::mem::zeroed() };
+        if unsafe { libc::ioctl(descriptor, libc::TCGETS2, &mut termios) } != 0 {
+            return None;
+        }
+        let stop_bits = if termios.c_cflag & libc::CSTOPB != 0 {
+            2
+        } else {
+            1
         };
-        Some((line.baud_rate().ok()?, stop_bits))
+        Some((termios.c_ospeed, stop_bits))
     })
 }
 

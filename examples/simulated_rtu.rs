@@ -18,14 +18,17 @@ async fn main() -> std::io::Result<()> {
     // the other side is opened by modbusio; keep it open here so the terminal lives
     std::mem::forget(theirs);
     println!("{name}");
-    let mut units = sim::Units::new(vec![
+    let units = sim::Units::new(vec![
         (1, sim::heat_meter()),
         (2, sim::drive()),
         (5, sim::room_controller()),
     ]);
-    if std::env::args().any(|arg| arg == "--settings") {
-        units = units.with_own_settings(sim::line_settings(&ours), &sim::OWN_SETTINGS);
-    }
+    #[cfg(target_os = "linux")]
+    let units = if std::env::args().any(|arg| arg == "--settings") {
+        units.with_own_settings(sim::line_settings(&ours), &sim::OWN_SETTINGS)
+    } else {
+        units
+    };
     tokio_modbus::server::rtu::Server::new(ours)
         .serve_forever(units)
         .await

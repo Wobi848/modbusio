@@ -134,3 +134,62 @@ async fn listening_hears_another_master_without_sending() {
     assert!(listened.trials[0].heard.units.contains(&5));
     assert!(!listened.quiet);
 }
+
+#[cfg(target_os = "linux")]
+#[tokio::test]
+async fn devices_at_other_settings_are_named_and_joined_at_theirs() {
+    use modbusio::endpoint::{Parity, SerialSettings};
+    use modbusio::other_settings::{self, Asking};
+    let port = common::trunk_with_own_settings();
+    let search = Arc::new(Search::default());
+    let asking = Asking {
+        trunk: SerialSettings {
+            port: port.clone(),
+            baud: 19200,
+            parity: Parity::Even,
+            stop_bits: 1,
+        },
+        units: (1..=5).collect(),
+        all_speeds: false,
+        // the simulated devices answer at once
+        wait: Some(Duration::from_millis(60)),
+        master_asks: Default::default(),
+        master_silent: Default::default(),
+        listen_each: Duration::from_millis(50),
+    };
+    other_settings::search(Arc::new(common::links()), asking, search.clone()).await;
+    let report = search.report.lock().expect("report").clone();
+    let notes: Vec<Note> = report.notes.iter().map(|view| view.note.clone()).collect();
+    // a pseudo-terminal carries no parity: every frame with one stop bit reaches the drive
+    assert!(
+        notes.contains(&Note::AtOtherSettings {
+            unit: 2,
+            found: "9600 8E1, 9600 8N1, 9600 8O1".into(),
+            trunk: "19200 8E1".into()
+        }),
+        "{notes:?}"
+    );
+    assert!(
+        notes.contains(&Note::AtOtherSettings {
+            unit: 5,
+            found: "19200 8N2".into(),
+            trunk: "19200 8E1".into()
+        }),
+        "{notes:?}"
+    );
+    assert_eq!(notes.len(), 2, "{notes:?}");
+    let keys: Vec<&str> = report
+        .devices
+        .iter()
+        .map(|device| device.key.as_str())
+        .collect();
+    assert_eq!(
+        keys,
+        [
+            format!("serial:{port}:19200:8E1/1"),
+            format!("serial:{port}:9600:8E1/2"),
+            format!("serial:{port}:19200:8N2/5"),
+        ]
+    );
+    assert_eq!(report.other_settings.len(), 3);
+}
