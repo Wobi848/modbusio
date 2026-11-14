@@ -82,7 +82,11 @@ pub enum Command {
     /// Analyse a trunk without sending: each exchange of its master, then a table per unit
     Analyse {
         /// Serial port of an adapter hung on the trunk in parallel
-        port: String,
+        #[arg(required_unless_present = "file", conflicts_with = "file")]
+        port: Option<String>,
+        /// Analyse a saved capture (pcapng or pcap) instead of listening
+        #[arg(long, value_name = "FILE")]
+        file: Option<PathBuf>,
         /// Speed; found by listening when left out together with --frame
         #[arg(long, requires = "frame")]
         baud: Option<u32>,
@@ -247,14 +251,19 @@ pub async fn run(command: Command, data_dir: Option<PathBuf>) -> anyhow::Result<
         Command::Listen { port, seconds } => listen_to(&port, seconds).await,
         Command::Analyse {
             port,
+            file,
             baud,
             frame,
             seconds,
             pcap,
-        } => {
-            let given = baud.zip(frame.as_deref());
-            analyse::analyse(&port, given, seconds, pcap).await
-        }
+        } => match (port, file) {
+            (_, Some(file)) => analyse::analyse_file(&file),
+            (Some(port), None) => {
+                let given = baud.zip(frame.as_deref());
+                analyse::analyse(&port, given, seconds, pcap).await
+            }
+            (None, None) => unreachable!("clap asks for a port or a file"),
+        },
         Command::Read { place, count, csv } => read(&links, &place, count, csv).await,
         Command::Explore {
             device,
