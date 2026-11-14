@@ -133,7 +133,6 @@ export default {
     "an.stop": "Termina l'ascolto",
     "an.startTitle": "Ascoltare una linea senza trasmettere",
     "an.startLead": "Collegare un adattatore USB RS-485 in parallelo alla linea. modbusio legge soltanto e mostra cosa chiede il master dell'impianto e cosa rispondono i dispositivi.",
-    "an.wiring": "  Master ────┬──────── dispositivo ──── dispositivo ──┤ 120 Ω\n             │  A, B e GND in parallelo\n       [ adattatore USB ]   terminazione e polarizzazione: OFF",
     "an.wiringLabel": "Cablaggio: l'adattatore in parallelo su A, B e GND, terminazione e polarizzazione disattivate",
     "an.swapped": "Niente di leggibile? A e B sono spesso invertiti: i produttori li etichettano in modo diverso.",
     "an.heldHint": "Durante l'ascolto modbusio stesso non trasmette nulla su questa porta.",
@@ -241,6 +240,10 @@ export default {
     "search.whereAnswered": "Dove ha risposto ogni unit",
     "search.damagedAt": "danneggiata con {settings}",
     "search.joinedAtTheirs": "I dispositivi trovati sono nell'impianto con l'impostazione con cui rispondono.",
+    "an.wiringMaster": "Master",
+    "an.wiringUnit": "Dispositivo",
+    "an.wiringAdapter": "Adattatore USB",
+    "an.wiringOff": "terminazione e polar.: OFF",
   },
   notes: {
     all_at_trunk: "Tutte le {count} unit trovate rispondono con {trunk}, l'impostazione della linea.",

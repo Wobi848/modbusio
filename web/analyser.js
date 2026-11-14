@@ -108,10 +108,31 @@ function startFields(state) {
     : `<select id="analyser-frame" data-analyser="frame">${frames}</select>`}</label>`;
 }
 
+/** How to hang the adapter on the trunk: master and devices on A, B and GND, the trunk's
+ * terminating resistor, the adapter in parallel with its own termination and bias off. Drawn in
+ * the page's colours, so it reads in light and dark. */
+export function wiringSvg() {
+  const box = (x, y, width, label, kind = "") =>
+    `<rect class="box${kind}" x="${x}" y="${y}" width="${width}" height="56" rx="8"/><text class="label" x="${x + width / 2}" y="${y + 33}" text-anchor="middle">${h(label)}</text>`;
+  const line = (y, end, kind) => `<line class="${kind}" x1="74" y1="${y}" x2="${end}" y2="${y}"/>`;
+  const drop = (x, y, label) =>
+    `<circle class="joint" cx="${x}" cy="${y}" r="3"/><line class="wire" x1="${x}" y1="${y}" x2="${x}" y2="118"/><text class="small" x="${x + 5}" y="104">${label}</text>`;
+  // the trunk's terminating resistor across A and B at its far end
+  const resistor = `<rect class="resistor" x="472" y="34" width="10" height="22" rx="1"/>
+    <text class="small" x="490" y="50">120 Ω</text>`;
+  return `<div class="wiring-box"><svg class="wiring" viewBox="0 0 540 170" role="img" aria-label="${h(t("an.wiringLabel"))}">
+    ${line(38, 477, "wire")}${line(52, 477, "wire")}${line(66, 462, "wire ground")}${resistor}
+    ${box(4, 22, 70, t("an.wiringMaster"))}${box(250, 22, 100, t("an.wiringUnit"))}${box(364, 22, 100, t("an.wiringUnit"))}
+    ${drop(120, 38, "A")}${drop(150, 52, "B")}${drop(180, 66, "GND")}
+    ${box(90, 112, 150, t("an.wiringAdapter"), " adapter")}
+    <text class="off" x="252" y="145">${h(t("an.wiringOff"))}</text>
+  </svg></div>`;
+}
+
 /** Before anything was heard: how to connect, the fields, opening a capture. */
 function startCard(state) {
   return `<div class="page analyser-page"><div class="cards"><section class="card analyser-start"><h2>${t("an.startTitle")}</h2><p>${t("an.startLead")}</p>
-    <pre class="wiring" aria-label="${t("an.wiringLabel")}">${h(t("an.wiring"))}</pre>
+    ${wiringSvg()}
     <p class="hint">${t("an.swapped")}</p>
     <div class="start-fields">${startFields(state)}</div>
     <p class="hint">${t("an.heldHint")}</p>

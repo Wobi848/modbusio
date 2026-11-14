@@ -127,7 +127,6 @@ export default {
     "an.stop": "Mithören beenden",
     "an.startTitle": "Den Strang mithören, ohne zu senden",
     "an.startLead": "Einen USB-RS-485-Adapter parallel an den Strang hängen. modbusio liest nur und zeigt, was der Master der Anlage fragt und was die Geräte antworten.",
-    "an.wiring": "  Master ────┬──────── Gerät ──── Gerät ──┤ 120 Ω\n             │  A, B und GND parallel\n       [ USB-Adapter ]   Abschluss und Bias: AUS",
     "an.wiringLabel": "Verdrahtung: der Adapter parallel an A, B und GND, sein Abschluss und Bias aus",
     "an.swapped": "Nichts Lesbares? A und B sind oft vertauscht: die Hersteller beschriften sie verschieden.",
     "an.heldHint": "Solange die Analyse läuft, sendet modbusio selbst nichts über diesen Anschluss.",
@@ -235,6 +234,10 @@ export default {
     "search.whereAnswered": "Wo jede Unit antwortete",
     "search.damagedAt": "beschädigt bei {settings}",
     "search.joinedAtTheirs": "Gefundene Geräte sind mit der Einstellung in der Anlage, mit der sie antworten.",
+    "an.wiringMaster": "Master",
+    "an.wiringUnit": "Gerät",
+    "an.wiringAdapter": "USB-Adapter",
+    "an.wiringOff": "Abschluss und Bias: AUS",
   },
   notes: {
     all_at_trunk: "Alle {count} gefundenen Units antworten mit {trunk}, der Einstellung des Strangs.",

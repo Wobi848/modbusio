@@ -2,7 +2,18 @@
 
 .analyser-page { flex: 0 0 auto; }
 .analyser-page .cards { grid-template-columns: minmax(0, 720px); }
-.analyser-start .wiring { margin: 8px 0; padding: 10px 12px; overflow-x: auto; border-radius: 8px; background: var(--sunken); font-family: var(--mono); font-size: 12px; line-height: 1.4; }
+/* on a phone the drawing keeps a readable size and scrolls within its box, not the page */
+.analyser-start .wiring-box { max-width: 600px; margin: 8px 0; overflow-x: auto; border-radius: 8px; background: var(--sunken); }
+.analyser-start .wiring { display: block; width: 100%; min-width: 440px; height: auto; padding: 8px; }
+.wiring .wire { stroke: var(--line-strong); stroke-width: 2; }
+.wiring .wire.ground { stroke-dasharray: 5 4; }
+.wiring .joint { fill: var(--line-strong); }
+.wiring .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.wiring .box.adapter { stroke: var(--accent); stroke-width: 2; }
+.wiring .resistor { fill: var(--surface); stroke: var(--text); stroke-width: 1.5; }
+.wiring .label { fill: var(--text); font: 600 14px system-ui, sans-serif; }
+.wiring .small { fill: var(--muted); font: 600 12px system-ui, sans-serif; }
+.wiring .off { fill: var(--warn); font: 700 13px system-ui, sans-serif; }
 .analyser-start .start-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 12px; align-items: end; margin: 8px 0; }
 .analyser-start .port-field { display: flex; align-items: end; gap: 8px; grid-column: 1 / -1; }
 .analyser-start .port-field .form-field { flex: 1 1 auto; max-width: 360px; }
