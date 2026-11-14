@@ -57,7 +57,10 @@ settings, estimate_seconds}`. When a search ends, its devices join the open site
 
 `POST /api/listen` `{port, seconds?}` listens to a serial port at each usual setting without
 sending → `{listened: {trials: [{settings, frames, stray_bytes, units}], active, quiet}, note}`.
-`409` while a search runs.
+`409` while a search runs or the bus analyser listens on the port.
+
+Searches of a serial line answer `409` too while the bus analyser listens on its port, and reads
+and writes there fail with `not sent`: modbusio sends nothing on a trunk it listens to.
 
 ## Sites and devices
 
@@ -175,6 +178,37 @@ recording. At most 50 points.
 `POST /api/recording/clear` → the recording.
 
 `GET /api/recording.csv?offset=`, `GET /api/recording.xlsx?offset=`: one row per time.
+
+## Bus analyser
+
+Listens to an RS-485 trunk without sending (`docs/concept-analyser.md`). The port is opened to be
+read only; modbusio's own requests to it are refused until the analyser stops.
+
+`POST /api/analyser/start` `{port, baud?, frame?}` starts listening; without `baud` and `frame`
+(`19200`, `8E1`) the settings are found by listening first, which takes up to half a minute. → the
+state below. `409` while a search runs or the analyser listens already; `502` when nothing valid is
+heard at any setting or the port cannot be opened.
+
+`GET /api/analyser?frames=N&exchanges=M` → `{running, ended, port, settings, started, elapsed_ms,
+bus: {frames, damaged, bytes, broadcasts}, load, units, exchanges, frames}`, or `{running: false}`
+before the first start. `ended` says why listening ended: `stopped`, or the port's failure.
+`started` is in seconds since 1970, `load` the share of time the trunk carried bytes (0 to 1).
+`frames` and `exchanges` hold what came after the numbers given, at most 500 of the newest.
+
+- `units`: `[{unit, requests, answers, no_answer, damaged, exceptions: {code: count}, writes,
+  answer_only, answer_ms, cycle_ms, last_seen_ms}]`; `answer_ms` and `cycle_ms` are `{min, median,
+  p95, max}` or `null`.
+- `exchanges`: `[{number, at, unit, function, asked: {area, address, count, write}, outcome,
+  answer_micros, request, answer}]`; `at` in microseconds since listening began, `request` and
+  `answer` the frames in hex. `outcome.kind` is `registers` (with `values`), `bits`, `written`,
+  `exception` (with `code`), `answered`, `malformed` (with `reason`), `damaged`, `no_answer`,
+  `broadcast` or `answer_only`.
+- `frames`: `[{number, at, role, bytes}]`, `role` `request`, `answer` or `damaged`.
+
+`POST /api/analyser/stop` ends listening and gives the port back; what was heard stays.
+`POST /api/analyser/clear` starts the counts and lists again while listening goes on.
+`GET /api/analyser.pcapng` → the frames kept, for Wireshark (RTU as in the capture below); `409`
+before the first start.
 
 ## Capture for Wireshark
 

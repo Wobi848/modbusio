@@ -16,6 +16,7 @@ const STORAGE_KEY = "modbusio.language";
 /** Server errors by pattern; each language names the key's text with $1, $2 for the parts. */
 const ERROR_PATTERNS = [
   [/^a search is running; stop it first$/, "searchRunning"],
+  [/^the bus analyser listens on (.+); stop it first$/, "analyserListens"],
   [/^writing is locked: unlock it for this session first$/, "locked"],
   [/^this device has no profile yet: .*$/, "noProfile"],
   [/^(.+) is not a number$/, "notNumber"],
