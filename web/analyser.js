@@ -100,7 +100,9 @@ function startCard(state) {
       <label class="form-field">${t("search.baud")}<select id="analyser-speed" data-analyser="speed">${speeds}</select></label>
       <label class="form-field">${t("search.frame")}<select id="analyser-frame" data-analyser="frame"${analyser.speed === "listen" ? " disabled" : ""}>${frames}</select></label>
     </div>
-    <p class="hint">${t("an.heldHint")}</p></section>`;
+    <p class="hint">${t("an.heldHint")}</p>
+    <div class="actions"><button type="button" class="quiet" data-act="analyser-open-file">${t("an.openFile")}</button></div>
+    <p class="hint">${t("an.openFileHint")}</p></section>`;
 }
 
 function unitRow(state, unit) {
@@ -172,7 +174,7 @@ function unitDetail(state, number) {
     const hex = Number(code).toString(16).padStart(2, "0");
     return `${count} × ${hex.toUpperCase()} (${h(codeText(`exception_${hex}`))})`;
   }).join("<br>") || "–";
-  const add = device ? "" : `<button type="button" class="tonal" data-act="analyser-add-unit" data-unit="${unit.unit}">${t("an.addToSite")}</button>`;
+  const add = device || heard.file ? "" : `<button type="button" class="tonal" data-act="analyser-add-unit" data-unit="${unit.unit}">${t("an.addToSite")}</button>`;
   return `<div class="dhead"><b>${t("an.unitTitle", { unit: unit.unit })}</b><span class="sub">${device ? h(deviceName(device)) : t("an.notOnSite")}</span></div>
     <dl class="facts"><dt>${t("an.requests")}</dt><dd>${unit.requests}</dd><dt>${t("an.answers")}</dt><dd>${unit.answers}</dd>
       <dt>${t("an.noAnswers")}</dt><dd>${unit.no_answer}</dd><dt>${t("an.damagedAnswers")}</dt><dd>${unit.damaged}</dd>
@@ -242,7 +244,7 @@ export function viewAnalyser(state) {
   const running = Boolean(heard?.running);
   const lead = running
     ? t("an.leadRunning", { port: h(heard.port), settings: h(heard.settings), since: heardTime(heard, 0).slice(0, 5) })
-    : t("an.lead");
+    : heard?.file ? t("an.leadFile", { file: h(heard.port), frames: heard.bus.frames }) : t("an.lead");
   const start = running ? "" : `<div class="page analyser-page"><div class="cards">${startCard(state)}</div></div>`;
   return {
     title: t("tab.analyser"),

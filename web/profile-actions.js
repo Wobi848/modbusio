@@ -136,7 +136,7 @@ async function openProfile(id) {
   render();
 }
 
-function fileBase64(file) {
+export function fileBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result).replace(/^data:[^,]*,/, ""));

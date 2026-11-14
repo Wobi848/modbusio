@@ -49,6 +49,14 @@ to search the points, Escape to close.
   while values stand asks first. Raw registers can be written from the explorer after a
   confirmation naming the address.
 - **Watch list** across devices, **recording** every 5 s to 1 min as charts, CSV and Excel.
+- **Bus analyser**: a USB RS-485 adapter hung on a trunk in parallel hears the plant's own master
+  without ever sending (the adapter's termination and bias off; modbusio sends nothing on that
+  port meanwhile). Per unit: requests, answers, problems, answer times, poll cycle; each exchange
+  in words with its bytes; the registers the master reads and writes with every reading, the
+  profile's points and their changes as a chart; the master's writes with the value before them;
+  the raw frames; what is wrong in plain words (a silent unit, answers missed after a neighbour, a
+  block refused every time, damage at one unit, a second master). A draft profile from the
+  registers used, CSV and Excel, saved for Wireshark and opened again later. Not on Android.
 - **Capture for Wireshark** (*Settings*): modbusio's own traffic as pcapng. Modbus TCP opens as it
   is; RTU frames use the user link type 147: in Wireshark map *DLT_USER* User 0 (147) to `mbrtu`.
 - **Sites**: several kept, named, opened again, saved to and read from a file with their profiles.
@@ -66,6 +74,7 @@ modbusio scan --serial COM3 --find           find speed and frame first, then th
 modbusio listen COM3                         listen without sending: another master?
 modbusio analyse COM3                        bus analyser: each exchange of the trunk's master
 modbusio analyse COM3 --baud 19200 --frame 8E1 --seconds 600 --pcap trunk.pcapng
+modbusio analyse --file trunk.pcapng         units and notes of a saved capture
 modbusio read 192.168.10.20/1 ir 0 3 --type f32        three float32 from input register 0
 modbusio read serial:COM3:9600:8E1/5 hr 10 --factor 0.1 --csv values.csv
 modbusio explore 192.168.10.20/1 hr 0 200    which addresses exist, what they could mean
@@ -81,7 +90,8 @@ prints each request of the trunk's master with its answer and answer time, and e
 after `--seconds` with a table per unit: requests, answers, no answer, damaged answers, exceptions,
 answer times and poll cycle. Times are when the adapter handed the bytes over: a USB adapter waits
 up to 16 ms before it passes on a small chunk (FTDI's default *latency timer*), so answer times are
-exact to about that.
+exact to about that. `--file` reads a saved capture (pcapng or pcap with RTU frames of the user
+link types 147 to 162, from modbusio or another tool) and prints the same table and notes.
 
 A device is named by its line and unit ID: `192.168.10.20/1` (TCP, port 502),
 `tcp:192.168.10.20:5020/1`, `rtu-tcp:192.168.10.50:4001/2`, `serial:/dev/ttyUSB0:19200:8N1/5`.

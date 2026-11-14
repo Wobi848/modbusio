@@ -1,8 +1,8 @@
 # Concept: bus analyser for Modbus RTU
 
-Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 6 of the building order are
+Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 7 of the building order are
 built (branches `concept-analyser`, `analyser-server`, `analyser-page`, `analyser-views`,
-`analyser-notes`). A foreign answer while a request waits (a late one, or a second master's)
+`analyser-notes`, `analyser-files`); open is step 8, the field test. A foreign answer while a request waits (a late one, or a second master's)
 counts as an answer without request and leaves the wait standing. In the units table, no
 answer, damaged answers and exceptions share one column *Problems*, so damaged answers show too. Mockup:
 [mockup/analyser.html](mockup/analyser.html).
@@ -143,8 +143,9 @@ set (thresholds are proposals, each with a test):
 ### Into a profile
 
 On *Registers*, for a unit: *Into a profile …* opens the existing profile editor with a draft: one
-point per address range the master reads, area and address as seen, type u16 (u32 or float where
-the plausible word order says so), name empty. The technician names them. A vendor's list is still
+point per register the master reads, area and address as seen, type u16 (float where the
+plausible word order says so), on/off for coils and inputs, writable where the master wrote. Each
+is named by its address (`HR 100`), so the draft can be saved at once; the technician renames them. A vendor's list is still
 the better source (skill `register-map`); this is for the device without one.
 
 ### Saving and opening

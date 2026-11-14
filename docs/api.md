@@ -210,6 +210,12 @@ before the first start. `ended` says why listening ended: `stopped`, or the port
 `GET /api/analyser.pcapng` → the frames kept, for Wireshark (RTU as in the capture below); `409`
 before the first start.
 
+`POST /api/analyser/open` `{file_name, content_base64}` analyses a capture file (pcapng or pcap;
+RTU frames of the user link types 147 to 162, other packets left out) as if heard → the state
+above with `file: true`, `port` the file's name, `settings` and `load` unknown (`null`, 0),
+`ended: "opened"`. `400` for another kind of file or one without RTU frames, `409` while the
+analyser listens.
+
 `GET /api/analyser/unit?unit=N` → `{unit, order, registers, points, answer_times}`: the registers
 the master read or wrote at this unit, each `{area, reads, writes, changes, min, max, last_at,
 reading}` with `reading` as a row of the explorer (`{address, value, hex, signed, text, pairs}`);

@@ -80,6 +80,7 @@ export const api = {
   },
   analyserStart: (request) => call("POST", "/api/analyser/start", request),
   analyserStop: () => call("POST", "/api/analyser/stop"),
+  analyserOpen: (fileName, content) => call("POST", "/api/analyser/open", { file_name: fileName, content_base64: content }),
   analyserUnit: (unit) => call("GET", `/api/analyser/unit?unit=${unit}`),
   analyserRegister: (unit, area, address) => call("GET", `/api/analyser/register?unit=${unit}&area=${area}&address=${address}`),
   analyserClear: () => call("POST", "/api/analyser/clear"),

@@ -17,7 +17,7 @@ const { pairHtml } = await import("../../web/explorer.js");
 const { listenedHtml } = await import("../../web/shell.js");
 const { askedText, bytesHtml, filteredExchanges, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
 const { startRequest } = await import("../../web/analyser-actions.js");
-const { registersUnit, stepSamples } = await import("../../web/analyser-registers.js");
+const { profileFrom, registersUnit, stepSamples } = await import("../../web/analyser-registers.js");
 
 const webDir = new URL("../../web/", import.meta.url);
 const sources = readdirSync(webDir).filter((name) => name.endsWith(".js")).map((name) => readFileSync(new URL(name, webDir), "utf8"));
@@ -312,4 +312,27 @@ test("a write of the master names the value before it where it was read", () => 
   const write = { area: "holding_register", address: 1, count: 1, write: true, values: [4500] };
   assert.equal(resultText({ ...exchange(0, 12, { kind: "written" }, write), before: [4200] }), "written: 4200 → 4500");
   assert.equal(resultText(exchange(0, 12, { kind: "written" }, write)), "written: 4500");
+});
+
+test("a draft profile from the trunk: floats where the order says so, bits, writable where written", () => {
+  const row = (area, address, extra = {}) => ({ area, reads: 3, writes: 0, reading: { address, pairs: [] }, ...extra });
+  const data = {
+    unit: 1, order: "CDAB", points: [],
+    registers: [
+      { ...row("holding_register", 0), reading: { address: 0, pairs: [{ order: "CDAB", plausible: true }] } },
+      row("holding_register", 1),
+      row("holding_register", 5, { writes: 2 }),
+      row("coil", 3),
+    ],
+  };
+  const draft = profileFrom(data, "Unit 1 from the trunk");
+  assert.equal(draft.order, "CDAB");
+  assert.deepEqual(draft.points.map((point) => [point.name, point.type, point.writable]), [["HR 0", "f32", false], ["HR 5", "u16", true], ["coil 3", "bool", false]]);
+  assert.equal(draftProblem(draft), null);
+});
+
+test("the capture file's errors are said in German", () => {
+  setLanguage("de");
+  assert.equal(errorText("trunk.zip holds no RTU frames (3 packets of other kinds)"), "trunk.zip enthält keine RTU-Rahmen (3 Pakete anderer Art)");
+  setLanguage("en");
 });

@@ -158,6 +158,17 @@ export function toast(text, error = false) {
   toastTimer = setTimeout(() => { element.hidden = true; }, error ? 7000 : 3500);
 }
 
+/** Opens the file chooser for one file. */
+export function pickFile(accept, use) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = accept;
+  input.addEventListener("change", () => {
+    if (input.files?.[0]) use(input.files[0]);
+  });
+  input.click();
+}
+
 /** Runs an action, showing its error as a toast; returns its result or null. */
 export async function attempt(action) {
   try {

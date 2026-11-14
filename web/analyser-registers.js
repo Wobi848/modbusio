@@ -50,12 +50,39 @@ function registerRow(analyser, data, row) {
     <span class="num mono">${row.changes}</span><span class="num mono cut">${last}</span><span class="num mono">${range}</span></div>`;
 }
 
+/**
+ * A draft profile from the registers the master uses at a unit: one point per register, or per
+ * pair where the word order found makes the pair a plausible float; coils and inputs as on/off.
+ * Points are named by their address for the technician to rename; written ones are writable.
+ */
+export function profileFrom(data, name) {
+  const order = data.order ?? "ABCD";
+  const rows = data.registers;
+  const points = [];
+  for (let index = 0; index < rows.length; index++) {
+    const row = rows[index];
+    const address = row.reading.address;
+    const bits = row.area === "coil" || row.area === "discrete_input";
+    const next = rows[index + 1];
+    const pair = !bits && data.order && next?.area === row.area && next.reading.address === address + 1
+      && row.reading.pairs?.find((reading) => reading.order === order)?.plausible;
+    points.push({
+      name: `${areaShort(row.area)} ${address}`, group: "", area: row.area, address,
+      type: bits ? "bool" : pair ? "f32" : "u16", factor: 1, offset: 0, unit: "", description: "", states: [],
+      writable: row.writes > 0 || Boolean(pair && next.writes > 0),
+    });
+    if (pair) index += 1;
+  }
+  return { id: "", name, vendor: "", model: "", origin: "own", source: t("an.draftSource"), order, points };
+}
+
 export function registersHtml(state) {
   const analyser = state.analyser;
   const unit = registersUnit(analyser);
   const units = (analyser.heard?.units ?? []).map((item) =>
     `<option value="${item.unit}"${item.unit === unit ? " selected" : ""}>${item.unit}</option>`).join("");
-  const toolbar = `<div class="toolbar"><label class="form-field inline">${t("col.unit")}<select id="analyser-registers-unit" data-analyser="registersUnit">${units}</select></label></div>`;
+  const toolbar = `<div class="toolbar"><label class="form-field inline">${t("col.unit")}<select id="analyser-registers-unit" data-analyser="registersUnit">${units}</select></label>
+    <div class="end"><button type="button" class="tonal" data-act="analyser-draft-profile"${analyser.unitData?.registers?.length ? "" : " disabled"}>${t("an.intoProfile")}</button></div></div>`;
   const data = analyser.unitData?.unit === unit ? analyser.unitData : null;
   if (!data) return `${toolbar}<p class="hint pad">${t("an.loading")}</p>`;
   if (!data.registers.length) return `${toolbar}<div class="empty"><h2>${t("an.noRegisters")}</h2><p>${t("an.noRegistersLead")}</p></div>`;

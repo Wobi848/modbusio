@@ -76,8 +76,30 @@ export default {
     await noSidewaysScroll(page);
     await page.setViewportSize({ width: 1500, height: 900 });
 
+    // a draft profile from what the master reads at the meter
+    await page.click("[data-act=analyser-view][data-view=registers]");
+    await page.selectOption("#analyser-registers-unit", "1");
+    await page.waitForSelector(".row.aregs[data-place='holding_register:7']");
+    await page.click("[data-act=analyser-draft-profile]");
+    await page.waitForSelector("#profile-name");
+    assert.equal(await page.inputValue("#profile-name"), "Unit 1 from the trunk");
+    await page.waitForSelector(".row.mprofile-points:has-text('HR 7')");
+    // not saved: closing asks first
+    await page.click("[data-act=close-profile]");
+    await page.click("[data-act=discard-profile]");
+    await page.keyboard.press("7");
+
     await page.click("#next");
     await page.waitForFunction(() => document.querySelector("#next")?.textContent === "Start listening");
     assert.equal((await api("analyser")).running, false);
+
+    // what was heard, saved and opened again: the same units, at the desk
+    const saved = Buffer.from(await (await fetch(`${base}/api/analyser.pcapng`)).arrayBuffer());
+    const choosing = page.waitForEvent("filechooser");
+    await page.click("[data-act=analyser-open-file]");
+    await (await choosing).setFiles({ name: "trunk.pcapng", mimeType: "application/octet-stream", buffer: saved });
+    await page.waitForSelector(".pagehead .lead:has-text('trunk.pcapng')");
+    await page.waitForSelector(".row.aunits[data-chosen=u9]");
+    assert.equal((await api("analyser")).file, true);
   },
 };

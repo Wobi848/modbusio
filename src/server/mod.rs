@@ -103,6 +103,10 @@ pub fn router(state: Shared) -> Router {
         .route("/api/analyser/stop", post(analysing::stop))
         .route("/api/analyser/clear", post(analysing::clear))
         .route("/api/analyser.pcapng", get(analysing::file))
+        .route(
+            "/api/analyser/open",
+            post(analysing::open).layer(DefaultBodyLimit::max(MOST_UPLOAD_BYTES)),
+        )
         .route("/api/analyser/unit", get(analyser_details::unit))
         .route("/api/analyser/register", get(analyser_details::register))
         .route("/api/analyser.csv", get(analyser_details::csv))

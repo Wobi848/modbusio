@@ -4,8 +4,9 @@
 import { api } from "./api.js";
 import { t } from "./i18n.js";
 import { lastNumber, takeHeard } from "./analyser.js";
-import { registersUnit } from "./analyser-registers.js";
-import { attempt, remember, render, state, toast } from "./store.js";
+import { profileFrom, registersUnit } from "./analyser-registers.js";
+import { fileBase64 } from "./profile-actions.js";
+import { attempt, go, pickFile, remember, render, state, toast } from "./store.js";
 
 /** The start's request from the page's choices; an error text when one is missing. */
 export function startRequest(analyser) {
@@ -90,6 +91,23 @@ export const analyserActions = {
     render();
   },
   "analyser-ports": () => loadPorts(),
+  "analyser-open-file": () => pickFile(".pcapng,.pcap,.cap", async (file) => {
+    const content = await attempt(() => fileBase64(file));
+    if (!content) return;
+    const answer = await attempt(() => api.analyserOpen(file.name, content));
+    if (!answer) return;
+    Object.assign(state.analyser, { heard: takeHeard(null, answer), chosen: null, register: null, unitData: null, view: "units" });
+    render();
+  }),
+  "analyser-draft-profile": () => {
+    const data = state.analyser.unitData;
+    if (!data?.registers.length) return;
+    state.profileId = null;
+    state.profileDraft = profileFrom(data, t("an.draftName", { unit: data.unit }));
+    state.profileDirty = true;
+    state.pointIndex = null;
+    go("profiles");
+  },
   "analyser-pause": () => { state.analyser.paused = !state.analyser.paused; render(); },
   "analyser-view": async (element) => {
     Object.assign(state.analyser, { view: element.dataset.view, chosen: null, register: null });

@@ -37,8 +37,9 @@ First version.
   master's writes with the value before them; the raw frames; answer times as a chart; what is
   wrong in plain words (a silent unit, answers missed after a neighbour, a block refused every
   time, slow answers, damage at one unit, a second master, a busy trunk); units,
-  exchanges and registers as CSV and Excel; on the
-  command line `analyse`. The keys count up: the bus analyser is `7`, *Settings* now `8`.
+  exchanges and registers as CSV and Excel; a draft profile from the registers the master uses;
+  capture files (pcapng or pcap, also from other tools) opened into the same views; on the
+  command line `analyse`, and `analyse --file` for a saved capture. The keys count up: the bus analyser is `7`, *Settings* now `8`.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.
 - Android app with the same interface, Modbus TCP only.

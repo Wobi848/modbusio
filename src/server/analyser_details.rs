@@ -106,7 +106,11 @@ fn site_profile(state: &Shared, unit: u8) -> Result<Option<Profile>, ApiError> {
         let listening = analyser
             .as_ref()
             .ok_or_else(|| ApiError::conflict(NOTHING_YET))?;
-        listening.settings.port.clone()
+        // a file names no port the site knows
+        let Some(settings) = listening.port() else {
+            return Ok(None);
+        };
+        settings.port.clone()
     };
     let site = state.site.lock().expect("site lock");
     let device = site.devices.iter().find(|device| {

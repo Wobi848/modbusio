@@ -1,11 +1,11 @@
 //! `modbusio analyse`: the bus analyser in the terminal (docs/concept-analyser.md). Listens without
 //! sending, shows each exchange as it happens, and ends with the units table.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
-use anyhow::anyhow;
+use anyhow::{Context, anyhow, bail};
 use modbusio::analyser::Analysis;
 use modbusio::analyser::exchanges::{Exchange, Outcome};
 use modbusio::analyser::port::{self, ReadOnly};
@@ -67,15 +67,12 @@ pub async fn analyse(
     };
     print_new_of(&analysis, &mut printed);
     println!();
-    print_units(&analysis);
     let elapsed = started.elapsed().as_micros().max(1) as f64;
     let load = (analysis.bus.bytes as f64
         * modbusio::protocol::rtu::character_micros(settings.baud) as f64
         / elapsed)
         .min(1.0);
-    for note in modbusio::analyser::notes::notes(&analysis, port, load) {
-        println!("{note}");
-    }
+    print_summary(&analysis, port, load);
     if let Some(path) = pcap {
         let frames: Vec<_> = analysis
             .frames()
@@ -86,6 +83,41 @@ pub async fn analyse(
         println!("{} frames saved in {}", frames.len(), path.display());
     }
     Ok(())
+}
+
+/// A saved capture: its units and notes, as at the end of listening.
+pub fn analyse_file(path: &Path) -> anyhow::Result<()> {
+    let bytes = std::fs::read(path).with_context(|| format!("cannot read {}", path.display()))?;
+    let opened = modbusio::pcap_read::read(&bytes).map_err(|error| anyhow!(error))?;
+    if opened.packets.is_empty() {
+        bail!(
+            "{} holds no RTU frames ({} packets of other kinds)",
+            path.display(),
+            opened.skipped
+        );
+    }
+    let (analysis, _) = Analysis::of_packets(&opened.packets);
+    println!(
+        "{}: {} RTU frames{}",
+        path.display(),
+        opened.packets.len(),
+        if opened.skipped > 0 {
+            format!(", {} other packets left out", opened.skipped)
+        } else {
+            String::new()
+        }
+    );
+    // the file does not hold the trunk's speed: no bus load
+    print_summary(&analysis, &path.display().to_string(), 0.0);
+    Ok(())
+}
+
+/// The units table and the notes.
+fn print_summary(analysis: &Analysis, line: &str, load: f64) {
+    print_units(analysis);
+    for note in modbusio::analyser::notes::notes(analysis, line, load) {
+        println!("{note}");
+    }
 }
 
 fn print_new(analysis: &Mutex<Analysis>, printed: &mut Option<u64>) {

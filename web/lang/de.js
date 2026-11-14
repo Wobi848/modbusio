@@ -214,6 +214,12 @@ export default {
     "an.role": "Art",
     "an.bytes": "Bytes",
     "an.timesNote": "Die Zeiten sind, wann der USB-Adapter die Bytes übergab (mit einem FTDI-Chip ab Werk bis 16 ms später), nicht der Moment auf der Leitung.",
+    "an.openFile": "Mitschnitt öffnen …",
+    "an.openFileHint": "Eine pcapng- oder pcap-Datei mit RTU-Rahmen, hier gesichert oder mit einem anderen Werkzeug: dieselben Ansichten, am Schreibtisch.",
+    "an.leadFile": "{file} · {frames} Rahmen, aus einer Datei geöffnet",
+    "an.intoProfile": "In ein Profil …",
+    "an.draftName": "Unit {unit} vom Strang",
+    "an.draftSource": "Busanalyse: die Register, die ihr Master benutzte",
   },
   notes: {
     misses_answers: "Unit {unit} antwortet auf {missing} von {requests} Anfragen nicht ({percent} %): Verdrahtung und Speisung prüfen, und ob der Master lange genug wartet.",
@@ -245,6 +251,9 @@ export default {
   errors: {
     searchRunning: "Eine Suche läuft; zuerst stoppen.",
     analyserListens: "Die Busanalyse hört auf $1 mit; zuerst beenden.",
+    notCapture: "keine pcapng- oder pcap-Datei",
+    noRtuFrames: "$1 enthält keine RTU-Rahmen ($2 Pakete anderer Art)",
+    captureCut: "die Datei ist abgeschnitten",
     locked: "Schreiben ist gesperrt: zuerst für diese Sitzung freischalten.",
     noProfile: "Dieses Gerät hat noch kein Profil: eines wählen oder im Explorer anlegen.",
     notNumber: "$1 ist keine Zahl",

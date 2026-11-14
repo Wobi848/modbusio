@@ -232,7 +232,7 @@ pub async fn xlsx(
 }
 
 /// Standard base64, with or without padding and line breaks; `None` when it is not.
-fn base64(text: &str) -> Option<Vec<u8>> {
+pub(super) fn base64(text: &str) -> Option<Vec<u8>> {
     let value = |byte: u8| -> Option<u32> {
         Some(match byte {
             b'A'..=b'Z' => byte - b'A',
