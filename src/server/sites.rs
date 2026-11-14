@@ -277,6 +277,36 @@ pub struct Key {
     key: String,
 }
 
+#[derive(Deserialize)]
+pub struct Line {
+    /// The line as the site gives it: `COM3 9600 8E1`, `10.0.0.9:502`.
+    line: String,
+}
+
+/// Removes every device of one line from the site at once. Nothing changes in the devices.
+pub async fn remove_line(
+    State(state): State<Shared>,
+    Json(request): Json<Line>,
+) -> Result<Json<Value>, ApiError> {
+    {
+        let mut site = state.site.lock().expect("site lock");
+        let before = site.devices.len();
+        site.devices.retain(|device| {
+            Target::parse_key(&device.key).map_or(true, |target| {
+                crate::scan::line_text(&target.endpoint) != request.line
+            })
+        });
+        if site.devices.len() == before {
+            return Err(ApiError::not_found(format!(
+                "no line {} on this site",
+                request.line
+            )));
+        }
+    }
+    state.save_site()?;
+    Ok(site_json(&state))
+}
+
 pub async fn remove_device(
     State(state): State<Shared>,
     Json(request): Json<Key>,

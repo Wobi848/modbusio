@@ -70,6 +70,7 @@ pub fn router(state: Shared) -> Router {
         .route("/api/devices/add", post(sites::add_device))
         .route("/api/devices/update", post(sites::update_device))
         .route("/api/devices/remove", post(sites::remove_device))
+        .route("/api/devices/remove-line", post(sites::remove_line))
         .route("/api/devices/identify", post(devices::identify))
         .route("/api/devices/read", post(devices::read))
         .route("/api/values", post(devices::values))
