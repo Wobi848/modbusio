@@ -803,6 +803,52 @@ async fn the_analyser_hears_a_trunk_and_modbusio_sends_nothing_there_meanwhile()
     let (status, _) = call(&app, "GET", "/api/analyser.pcapng", None).await;
     assert_eq!(status, StatusCode::OK);
 
+    // the meter's registers as the master reads them, with every reading of them
+    let (status, meter) = call(&app, "GET", "/api/analyser/unit?unit=1", None).await;
+    assert_eq!(status, StatusCode::OK, "{meter}");
+    let registers = meter["registers"].as_array().expect("registers");
+    assert_eq!(registers.len(), 8);
+    assert_eq!(registers[0]["area"], json!("holding_register"));
+    assert_eq!(registers[0]["reading"]["address"], json!(0));
+    assert_eq!(
+        registers[0]["reading"]["pairs"].as_array().map(Vec::len),
+        Some(4)
+    );
+    assert!(registers[0]["reads"].as_u64() >= Some(2));
+    assert!(
+        meter["answer_times"]
+            .as_array()
+            .is_some_and(|times| !times.is_empty())
+    );
+    // the energy counts up each cycle: its low word changes
+    let (_, energy) = call(
+        &app,
+        "GET",
+        "/api/analyser/register?unit=1&area=holding_register&address=1",
+        None,
+    )
+    .await;
+    assert!(
+        energy["history"]
+            .as_array()
+            .is_some_and(|history| history.len() >= 2),
+        "{energy}"
+    );
+    let (status, _) = call(&app, "GET", "/api/analyser/unit?unit=99", None).await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, units) = call(&app, "GET", "/api/analyser.csv?table=units", None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(
+        units
+            .as_str()
+            .is_some_and(|csv| csv.contains("Unit") && csv.contains("Requests")),
+        "{units}"
+    );
+    let (status, _) = call(&app, "GET", "/api/analyser.csv?table=everything", None).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    let (status, _) = call(&app, "GET", "/api/analyser.xlsx?offset=60", None).await;
+    assert_eq!(status, StatusCode::OK);
+
     let (_, stopped) = call(&app, "POST", "/api/analyser/stop", None).await;
     assert_eq!(stopped["running"], json!(false));
     assert_eq!(stopped["ended"], json!("stopped"));
