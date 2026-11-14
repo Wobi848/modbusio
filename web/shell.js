@@ -80,7 +80,8 @@ function activity(state) {
   const scan = state.scan;
   if (!scan.finished) {
     const phase = t(`phase.${scan.phase || "hosts"}`);
-    return `${phase} · ${scan.done ?? 0}/${scan.total ?? 0}`;
+    // listening counts nothing: only the phase then
+    return scan.total ? `${phase} · ${scan.done ?? 0}/${scan.total}` : phase;
   }
   if (state.busy) return state.busy;
   return t("status.ready");

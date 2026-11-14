@@ -98,7 +98,12 @@ export const analyserActions = {
     state.analyser.chosen = null;
     render();
   },
-  "analyser-ports": () => loadPorts(),
+  // asked for: say what was found, also when the list did not change
+  "analyser-ports": async () => {
+    await loadPorts();
+    const count = state.serialPorts.length;
+    toast(count === 1 ? t("an.onePortFound") : count ? t("an.portsFound", { n: count }) : t("an.noPortFound"));
+  },
   "analyser-open-file": () => pickFile(".pcapng,.pcap,.cap", async (file) => {
     const content = await attempt(() => fileBase64(file));
     if (!content) return;
