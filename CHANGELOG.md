@@ -45,6 +45,8 @@ First version.
   command line `analyse`, and `analyse --file` for a saved capture. The keys count up: the bus analyser is `7`, *Settings* now `8`.
 - Sidebar, tree and details as wide as you drag them (or move their border with the arrow keys),
   kept in this browser; a double-click gives the width back to the window.
+- Lists sorted by a click on a column head, and their columns as wide as you drag them: devices,
+  points, profiles, the watch list and the bus analyser's tables.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).
 - A note in the sidebar when a newer release is out, looked for once a day; can be switched off.
 - Android app with the same interface, Modbus TCP only.

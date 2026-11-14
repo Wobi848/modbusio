@@ -1,7 +1,10 @@
 # Concept: catching up with bacnetio's interface
 
 Status: **approved on 2026-11-14** (the maintainer: "ok gogog"); step 1 built on branch
-`bacnetio-panels`.
+`bacnetio-panels`, steps 2 and 3 (columns and sorting, built together: the column's border sits in
+its sorting head) on `bacnetio-columns`. Columns: modbusio switches its table layouts by the
+window's width, so the widths set hold from 1000 px of window up. Not yet sortable: the explorer,
+the recording, the log and the analyser's frames, whose own order is the one that matters.
 
 ## Why
 
