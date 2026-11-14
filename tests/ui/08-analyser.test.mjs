@@ -11,6 +11,9 @@ export default {
     const port = await page.$("#analyser-port");
     await page.waitForTimeout(2500);
     assert.ok(await port.evaluate((element) => element.isConnected), "the port's list was drawn anew");
+    // looking again says what it found, also when nothing changed
+    await page.click("[data-act=analyser-ports]");
+    await page.waitForSelector("#toast:has-text('serial ports found')");
     await page.selectOption("#analyser-port", trunk);
     // finding the speed by listening finds the frame too: the frame says so instead of a choice
     assert.equal(await page.textContent("#analyser-frame"), "found by listening too");
