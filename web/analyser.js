@@ -26,6 +26,13 @@ export function takeHeard(held, answer) {
   return { ...answer, exchanges: keep(held?.exchanges ?? [], answer.exchanges), frames: keep(held?.frames ?? [], answer.frames) };
 }
 
+/** Whether the server's answer changes what the page shows: a start, a stop, or something heard. */
+export function heardChanged(held, answer) {
+  if (!held) return Boolean(answer.running) || answer.started_ms !== undefined;
+  return held.running !== answer.running || held.started_ms !== answer.started_ms || held.ended !== answer.ended
+    || answer.exchanges?.length > 0 || answer.frames?.length > 0;
+}
+
 /** The number of the last item of a list, for asking only what came after it. */
 export const lastNumber = (list) => list?.at(-1)?.number;
 

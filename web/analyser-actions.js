@@ -3,7 +3,7 @@
 
 import { api } from "./api.js";
 import { t } from "./i18n.js";
-import { lastNumber, takeHeard } from "./analyser.js";
+import { heardChanged, lastNumber, takeHeard } from "./analyser.js";
 import { profileFrom, registersUnit } from "./analyser-registers.js";
 import { fileBase64 } from "./profile-actions.js";
 import { attempt, go, pickFile, remember, render, state, toast } from "./store.js";
@@ -15,15 +15,21 @@ export function startRequest(analyser) {
   return { body: { port: analyser.port, baud: Number(analyser.speed), frame: analyser.frame } };
 }
 
-/** What is new on the server; kept unless the view is paused. */
+/** A choice list of the page is open: drawing the page anew would close it under the pointer. */
+const choosing = () => document.activeElement?.tagName === "SELECT" && document.getElementById("work")?.contains(document.activeElement);
+
+/** What is new on the server; kept unless the view is paused. The page is drawn anew only when
+ * something changed, and not while a choice list on it is open. */
 export async function pollAnalyser() {
   const held = state.analyser.heard;
   const answer = await api.analyser(lastNumber(held?.exchanges), lastNumber(held?.frames));
   const wasRunning = Boolean(held?.running);
   if (state.analyser.paused && answer.running && held?.started_ms === answer.started_ms) return;
+  if (!heardChanged(held, answer)) return;
   state.analyser.heard = takeHeard(held, answer);
   await loadDetails();
-  if (state.area === "analyser" || wasRunning !== Boolean(answer.running)) render();
+  const started = wasRunning !== Boolean(answer.running);
+  if (started || (state.area === "analyser" && !choosing())) render();
 }
 
 /** The unit in focus (the registers' unit, or the one chosen) with its registers and answer times,
@@ -52,6 +58,8 @@ export async function loadPorts() {
 /** Fields of the analyser page; true when the page must be drawn anew. */
 export function analyserField(element) {
   state.analyser[element.dataset.analyser] = element.value;
+  // chosen: the list is closed, the live view may be drawn again
+  element.blur();
   if (element.dataset.analyser === "registersUnit") {
     state.analyser.register = null;
     attempt(async () => { await loadDetails(); render(); });
