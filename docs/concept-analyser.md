@@ -1,7 +1,7 @@
 # Concept: bus analyser for Modbus RTU
 
-Status: **approved on 2026-11-14** (answers at the end). Steps 1 and 2 of the building order are
-built (branch `concept-analyser`). Mockup:
+Status: **approved on 2026-11-14** (answers at the end). Steps 1 to 3 of the building order are
+built (branches `concept-analyser`, `analyser-server`). Mockup:
 [mockup/analyser.html](mockup/analyser.html).
 
 ## Why

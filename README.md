@@ -64,6 +64,8 @@ modbusio scan --gateway 192.168.10.50:4001 --rtu       … passing RTU over TCP
 modbusio scan --serial /dev/ttyUSB0 --baud 19200 --frame 8N1
 modbusio scan --serial COM3 --find           find speed and frame first, then the units
 modbusio listen COM3                         listen without sending: another master?
+modbusio analyse COM3                        bus analyser: each exchange of the trunk's master
+modbusio analyse COM3 --baud 19200 --frame 8E1 --seconds 600 --pcap trunk.pcapng
 modbusio read 192.168.10.20/1 ir 0 3 --type f32        three float32 from input register 0
 modbusio read serial:COM3:9600:8E1/5 hr 10 --factor 0.1 --csv values.csv
 modbusio explore 192.168.10.20/1 hr 0 200    which addresses exist, what they could mean
@@ -71,6 +73,15 @@ modbusio write 192.168.10.20/2 hr 1 3000     reads the old value, writes, reads 
 modbusio changed                             values written and not put back yet
 modbusio restore 4                           put back write number 4 (or: restore all)
 ```
+
+`analyse` listens to a trunk through a USB RS-485 adapter hung on it in parallel and never sends:
+connect A, B and GND anywhere on the trunk, with the adapter's own termination and bias switched
+off (the trunk has them already). It finds speed and frame by listening unless they are given,
+prints each request of the trunk's master with its answer and answer time, and ends at Ctrl+C or
+after `--seconds` with a table per unit: requests, answers, no answer, damaged answers, exceptions,
+answer times and poll cycle. Times are when the adapter handed the bytes over: a USB adapter waits
+up to 16 ms before it passes on a small chunk (FTDI's default *latency timer*), so answer times are
+exact to about that.
 
 A device is named by its line and unit ID: `192.168.10.20/1` (TCP, port 502),
 `tcp:192.168.10.20:5020/1`, `rtu-tcp:192.168.10.50:4001/2`, `serial:/dev/ttyUSB0:19200:8N1/5`.
