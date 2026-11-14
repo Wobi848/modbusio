@@ -28,6 +28,8 @@ pub enum Note {
     },
     /// Nothing answered on a line.
     NothingAnswered { line: String },
+    /// Asking a line stopped because the line itself failed: it could not be opened, or broke.
+    LineFailed { line: String, reason: String },
     /// Frames of another master were heard while listening.
     OtherMaster { port: String, settings: String },
     /// The line was quiet while listening: no other master.
@@ -128,6 +130,9 @@ impl fmt::Display for Note {
                 f,
                 "On {line} unit {answered} answered when {asked} was asked: another master, or two devices with one address."
             ),
+            Note::LineFailed { line, reason } => {
+                write!(f, "Asking on {line} stopped: {reason}.")
+            }
             Note::NothingAnswered { line } => write!(
                 f,
                 "No unit answered on {line}: check unit IDs, speed and parity, A/B and the power of the devices."

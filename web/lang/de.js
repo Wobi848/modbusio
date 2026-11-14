@@ -221,6 +221,7 @@ export default {
     "an.draftSource": "Busanalyse: die Register, die ihr Master benutzte",
     "an.leadStopped": "Beendet · {port} · {settings} · {frames} Rahmen gehört; mit den Feldern darunter neu mithören",
     "an.frameByListening": "wird mitgefunden",
+    "search.lineTools": "Leitung prüfen",
     "search.finding": "Probiere Geschwindigkeiten und Frames: {done} von {total} Einstellungen …",
     "search.foundNext": "Geschwindigkeit und Frame stehen auf {settings}: Suchen fragt jetzt jede Unit damit ab.",
     "search.otherSettings": "Geräte mit anderen Einstellungen finden",
@@ -240,6 +241,7 @@ export default {
     "an.wiringOff": "Abschluss und Bias: AUS",
   },
   notes: {
+    line_failed: "Die Abfrage auf {line} brach ab: {reason}.",
     all_at_trunk: "Alle {count} gefundenen Units antworten mit {trunk}, der Einstellung des Strangs.",
     meant_as: "Unit {unit} antwortet mit der Einstellung des Strangs, aber der Master fragt sie nie; Units, die der Master fragt, bleiben stumm ({silent}): ist Unit {unit} eine davon mit anderer Adresse?",
     damaged_at_trunk: "Antworten von Unit {unit} kommen mit {trunk} beschädigt an: ihre Parität oder Stoppbits weichen vielleicht ab, oder die Verdrahtung.",

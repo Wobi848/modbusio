@@ -217,12 +217,16 @@ export function dialogHtml(state) {
   if (state.menu !== "search") return "";
   const mode = state.search.mode;
   const fields = mode === "serial" ? serialFields(state) : mode === "gateway" ? gatewayFields(state) : tcpFields(state);
-  const serialTools = mode === "serial" ? `<button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button><button type="button" class="tonal" data-act="other-settings-ask">${t("search.otherSettings")}</button>` : "";
+  // the line's own tools in a block of their own, their results right under them; the footer
+  // keeps only cancel and the search itself
+  const lineTools = mode === "serial" ? `<section class="line-tools" aria-labelledby="line-tools-title"><span class="cap" id="line-tools-title">${t("search.lineTools")}</span>
+    <div class="tools"><button type="button" class="tonal" data-act="listen">${t("search.listen")}</button><button type="button" class="tonal" data-act="find-settings">${t("search.findSettings")}</button><button type="button" class="tonal" data-act="other-settings-ask">${t("search.otherSettings")}</button></div>
+    ${listenedHtml(state)}${otherSettingsAskHtml(state)}${findingHtml(state)}</section>` : "";
   return `<div class="modal"><div class="modal-box search-settings" data-keep="search-settings" role="dialog" aria-modal="true" aria-labelledby="search-title">
     <h2 id="search-title">${t("search.title")}</h2>
     <p class="sub">${t(`search.lead.${mode}`)}</p>
     <dl class="facts">${modeChoice(state)}${fields}</dl>
-    ${mode === "serial" ? listenedHtml(state) + otherSettingsAskHtml(state) + findingHtml(state) : ""}
-    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button>${serialTools}<button type="button" data-act="search">${t("search.start")}</button></div>
+    ${lineTools}
+    <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button><button type="button" data-act="search">${t("search.start")}</button></div>
   </div></div>`;
 }

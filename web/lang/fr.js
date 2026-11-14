@@ -227,6 +227,7 @@ export default {
     "an.draftSource": "analyse de bus : les registres utilisés par son maître",
     "an.leadStopped": "Arrêtée · {port} · {settings} · {frames} trames entendues ; réécouter avec les champs ci-dessous",
     "an.frameByListening": "trouvée aussi par l'écoute",
+    "search.lineTools": "Vérifier la ligne",
     "search.finding": "Essai des vitesses et trames : {done} sur {total} réglages …",
     "search.foundNext": "Vitesse et trame sont réglées sur {settings} : Rechercher interroge maintenant chaque unit ainsi.",
     "search.otherSettings": "Trouver les appareils à d'autres réglages",
@@ -246,6 +247,7 @@ export default {
     "an.wiringOff": "terminaison et polar. : OFF",
   },
   notes: {
+    line_failed: "L'interrogation sur {line} s'est arrêtée : {reason}.",
     all_at_trunk: "Les {count} units trouvées répondent toutes à {trunk}, le réglage de la ligne.",
     meant_as: "L'unit {unit} répond au réglage de la ligne, mais le maître ne l'interroge jamais ; des units qu'il interroge restent muettes ({silent}) : l'unit {unit} est-elle l'une d'elles à une autre adresse ?",
     damaged_at_trunk: "Les réponses de l'unit {unit} arrivent endommagées à {trunk} : sa parité ou ses bits d'arrêt diffèrent peut-être, ou son câblage.",

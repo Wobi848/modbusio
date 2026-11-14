@@ -43,4 +43,11 @@ Run each as a background task and keep its id, to stop exactly that one (never `
 
 - The data folder keeps the write log, profiles and sites over restarts: a value written days ago
   comes back as standing. Say where it comes from (`writes.jsonl`).
-- After a rebuild, stop and start modbusio again; the simulators only when they changed.
+- After a rebuild, stop and start modbusio again, **and the simulators on pseudo-terminals with
+  it** (`simulated_rtu`, `simulated_rtu --settings`, `simulated_trunk`): modbusio opens a serial
+  port for itself alone, and a pseudo-terminal the simulator keeps open stays locked after
+  modbusio ends, so the new modbusio gets "used by another program". They print new terminals;
+  pass them all in `MODBUSIO_TEST_SERIAL`, comma-separated.
+- The simulators for the bus analyser and for devices at other settings: `simulated_trunk
+  --cycle-ms 1000` (a trunk with its own master) and `simulated_rtu --settings` (devices at
+  settings of their own; the trunk runs 19200 8E1).

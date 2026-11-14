@@ -117,7 +117,8 @@ export function counted(key, n, values = {}) {
 export function noteText(note) {
   const own = file().notes[note.code];
   if (!own) return note.text;
-  return own.replace(/\{(\w+)\}/g, (_, name) => note[name] ?? "");
+  // a reason is a server error: in the page's language where it is a known one
+  return own.replace(/\{(\w+)\}/g, (_, name) => (name === "reason" ? errorText(note[name] ?? "") : note[name] ?? ""));
 }
 
 /** An error message from the server in the current language; unknown ones stay English. */

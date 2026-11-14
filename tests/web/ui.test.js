@@ -353,3 +353,10 @@ test("the version names the commit it was built from", () => {
   assert.equal(versionText({ version: "0.1.0", commit: "" }), "0.1.0");
   assert.equal(versionText(null), "");
 });
+
+test("a failed line names its reason in the page's language", () => {
+  setLanguage("de");
+  const note = { code: "line_failed", line: "COM3", reason: "cannot open the connection: COM3 is used by another program; close it there first", text: "" };
+  assert.match(noteText(note), /^Die Abfrage auf COM3 brach ab: COM3 wird von einem anderen Programm benutzt/);
+  setLanguage("en");
+});

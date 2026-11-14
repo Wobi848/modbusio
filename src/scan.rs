@@ -311,6 +311,7 @@ pub async fn search_units(
             Some((timeout * u32::from(retries + 1) * units.len() as u32).as_secs());
     });
     let mut damaged = 0;
+    let mut failed = false;
     for unit in units {
         if search.stopped() {
             break;
@@ -328,12 +329,12 @@ pub async fn search_units(
                 answered,
             }),
             Probed::Failed(error) => {
-                search.update(|report| {
-                    report.notes.push(NoteView {
-                        note: Note::NothingAnswered { line: line.clone() },
-                        text: error.to_string(),
-                    })
+                // the line itself failed: that is the one thing to say, not "nothing answered"
+                search.note(Note::LineFailed {
+                    line: line.clone(),
+                    reason: error.to_string(),
                 });
+                failed = true;
                 break;
             }
             Probed::Gateway | Probed::Silent => {}
@@ -346,12 +347,13 @@ pub async fn search_units(
             count: damaged,
         });
     }
-    if search
-        .report
-        .lock()
-        .expect("report lock")
-        .devices
-        .is_empty()
+    if !failed
+        && search
+            .report
+            .lock()
+            .expect("report lock")
+            .devices
+            .is_empty()
     {
         search.note(Note::NothingAnswered { line });
     }
@@ -407,11 +409,9 @@ pub async fn find_settings(
                 }
                 Probed::Damaged => damaged += 1,
                 Probed::Failed(error) => {
-                    search.update(|report| {
-                        report.notes.push(NoteView {
-                            note: Note::NothingAnswered { line: port.clone() },
-                            text: error.to_string(),
-                        })
+                    search.note(Note::LineFailed {
+                        line: port.clone(),
+                        reason: error.to_string(),
                     });
                     return None;
                 }
