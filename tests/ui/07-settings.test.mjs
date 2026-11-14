@@ -58,5 +58,36 @@ export default {
     await page.click(".detail.open .back");
     await page.click(".phone-back");
     await page.waitForSelector(".row.mdevices:has-text('Drive')");
+    // no borders to drag on a phone
+    assert.equal(await page.locator(".resize:visible").count(), 0);
+
+    // on a wide window the sidebar, the tree and the details are resized by their borders
+    await page.setViewportSize({ width: 1500, height: 900 });
+    await page.goto(`${base}/#/workspace`);
+    await page.click(".row.mdevices:has-text('Drive')");
+    const width = (selector) => page.$eval(selector, (element) => Math.round(element.getBoundingClientRect().width));
+    const drag = async (handle, by) => {
+      const box = await page.locator(handle).boundingBox();
+      await page.mouse.move(box.x + box.width / 2, box.y + 200);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + by, box.y + 200, { steps: 5 });
+      await page.mouse.up();
+    };
+    const side = await width(".side");
+    await drag("#resize-side", 60);
+    assert.ok(Math.abs(await width(".side") - (side + 60)) <= 2, "the sidebar grew by the drag");
+    const tree = await width(".tree");
+    await drag("#resize-tree", 40);
+    assert.ok(Math.abs(await width(".tree") - (tree + 40)) <= 2, "the tree grew by the drag");
+    // kept in this browser, also after a reload
+    await page.reload();
+    await page.waitForSelector(".tree");
+    assert.ok(Math.abs(await width(".side") - (side + 60)) <= 2, "the sidebar kept its width");
+    // the arrow keys move a focused border; a double-click hands it back to the window
+    await page.focus("#resize-side");
+    await page.keyboard.press("ArrowLeft");
+    assert.ok(Math.abs(await width(".side") - (side + 44)) <= 2, "the arrow key moved it");
+    await page.dblclick("#resize-side");
+    assert.equal(await width(".side"), side);
   },
 };
