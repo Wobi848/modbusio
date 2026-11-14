@@ -7,6 +7,10 @@ export default {
     if (!trunk) return;
     await open(page, base, { area: "analyser" });
     await page.waitForSelector(`#analyser-port option[value="${trunk}"]`, { state: "attached" });
+    // nothing heard yet: the page stays as it is, so an open choice list does not close
+    const port = await page.$("#analyser-port");
+    await page.waitForTimeout(2500);
+    assert.ok(await port.evaluate((element) => element.isConnected), "the port's list was drawn anew");
     await page.selectOption("#analyser-port", trunk);
     await page.selectOption("#analyser-speed", "19200");
     assert.equal(await page.textContent("#next"), "Start listening");

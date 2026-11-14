@@ -15,7 +15,7 @@ const { heldUntil, sameRecording, withNewSamples } = await import("../../web/rec
 const { deviceName, deviceNameOnLine, state } = await import("../../web/store.js");
 const { pairHtml } = await import("../../web/explorer.js");
 const { listenedHtml } = await import("../../web/shell.js");
-const { askedText, bytesHtml, filteredExchanges, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
+const { askedText, bytesHtml, filteredExchanges, heardChanged, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
 const { startRequest } = await import("../../web/analyser-actions.js");
 const { profileFrom, registersUnit, stepSamples } = await import("../../web/analyser-registers.js");
 
@@ -335,4 +335,14 @@ test("the capture file's errors are said in German", () => {
   setLanguage("de");
   assert.equal(errorText("trunk.zip holds no RTU frames (3 packets of other kinds)"), "trunk.zip enthält keine RTU-Rahmen (3 Pakete anderer Art)");
   setLanguage("en");
+});
+
+test("the analyser's page is drawn anew only when something changed", () => {
+  const idle = { running: false };
+  assert.equal(heardChanged(null, idle), false);
+  const running = { running: true, started_ms: 5, ended: null, exchanges: [], frames: [] };
+  assert.equal(heardChanged(null, running), true);
+  assert.equal(heardChanged(running, { ...running }), false);
+  assert.equal(heardChanged(running, { ...running, frames: [{ number: 1 }] }), true);
+  assert.equal(heardChanged(running, { ...running, running: false, ended: "stopped" }), true);
 });

@@ -6,6 +6,12 @@
 .analyser-start .start-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 12px; align-items: end; margin: 8px 0; }
 .analyser-start .port-field { display: flex; align-items: end; gap: 8px; grid-column: 1 / -1; }
 .analyser-start .port-field .form-field { flex: 1 1 auto; max-width: 360px; }
+/* the start bar above an ended analysis: the fields in one row, wrapping on a phone */
+.analyser-startbar { align-items: end; flex: none; }
+/* the work area is a grid: the bar takes its own height, the analysis the rest */
+.work:has(> .analyser-startbar) { grid-template-rows: auto minmax(0, 1fr); }
+.analyser-startbar .port-field { display: flex; align-items: end; gap: 8px; }
+.analyser-startbar .form-field { min-width: 0; }
 
 .row.aunits { grid-template-columns: minmax(110px, 1.4fr) 84px 92px minmax(140px, 1.6fr) 84px 64px; min-height: 32px; }
 .row.aexch { grid-template-columns: 104px 44px minmax(120px, 1.2fr) minmax(140px, 2fr) 60px; min-height: 30px; }

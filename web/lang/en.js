@@ -219,6 +219,7 @@ export default {
     "an.intoProfile": "Into a profile …",
     "an.draftName": "Unit {unit} from the trunk",
     "an.draftSource": "bus analyser: the registers its master used",
+    "an.leadStopped": "Stopped · {port} · {settings} · {frames} frames heard; listen again with the fields below",
   },
   notes: {},
   errors: {},

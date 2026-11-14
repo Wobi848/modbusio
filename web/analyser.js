@@ -26,6 +26,13 @@ export function takeHeard(held, answer) {
   return { ...answer, exchanges: keep(held?.exchanges ?? [], answer.exchanges), frames: keep(held?.frames ?? [], answer.frames) };
 }
 
+/** Whether the server's answer changes what the page shows: a start, a stop, or something heard. */
+export function heardChanged(held, answer) {
+  if (!held) return Boolean(answer.running) || answer.started_ms !== undefined;
+  return held.running !== answer.running || held.started_ms !== answer.started_ms || held.ended !== answer.ended
+    || answer.exchanges?.length > 0 || answer.frames?.length > 0;
+}
+
 /** The number of the last item of a list, for asking only what came after it. */
 export const lastNumber = (list) => list?.at(-1)?.number;
 
@@ -84,25 +91,36 @@ export function filteredExchanges(analyser) {
 const millis = (value) => localNumber(String(Math.round(value)));
 
 
-function startCard(state) {
+/** Port, speed and frame to start with: the same fields in the start card and the start bar. */
+function startFields(state) {
   const analyser = state.analyser;
   const ports = state.serialPorts.map((port) =>
     `<option value="${h(port.name)}"${port.name === analyser.port ? " selected" : ""}>${h(port.name)}${port.description ? ` · ${h(port.description)}` : ""}</option>`).join("");
   const speeds = [["listen", t("an.findSpeed")], ...BAUDS.map((baud) => [baud, baud])].map(([value, label]) =>
     `<option value="${value}"${value === analyser.speed ? " selected" : ""}>${label}</option>`).join("");
   const frames = FRAMES.map((frame) => `<option${frame === analyser.frame ? " selected" : ""}>${frame}</option>`).join("");
-  return `<section class="card analyser-start"><h2>${t("an.startTitle")}</h2><p>${t("an.startLead")}</p>
+  return `<div class="port-field"><label class="form-field">${t("search.serialPort")}<select id="analyser-port" data-analyser="port">${ports || `<option value="">${t("an.noPort")}</option>`}</select></label>
+      <button type="button" class="quiet" data-act="analyser-ports">${t("an.lookAgain")}</button></div>
+    <label class="form-field">${t("search.baud")}<select id="analyser-speed" data-analyser="speed">${speeds}</select></label>
+    <label class="form-field">${t("search.frame")}<select id="analyser-frame" data-analyser="frame"${analyser.speed === "listen" ? " disabled" : ""}>${frames}</select></label>`;
+}
+
+/** Before anything was heard: how to connect, the fields, opening a capture. */
+function startCard(state) {
+  return `<div class="page analyser-page"><div class="cards"><section class="card analyser-start"><h2>${t("an.startTitle")}</h2><p>${t("an.startLead")}</p>
     <pre class="wiring" aria-label="${t("an.wiringLabel")}">${h(t("an.wiring"))}</pre>
     <p class="hint">${t("an.swapped")}</p>
-    <div class="start-fields">
-      <div class="port-field"><label class="form-field">${t("search.serialPort")}<select id="analyser-port" data-analyser="port">${ports || `<option value="">${t("an.noPort")}</option>`}</select></label>
-        <button type="button" class="quiet" data-act="analyser-ports">${t("an.lookAgain")}</button></div>
-      <label class="form-field">${t("search.baud")}<select id="analyser-speed" data-analyser="speed">${speeds}</select></label>
-      <label class="form-field">${t("search.frame")}<select id="analyser-frame" data-analyser="frame"${analyser.speed === "listen" ? " disabled" : ""}>${frames}</select></label>
-    </div>
+    <div class="start-fields">${startFields(state)}</div>
     <p class="hint">${t("an.heldHint")}</p>
     <div class="actions"><button type="button" class="quiet" data-act="analyser-open-file">${t("an.openFile")}</button></div>
-    <p class="hint">${t("an.openFileHint")}</p></section>`;
+    <p class="hint">${t("an.openFileHint")}</p></section></div></div>`;
+}
+
+/** After an analysis ended or a capture was opened: what was heard stays the page; starting again
+ * is one row above it. */
+function startBar(state) {
+  return `<div class="toolbar analyser-startbar">${startFields(state)}
+    <div class="end"><button type="button" class="quiet" data-act="analyser-open-file">${t("an.openFile")}</button></div></div>`;
 }
 
 function unitRow(state, unit) {
@@ -244,8 +262,10 @@ export function viewAnalyser(state) {
   const running = Boolean(heard?.running);
   const lead = running
     ? t("an.leadRunning", { port: h(heard.port), settings: h(heard.settings), since: heardTime(heard, 0).slice(0, 5) })
-    : heard?.file ? t("an.leadFile", { file: h(heard.port), frames: heard.bus.frames }) : t("an.lead");
-  const start = running ? "" : `<div class="page analyser-page"><div class="cards">${startCard(state)}</div></div>`;
+    : heard?.file ? t("an.leadFile", { file: h(heard.port), frames: heard.bus.frames })
+      : heard ? t("an.leadStopped", { port: h(heard.port), settings: h(heard.settings ?? ""), frames: heard.bus.frames })
+        : t("an.lead");
+  const start = running ? "" : heard ? startBar(state) : startCard(state);
   return {
     title: t("tab.analyser"),
     lead,

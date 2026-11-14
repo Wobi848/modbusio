@@ -226,6 +226,7 @@ export default {
     "an.intoProfile": "In un profilo …",
     "an.draftName": "Unit {unit} dalla linea",
     "an.draftSource": "analisi del bus: i registri usati dal suo master",
+    "an.leadStopped": "Terminata · {port} · {settings} · {frames} trame ascoltate; riascoltare con i campi qui sotto",
   },
   notes: {
     misses_answers: "La unit {unit} non risponde a {missing} richieste su {requests} ({percent} %): verificare cablaggio e alimentazione, e se il master attende abbastanza.",
