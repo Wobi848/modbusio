@@ -160,7 +160,7 @@ fn view(state: &Shared, after: &After) -> Json<Value> {
         "ended": *listening.ended.lock().expect("ended lock"),
         "port": listening.settings.port,
         "settings": format!("{} {}", listening.settings.baud, listening.settings.frame_text()),
-        "started": seconds_since_epoch(listening.started),
+        "started_ms": millis_since_epoch(listening.started),
         "elapsed_ms": elapsed.as_millis() as u64,
         "bus": analysis.bus,
         "load": load(analysis.bus.bytes, listening.settings.baud, elapsed),
@@ -254,9 +254,9 @@ fn hex(bytes: &[u8]) -> String {
         .join(" ")
 }
 
-fn seconds_since_epoch(time: SystemTime) -> u64 {
+fn millis_since_epoch(time: SystemTime) -> u64 {
     time.duration_since(UNIX_EPOCH)
-        .map_or(0, |since| since.as_secs())
+        .map_or(0, |since| since.as_millis() as u64)
 }
 
 /// The frames kept, for Wireshark: requests as sent, answers and damaged bytes as received.
