@@ -3,7 +3,7 @@
 
 import { api } from "./api.js";
 import { t } from "./i18n.js";
-import { heardChanged, lastNumber, takeHeard } from "./analyser.js";
+import { BAUDS, FRAMES, heardChanged, lastNumber, takeHeard } from "./analyser.js";
 import { profileFrom, registersUnit } from "./analyser-registers.js";
 import { fileBase64 } from "./profile-actions.js";
 import { attempt, go, pickFile, remember, render, state, toast } from "./store.js";
@@ -17,6 +17,14 @@ export function startRequest(analyser) {
 
 /** A choice list of the page is open: drawing the page anew would close it under the pointer. */
 const choosing = () => document.activeElement?.tagName === "SELECT" && document.getElementById("work")?.contains(document.activeElement);
+
+/** The start fields set to the speed and frame the analyser listens at (`19200 8E1`), so they
+ * say what listening found and the next start needs no search. */
+export function foundSettings(analyser, settings) {
+  const [speed, frame] = (settings ?? "").split(" ");
+  if (!BAUDS.includes(speed) || !FRAMES.includes(frame)) return analyser;
+  return { ...analyser, speed, frame };
+}
 
 /** What is new on the server; kept unless the view is paused. The page is drawn anew only when
  * something changed, and not while a choice list on it is open. */
@@ -80,9 +88,11 @@ export const analyserActions = {
     state.analyser.busy = false;
     state.busy = null;
     if (answer) {
+      state.analyser = foundSettings(state.analyser, answer.settings);
       state.analyser.heard = takeHeard(null, answer);
       state.analyser.chosen = null;
       state.analyser.paused = false;
+      remember();
     }
     render();
   },
