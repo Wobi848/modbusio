@@ -228,6 +228,8 @@ export default {
     "an.draftSource": "análisis de bus: los registros que usó su maestro",
     "an.leadStopped": "Terminada · {port} · {settings} · {frames} tramas escuchadas; escuchar de nuevo con los campos de abajo",
     "an.frameByListening": "también se averigua escuchando",
+    "search.finding": "Probando velocidades y tramas: {done} de {total} ajustes …",
+    "search.foundNext": "Velocidad y trama están en {settings}: Buscar consulta ahora cada unit así.",
   },
   notes: {
     misses_answers: "La unit {unit} no responde a {missing} de {requests} peticiones ({percent} %): revisar su cableado y alimentación, y si el maestro espera lo suficiente.",

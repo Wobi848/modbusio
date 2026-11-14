@@ -143,6 +143,19 @@ function gatewayFields(state) {
     ${rangeFields(state, "500")}`;
 }
 
+/** The settings search in the dialog: how far it is with a stop, then what it found. */
+export function findingHtml(state) {
+  if (!state.findingSettings) return "";
+  const scan = state.scan;
+  if (!scan.finished) {
+    return `<div class="strip info finding">${t("search.finding", { done: scan.done ?? 0, total: scan.total ?? 0 })}
+      <button type="button" class="quiet" data-act="stop-search">${t("stop")}</button></div>`;
+  }
+  const notes = (scan.notes ?? []).map((note) => `<div class="strip ${note.code === "settings_found" ? "info" : "warn"}">${h(noteText(note))}</div>`).join("");
+  const next = scan.settings ? `<p class="hint">${t("search.foundNext", { settings: h(scan.settings) })}</p>` : "";
+  return `${notes}${next}`;
+}
+
 /** What listening heard: the note, the unit IDs that talked, each setting's count behind a fold. */
 export function listenedHtml(state) {
   const listened = state.listened;
@@ -175,7 +188,7 @@ export function dialogHtml(state) {
     <h2 id="search-title">${t("search.title")}</h2>
     <p class="sub">${t(`search.lead.${mode}`)}</p>
     <dl class="facts">${modeChoice(state)}${fields}</dl>
-    ${mode === "serial" ? listenedHtml(state) : ""}
+    ${mode === "serial" ? listenedHtml(state) + findingHtml(state) : ""}
     <div class="acts"><button type="button" class="quiet" data-act="close-menu">${t("cancel")}</button>${serialTools}<button type="button" data-act="search">${t("search.start")}</button></div>
   </div></div>`;
 }

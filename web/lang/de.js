@@ -222,6 +222,8 @@ export default {
     "an.draftSource": "Busanalyse: die Register, die ihr Master benutzte",
     "an.leadStopped": "Beendet · {port} · {settings} · {frames} Rahmen gehört; mit den Feldern darunter neu mithören",
     "an.frameByListening": "wird mitgefunden",
+    "search.finding": "Probiere Geschwindigkeiten und Frames: {done} von {total} Einstellungen …",
+    "search.foundNext": "Geschwindigkeit und Frame stehen auf {settings}: Suchen fragt jetzt jede Unit damit ab.",
   },
   notes: {
     misses_answers: "Unit {unit} antwortet auf {missing} von {requests} Anfragen nicht ({percent} %): Verdrahtung und Speisung prüfen, und ob der Master lange genug wartet.",
