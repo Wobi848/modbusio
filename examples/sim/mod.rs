@@ -12,6 +12,8 @@ use std::time::{Duration, Instant};
 
 use tokio_modbus::prelude::*;
 
+pub mod trunk;
+
 /// One simulated device: its four areas, which addresses exist, what it refuses.
 #[derive(Clone, Default)]
 pub struct Device {
