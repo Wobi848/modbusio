@@ -3,6 +3,7 @@
 pub mod access;
 #[cfg(windows)]
 mod adapter_descriptions;
+pub mod analyser;
 pub mod capture;
 pub mod csv;
 pub mod diagnosis;
