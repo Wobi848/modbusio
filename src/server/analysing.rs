@@ -24,14 +24,27 @@ use crate::protocol::rtu;
 /// Items of a list the page gets at most per request; it asks again for the rest.
 const MOST_PER_ANSWER: usize = 500;
 
+/// Where an analysis comes from: a port listened to, or a capture file opened.
+pub enum Source {
+    Port {
+        settings: SerialSettings,
+        task: tokio::task::AbortHandle,
+    },
+    File {
+        name: String,
+        /// From the first packet to the last.
+        length: Duration,
+    },
+}
+
 /// An analysis, running or ended; kept until the next one starts.
 pub struct Listening {
-    pub settings: SerialSettings,
+    pub source: Source,
     pub started: SystemTime,
     pub analysis: Arc<Mutex<Analysis>>,
-    /// Why listening ended by itself (adapter unplugged), or `stopped` when the user ended it.
+    /// Why listening ended by itself (adapter unplugged), `stopped` when the user ended it, or
+    /// `opened` for a file.
     pub ended: Arc<Mutex<Option<String>>>,
-    task: tokio::task::AbortHandle,
 }
 
 impl Listening {
@@ -39,9 +52,51 @@ impl Listening {
         self.ended.lock().expect("ended lock").is_none()
     }
 
-    pub fn endpoint(&self) -> Endpoint {
-        Endpoint::Serial(self.settings.clone())
+    /// The serial port listened to; `None` for a file.
+    pub fn port(&self) -> Option<&SerialSettings> {
+        match &self.source {
+            Source::Port { settings, .. } => Some(settings),
+            Source::File { .. } => None,
+        }
     }
+
+    /// The port's name or the file's.
+    pub fn name(&self) -> &str {
+        match &self.source {
+            Source::Port { settings, .. } => &settings.port,
+            Source::File { name, .. } => name,
+        }
+    }
+
+    fn elapsed(&self) -> Duration {
+        match &self.source {
+            Source::Port { .. } => self.started.elapsed().unwrap_or_default(),
+            Source::File { length, .. } => *length,
+        }
+    }
+
+    /// The share of time the trunk carried bytes, 0 to 1; unknown for a file, whose speed is not
+    /// in it.
+    fn load(&self, bytes: u64) -> f64 {
+        self.port()
+            .map_or(0.0, |settings| load(bytes, settings.baud, self.elapsed()))
+    }
+}
+
+/// An analysis, running or ended, is kept: a new one may replace it only when it does not run.
+fn refuse_while_listening(state: &Shared) -> Result<(), ApiError> {
+    if state
+        .analyser
+        .lock()
+        .expect("analyser lock")
+        .as_ref()
+        .is_some_and(Listening::running)
+    {
+        return Err(ApiError::conflict(
+            "the bus analyser is listening; stop it first",
+        ));
+    }
+    Ok(())
 }
 
 #[derive(Deserialize)]
@@ -61,17 +116,7 @@ pub async fn start(
         return Err(ApiError::bad_request("choose a serial port"));
     }
     super::scanning::refuse_while_searching(&state)?;
-    if state
-        .analyser
-        .lock()
-        .expect("analyser lock")
-        .as_ref()
-        .is_some_and(Listening::running)
-    {
-        return Err(ApiError::conflict(
-            "the bus analyser is listening; stop it first",
-        ));
-    }
+    refuse_while_listening(&state)?;
     let given = match (request.baud, request.frame.as_deref()) {
         (Some(baud), Some(frame)) => Some((baud, frame)),
         (None, None) => None,
@@ -110,11 +155,10 @@ pub async fn start(
         .abort_handle()
     };
     *state.analyser.lock().expect("analyser lock") = Some(Listening {
-        settings,
+        source: Source::Port { settings, task },
         started: SystemTime::now(),
         analysis,
         ended,
-        task,
     });
     Ok(view(&state, &After::default()))
 }
@@ -122,10 +166,11 @@ pub async fn start(
 pub async fn stop(State(state): State<Shared>) -> Json<Value> {
     if let Some(listening) = state.analyser.lock().expect("analyser lock").as_ref()
         && listening.running()
+        && let Source::Port { settings, task } = &listening.source
     {
-        listening.task.abort();
+        task.abort();
         *listening.ended.lock().expect("ended lock") = Some("stopped".into());
-        state.links.release(&listening.endpoint());
+        state.links.release(&Endpoint::Serial(settings.clone()));
     }
     view(&state, &After::default())
 }
@@ -155,21 +200,19 @@ fn view(state: &Shared, after: &After) -> Json<Value> {
         return Json(json!({ "running": false }));
     };
     let analysis = listening.analysis.lock().expect("analysis lock");
-    let elapsed = listening.started.elapsed().unwrap_or_default();
+    let load = listening.load(analysis.bus.bytes);
+    let file = matches!(listening.source, Source::File { .. });
     Json(json!({
         "running": listening.running(),
         "ended": *listening.ended.lock().expect("ended lock"),
-        "port": listening.settings.port,
-        "settings": format!("{} {}", listening.settings.baud, listening.settings.frame_text()),
+        "port": listening.name(),
+        "file": file,
+        "settings": listening.port().map(|settings| format!("{} {}", settings.baud, settings.frame_text())),
         "started_ms": millis_since_epoch(listening.started),
-        "elapsed_ms": elapsed.as_millis() as u64,
+        "elapsed_ms": listening.elapsed().as_millis() as u64,
         "bus": analysis.bus,
-        "load": load(analysis.bus.bytes, listening.settings.baud, elapsed),
-        "notes": crate::analyser::notes::notes(
-            &analysis,
-            &listening.settings.port,
-            load(analysis.bus.bytes, listening.settings.baud, elapsed),
-        )
+        "load": load,
+        "notes": crate::analyser::notes::notes(&analysis, listening.name(), load)
         .into_iter()
         .map(NoteView::from)
         .collect::<Vec<_>>(),
@@ -266,6 +309,42 @@ fn hex(bytes: &[u8]) -> String {
 fn millis_since_epoch(time: SystemTime) -> u64 {
     time.duration_since(UNIX_EPOCH)
         .map_or(0, |since| since.as_millis() as u64)
+}
+
+#[derive(Deserialize)]
+pub struct Open {
+    file_name: String,
+    /// The file, base64.
+    content_base64: String,
+}
+
+/// A capture file (pcapng or pcap) analysed as if heard: the same views, offline.
+pub async fn open(
+    State(state): State<Shared>,
+    Json(request): Json<Open>,
+) -> Result<Json<Value>, ApiError> {
+    refuse_while_listening(&state)?;
+    let bytes = super::profiles::base64(&request.content_base64)
+        .ok_or_else(|| ApiError::bad_request("the file is not base64"))?;
+    let opened = crate::pcap_read::read(&bytes).map_err(ApiError::bad_request)?;
+    if opened.packets.is_empty() {
+        return Err(ApiError::bad_request(format!(
+            "{} holds no RTU frames ({} packets of other kinds)",
+            request.file_name, opened.skipped
+        )));
+    }
+    let (analysis, started) = Analysis::of_packets(&opened.packets);
+    let last = opened.packets.last().map_or(started, |packet| packet.time);
+    *state.analyser.lock().expect("analyser lock") = Some(Listening {
+        source: Source::File {
+            name: request.file_name,
+            length: last.duration_since(started).unwrap_or_default(),
+        },
+        started,
+        analysis: Arc::new(Mutex::new(analysis)),
+        ended: Arc::new(Mutex::new(Some("opened".into()))),
+    });
+    Ok(view(&state, &After::default()))
 }
 
 /// The frames kept, for Wireshark: requests as sent, answers and damaged bytes as received.

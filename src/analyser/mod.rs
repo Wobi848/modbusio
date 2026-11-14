@@ -103,6 +103,21 @@ impl Analysis {
         self.take(heard);
     }
 
+    /// The analysis of frames read from a capture file, with when the first one was heard. A
+    /// file's packets are whole frames, so the line counts as quiet after each.
+    pub fn of_packets(packets: &[crate::pcap_read::Packet]) -> (Analysis, SystemTime) {
+        let started = packets
+            .first()
+            .map_or(SystemTime::UNIX_EPOCH, |packet| packet.time);
+        let mut analysis = Analysis::default();
+        for packet in packets {
+            let at = packet.time.duration_since(started).unwrap_or_default();
+            analysis.push(at.as_micros() as u64, &packet.bytes);
+            analysis.quiet();
+        }
+        (analysis, started)
+    }
+
     /// Counts and lists start again; the numbers count on, so a page asking for what came after
     /// its last item gets the new ones.
     pub fn clear(&mut self) {
@@ -283,6 +298,34 @@ mod tests {
         analysis.quiet();
         assert_eq!(analysis.bus.damaged, 1);
         assert_eq!(analysis.frames().len(), 2);
+    }
+
+    #[test]
+    fn what_was_saved_is_analysed_the_same_when_opened_again() {
+        let mut heard = Analysis::default();
+        for cycle in 0..4u64 {
+            heard.push(cycle * 1_000_000, &rtu::frame(5, &[0x04, 0, 0, 0, 1]));
+            heard.push(
+                cycle * 1_000_000 + 25_000,
+                &rtu::frame(5, &[0x04, 2, 0, 42]),
+            );
+        }
+        heard.quiet();
+        let started = SystemTime::UNIX_EPOCH + Duration::from_secs(1000);
+        let frames: Vec<_> = heard
+            .frames()
+            .iter()
+            .map(|seen| seen.item.capture(started))
+            .collect();
+        let opened = crate::pcap_read::read(&crate::pcap::write(&frames)).expect("read");
+        let (again, first) = Analysis::of_packets(&opened.packets);
+        assert_eq!(first, started);
+        assert_eq!(again.units[&5].answers, 4);
+        assert_eq!(
+            again.units[&5].answer_times.summary(),
+            heard.units[&5].answer_times.summary()
+        );
+        assert_eq!(again.units[&5].cycle.summary().unwrap().median, 1_000_000);
     }
 
     #[test]

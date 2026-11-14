@@ -888,3 +888,72 @@ async fn the_analyser_wants_a_port_and_speed_with_frame() {
     let (status, _) = call(&app, "GET", "/api/analyser.pcapng", None).await;
     assert_eq!(status, StatusCode::CONFLICT);
 }
+
+#[tokio::test]
+async fn a_capture_file_opens_in_the_analyser_and_other_files_are_refused() {
+    use modbusio::capture::{Direction, Frame};
+    use modbusio::protocol::rtu;
+    use std::time::{Duration, SystemTime};
+    let app = app();
+    let at = |millis: u64| SystemTime::UNIX_EPOCH + Duration::from_millis(1_000_000 + millis);
+    let frame = |millis, bytes: Vec<u8>| Frame {
+        time: at(millis),
+        direction: Direction::Sent,
+        addresses: None,
+        bytes,
+        rtu: true,
+    };
+    let file = modbusio::pcap::write(&[
+        frame(0, rtu::frame(7, &[0x03, 0, 100, 0, 21])),
+        frame(21, rtu::frame(7, &[0x83, 0x02])),
+        frame(1000, rtu::frame(7, &[0x03, 0, 0, 0, 1])),
+        frame(1020, rtu::frame(7, &[0x03, 2, 0, 9])),
+    ]);
+    let base64 = |bytes: &[u8]| {
+        const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        bytes
+            .chunks(3)
+            .flat_map(|chunk| {
+                let bits = chunk
+                    .iter()
+                    .fold(0u32, |bits, byte| (bits << 8) | u32::from(*byte))
+                    << (8 * (3 - chunk.len()));
+                (0..=chunk.len())
+                    .map(move |index| ALPHABET[(bits >> (18 - 6 * index) & 63) as usize] as char)
+            })
+            .collect::<String>()
+    };
+    let (status, opened) = call(
+        &app,
+        "POST",
+        "/api/analyser/open",
+        Some(json!({ "file_name": "trunk.pcapng", "content_base64": base64(&file) })),
+    )
+    .await;
+    assert_eq!(status, StatusCode::OK, "{opened}");
+    assert_eq!(opened["file"], json!(true));
+    assert_eq!(opened["running"], json!(false));
+    assert_eq!(opened["port"], json!("trunk.pcapng"));
+    assert_eq!(opened["settings"], json!(null));
+    assert_eq!(opened["started_ms"], json!(1_000_000));
+    assert_eq!(opened["units"][0]["requests"], json!(2));
+    assert_eq!(
+        opened["exchanges"][0]["outcome"],
+        json!({ "kind": "exception", "code": 2 })
+    );
+    let (status, unit) = call(&app, "GET", "/api/analyser/unit?unit=7", None).await;
+    assert_eq!(status, StatusCode::OK);
+    assert_eq!(unit["registers"][0]["reading"]["value"], json!(9));
+
+    let (status, refused) = call(
+        &app,
+        "POST",
+        "/api/analyser/open",
+        Some(
+            json!({ "file_name": "list.xlsx", "content_base64": base64(b"PK\x03\x04 a workbook") }),
+        ),
+    )
+    .await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(refused["error"], json!("not a pcapng or pcap file"));
+}
