@@ -1,4 +1,4 @@
-import { assert, driveWithProfile, noSidewaysScroll, open } from "./helpers.mjs";
+import { assert, driveWithProfile, headsOverValues, noSidewaysScroll, open } from "./helpers.mjs";
 
 export default {
   name: "settings and layout: sites, German, dark, phone width without sideways scrolling",
@@ -68,9 +68,11 @@ export default {
     const width = (selector) => page.$eval(selector, (element) => Math.round(element.getBoundingClientRect().width));
     const drag = async (handle, by) => {
       const box = await page.locator(handle).boundingBox();
-      await page.mouse.move(box.x + box.width / 2, box.y + 200);
+      // in the middle of the border, which for a column is only as tall as its head
+      const y = box.y + Math.min(box.height / 2, 200);
+      await page.mouse.move(box.x + box.width / 2, y);
       await page.mouse.down();
-      await page.mouse.move(box.x + box.width / 2 + by, box.y + 200, { steps: 5 });
+      await page.mouse.move(box.x + box.width / 2 + by, y, { steps: 5 });
       await page.mouse.up();
     };
     const side = await width(".side");
@@ -89,5 +91,29 @@ export default {
     assert.ok(Math.abs(await width(".side") - (side + 44)) <= 2, "the arrow key moved it");
     await page.dblclick("#resize-side");
     assert.equal(await width(".side"), side);
+
+    // a click on a column head sorts the list: up, down, back to the site's own order
+    await page.click(".tree [data-act=select-device][data-key='']");
+    await page.waitForSelector(".row.mdevices:not(.head)");
+    const names = () => page.$$eval(".row.mdevices:not(.head) > .name", (cells) => cells.map((cell) => cell.textContent.trim()));
+    const own = await names();
+    await page.click(".row.mdevices.head [data-key=name]");
+    assert.deepEqual(await names(), [...own].sort((a, b) => a.localeCompare(b)));
+    await page.click(".row.mdevices.head [data-key=name]");
+    assert.deepEqual(await names(), [...own].sort((a, b) => b.localeCompare(a)));
+    await page.click(".row.mdevices.head [data-key=name]");
+    assert.deepEqual(await names(), own);
+
+    // a column as wide as its border is dragged, kept after a reload, back on a double-click
+    const lineWidth = () => page.$eval(".row.mdevices.head > :nth-child(2)", (cell) => Math.round(cell.getBoundingClientRect().width));
+    const before = await lineWidth();
+    await drag(".row.mdevices.head [data-key=line] + .col-border", 50);
+    assert.ok(Math.abs(await lineWidth() - (before + 50)) <= 3, "the column grew by the drag");
+    await page.reload();
+    await page.waitForSelector(".row.mdevices.head");
+    assert.ok(Math.abs(await lineWidth() - (before + 50)) <= 3, "the column kept its width");
+    await page.dblclick(".row.mdevices.head [data-key=line] + .col-border");
+    assert.ok(Math.abs(await lineWidth() - before) <= 3, "the column is back");
+    await headsOverValues(page, "mdevices");
   },
 };
