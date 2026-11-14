@@ -28,7 +28,7 @@ export async function loadPorts() {
   if (!state.info?.serial) return;
   state.serialPorts = (await attempt(api.serialPorts)) ?? [];
   if (!state.analyser.port && state.serialPorts.length) state.analyser.port = state.serialPorts[0].name;
-  render();
+  if (state.area === "analyser") render();
 }
 
 /** Fields of the analyser page; true when the page must be drawn anew. */
