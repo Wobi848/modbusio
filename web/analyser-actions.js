@@ -4,6 +4,7 @@
 import { api } from "./api.js";
 import { t } from "./i18n.js";
 import { lastNumber, takeHeard } from "./analyser.js";
+import { registersUnit } from "./analyser-registers.js";
 import { attempt, remember, render, state, toast } from "./store.js";
 
 /** The start's request from the page's choices; an error text when one is missing. */
@@ -20,7 +21,23 @@ export async function pollAnalyser() {
   const wasRunning = Boolean(held?.running);
   if (state.analyser.paused && answer.running && held?.started_ms === answer.started_ms) return;
   state.analyser.heard = takeHeard(held, answer);
+  await loadDetails();
   if (state.area === "analyser" || wasRunning !== Boolean(answer.running)) render();
+}
+
+/** The unit in focus (the registers' unit, or the one chosen) with its registers and answer times,
+ * and the chosen register's changes. */
+async function loadDetails() {
+  const analyser = state.analyser;
+  if (state.area !== "analyser" || !analyser.heard) return;
+  const unit = analyser.view === "registers" ? registersUnit(analyser)
+    : analyser.view === "units" && analyser.chosen?.startsWith("u") ? Number(analyser.chosen.slice(1)) : null;
+  if (unit === null) return;
+  analyser.unitData = await api.analyserUnit(unit);
+  if (analyser.view !== "registers" || !analyser.register) return;
+  const [area, address] = analyser.register.split(":");
+  const answer = await api.analyserRegister(unit, area, address);
+  analyser.history = { place: analyser.register, values: answer.history };
 }
 
 /** Serial ports for the start, once the page is opened. */
@@ -34,6 +51,10 @@ export async function loadPorts() {
 /** Fields of the analyser page; true when the page must be drawn anew. */
 export function analyserField(element) {
   state.analyser[element.dataset.analyser] = element.value;
+  if (element.dataset.analyser === "registersUnit") {
+    state.analyser.register = null;
+    attempt(async () => { await loadDetails(); render(); });
+  }
   if (element.dataset.analyser !== "unitFilter") remember();
   return true;
 }
@@ -70,8 +91,31 @@ export const analyserActions = {
   },
   "analyser-ports": () => loadPorts(),
   "analyser-pause": () => { state.analyser.paused = !state.analyser.paused; render(); },
-  "analyser-view": (element) => { state.analyser.view = element.dataset.view; state.analyser.chosen = null; render(); },
-  "analyser-choose": (element) => { state.analyser.chosen = element.dataset.chosen || null; render(); },
+  "analyser-view": async (element) => {
+    Object.assign(state.analyser, { view: element.dataset.view, chosen: null, register: null });
+    render();
+    await loadDetails();
+    render();
+  },
+  "analyser-choose": async (element) => {
+    state.analyser.chosen = element.dataset.chosen || null;
+    render();
+    await loadDetails();
+    render();
+  },
+  "analyser-back": () => { Object.assign(state.analyser, { chosen: null, register: null }); render(); },
+  "analyser-register": async (element) => {
+    state.analyser.register = element.dataset.place;
+    render();
+    await loadDetails();
+    render();
+  },
+  "analyser-unit-registers": async (element) => {
+    Object.assign(state.analyser, { view: "registers", registersUnit: element.dataset.unit, chosen: null, register: null });
+    render();
+    await loadDetails();
+    render();
+  },
   "analyser-check": (element) => { state.analyser[element.dataset.field] = element.checked; render(); },
   "analyser-unit-exchanges": (element) => {
     Object.assign(state.analyser, { view: "exchanges", unitFilter: element.dataset.unit, chosen: null });

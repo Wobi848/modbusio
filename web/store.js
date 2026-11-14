@@ -46,6 +46,7 @@ export const state = {
   analyser: {
     port: "", speed: "listen", frame: "8E1", heard: null, busy: false, paused: false,
     view: "units", chosen: null, unitFilter: "", problemsOnly: false, writesOnly: false,
+    registersUnit: "", register: null, unitData: null, history: null,
   },
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
