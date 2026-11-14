@@ -443,3 +443,39 @@ async fn a_connection_the_device_closed_is_opened_anew_for_a_read_only() {
     tokio::time::sleep(closed_by_now).await;
     assert_eq!(requests.load(Ordering::SeqCst), before + 1);
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn a_line_the_analyser_holds_gets_no_request_at_any_speed_until_released() {
+    use modbusio::endpoint::{Parity, SerialSettings};
+    let port = common::trunk();
+    let links = common::links();
+    let at = |baud| {
+        Endpoint::Serial(SerialSettings {
+            port: port.clone(),
+            baud,
+            parity: Parity::Even,
+            stop_bits: 1,
+        })
+    };
+    links.hold(&at(19200)).await;
+    for baud in [9600, 19200] {
+        let refused = links
+            .exchange(
+                &common::target(at(baud), 5),
+                &read(Area::InputRegister, 0, 1),
+                WAIT,
+            )
+            .await;
+        assert!(matches!(refused, Err(LinkError::NotSent(_))), "{refused:?}");
+    }
+    links.release(&at(19200));
+    let answer = links
+        .exchange(
+            &common::target(at(19200), 5),
+            &read(Area::InputRegister, 0, 1),
+            WAIT,
+        )
+        .await;
+    assert!(answer.is_ok(), "{answer:?}");
+}
