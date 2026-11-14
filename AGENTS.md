@@ -58,6 +58,10 @@ true when the commands, paths or rules they name change.
 - A work tool: self-explanatory, clean, every function reachable; bacnetio's interface principles.
 - Buttons look like buttons and name their task. Never weaken a control unasked.
 - Check screens with screenshots, at phone width too.
+- Before a pull request, click every changed control as a user would, in the browser, and look:
+  each one shows that it did something (a changed list, a note, progress, a short message), and
+  nothing overlaps or is cut off, at phone and desktop width, light and dark. The tests check that
+  things work, not that they are seen to work; most faults the maintainer found were of this kind.
 
 ## Languages
 - New texts need every existing language; a test fails otherwise.
