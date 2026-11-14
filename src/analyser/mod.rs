@@ -4,6 +4,7 @@
 
 pub mod exchanges;
 pub mod frames;
+pub mod notes;
 pub mod port;
 pub mod registers;
 pub mod tables;
