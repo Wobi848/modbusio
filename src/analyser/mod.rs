@@ -1,15 +1,18 @@
 //! The bus analyser (docs/concept-analyser.md): what a trunk's own master asks and what its units
-//! answer, heard without sending. This part has no I/O: it takes bytes with the time they arrived.
+//! answer, heard without sending. Only `port.rs` reads a port; the rest takes bytes with the time
+//! they arrived.
 
 pub mod exchanges;
 pub mod frames;
+pub mod port;
 pub mod units;
 
 use std::collections::{BTreeMap, VecDeque};
+use std::time::{Duration, SystemTime};
 
 use serde::Serialize;
 
-use crate::capture::MOST_FRAMES;
+use crate::capture::{self, Direction, MOST_FRAMES};
 use exchanges::{Exchange, Outcome, Pairer};
 use frames::{Framer, Heard};
 use units::UnitStats;
@@ -23,6 +26,42 @@ pub struct Bus {
     /// Every byte heard, for the bus load.
     pub bytes: u64,
     pub broadcasts: u64,
+}
+
+/// What a frame was on the trunk, known once it is paired.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Role {
+    Request,
+    Answer,
+    /// Bytes that made no frame.
+    Damaged,
+}
+
+/// A frame as kept for the view *Frames* and the capture file.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Seen {
+    /// When its first byte arrived, in microseconds since listening began.
+    pub at: u64,
+    pub role: Role,
+    pub bytes: Vec<u8>,
+}
+
+impl Seen {
+    /// The frame for a capture file (`pcap.rs`): requests as sent, the rest as received.
+    pub fn capture(&self, started: SystemTime) -> capture::Frame {
+        capture::Frame {
+            time: started + Duration::from_micros(self.at),
+            direction: if self.role == Role::Request {
+                Direction::Sent
+            } else {
+                Direction::Received
+            },
+            addresses: None,
+            bytes: self.bytes.clone(),
+            rtu: true,
+        }
+    }
 }
 
 /// One item of a list kept up to a limit, with a number that counts on, so a page can ask for
@@ -39,7 +78,7 @@ pub struct Analysis {
     pairer: Pairer,
     pub bus: Bus,
     pub units: BTreeMap<u8, UnitStats>,
-    frames: VecDeque<Numbered<Heard>>,
+    frames: VecDeque<Numbered<Seen>>,
     exchanges: VecDeque<Numbered<Exchange>>,
     next_frame: u64,
     next_exchange: u64,
@@ -59,7 +98,17 @@ impl Analysis {
         self.take(heard);
     }
 
-    pub fn frames(&self) -> &VecDeque<Numbered<Heard>> {
+    /// Counts and lists start again; the numbers count on, so a page asking for what came after
+    /// its last item gets the new ones.
+    pub fn clear(&mut self) {
+        *self = Analysis {
+            next_frame: self.next_frame,
+            next_exchange: self.next_exchange,
+            ..Analysis::default()
+        };
+    }
+
+    pub fn frames(&self) -> &VecDeque<Numbered<Seen>> {
         &self.frames
     }
 
@@ -69,17 +118,36 @@ impl Analysis {
 
     fn take(&mut self, heard: Vec<Heard>) {
         for item in heard {
-            let done: Vec<Exchange> = match &item {
+            let (seen, done) = match item {
                 Heard::Frame(frame) => {
                     self.bus.frames += 1;
-                    self.pairer.frame(frame)
+                    let done = self.pairer.frame(&frame);
+                    // the frame is an answer when it completed an exchange as its answer
+                    let answer = done
+                        .last()
+                        .is_some_and(|exchange| exchange.answer_bytes == frame.bytes);
+                    let role = if answer { Role::Answer } else { Role::Request };
+                    let seen = Seen {
+                        at: frame.at,
+                        role,
+                        bytes: frame.bytes,
+                    };
+                    (seen, done)
                 }
+                // listening began in the middle of a frame: a piece, not a fault on the line
+                Heard::Damaged(_) if self.bus.frames == 0 => continue,
                 Heard::Damaged(damaged) => {
                     self.bus.damaged += 1;
-                    self.pairer.damaged(damaged).into_iter().collect()
+                    let done = self.pairer.damaged(&damaged).into_iter().collect();
+                    let seen = Seen {
+                        at: damaged.at,
+                        role: Role::Damaged,
+                        bytes: damaged.bytes,
+                    };
+                    (seen, done)
                 }
             };
-            keep(&mut self.frames, &mut self.next_frame, item);
+            keep(&mut self.frames, &mut self.next_frame, seen);
             for exchange in done {
                 self.count(&exchange);
                 keep(&mut self.exchanges, &mut self.next_exchange, exchange);
@@ -132,6 +200,13 @@ mod tests {
         // the last request to unit 9 still waits: two of three are known to have no answer
         assert_eq!(analysis.units[&9].no_answer, 2);
         assert_eq!(analysis.bus.frames, 9);
+        let roles: Vec<Role> = analysis
+            .frames()
+            .iter()
+            .take(3)
+            .map(|seen| seen.item.role)
+            .collect();
+        assert_eq!(roles, [Role::Request, Role::Answer, Role::Request]);
         assert_eq!(analysis.exchanges().back().unwrap().number, 4);
     }
 
@@ -166,6 +241,18 @@ mod tests {
         let damaged: u64 = analysis.units.values().map(|unit| unit.damaged).sum();
         assert_eq!((requests, answers, damaged), (500, 450, 50));
         assert_eq!(analysis.bus.damaged, 50);
+    }
+
+    #[test]
+    fn the_piece_of_a_frame_heard_first_is_no_damage() {
+        let mut analysis = Analysis::default();
+        let answer = rtu::frame(5, &[0x04, 2, 0, 42]);
+        analysis.push(0, &answer[3..]);
+        analysis.push(1, &rtu::frame(5, &[0x04, 0, 0, 0, 1]));
+        analysis.push(2, &[0x05, 0x04, 0x02]);
+        analysis.quiet();
+        assert_eq!(analysis.bus.damaged, 1);
+        assert_eq!(analysis.frames().len(), 2);
     }
 
     #[test]
