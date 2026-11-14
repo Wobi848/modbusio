@@ -73,6 +73,18 @@ pub fn trunk() -> String {
     name
 }
 
+/// The simulated trunk with its master (`examples/sim/trunk.rs`) on a pseudo-terminal; returns
+/// the terminal's name.
+#[cfg(unix)]
+pub fn played_trunk(options: sim::trunk::Options) -> String {
+    use tokio_serial::SerialPort;
+    let (ours, theirs) = tokio_serial::SerialStream::pair().expect("a pseudo-terminal");
+    let name = theirs.name().expect("a name");
+    std::mem::forget(theirs);
+    tokio::spawn(sim::trunk::play(ours, options));
+    name
+}
+
 pub fn links() -> Links {
     Links::new(Arc::new(Capture::default()))
 }

@@ -1,6 +1,7 @@
 //! The local web server: the interface from `web/` and the JSON API it talks to (docs/api.md).
 //! Listens on 127.0.0.1 only, because the API can write to the plant.
 
+mod analysing;
 mod capturing;
 mod devices;
 mod exports;
@@ -96,6 +97,11 @@ pub fn router(state: Shared) -> Router {
         .route("/api/recording/clear", post(recording::clear))
         .route("/api/recording.csv", get(recording::csv))
         .route("/api/recording.xlsx", get(recording::xlsx))
+        .route("/api/analyser", get(analysing::state))
+        .route("/api/analyser/start", post(analysing::start))
+        .route("/api/analyser/stop", post(analysing::stop))
+        .route("/api/analyser/clear", post(analysing::clear))
+        .route("/api/analyser.pcapng", get(analysing::file))
         .route("/api/capture", get(capturing::state))
         .route("/api/capture/start", post(capturing::start))
         .route("/api/capture/stop", post(capturing::stop))

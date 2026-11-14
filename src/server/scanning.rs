@@ -113,6 +113,23 @@ pub(super) fn refuse_while_searching(state: &Shared) -> Result<(), ApiError> {
     Ok(())
 }
 
+/// Refuses to send on a line the bus analyser listens to: modbusio would be a second master there.
+fn refuse_held(state: &Shared, endpoint: &Endpoint) -> Result<(), ApiError> {
+    if state.links.is_held(endpoint) {
+        return Err(ApiError::conflict(crate::links::held_text(endpoint)));
+    }
+    Ok(())
+}
+
+pub(super) fn serial_line(port: &str) -> Endpoint {
+    Endpoint::Serial(crate::endpoint::SerialSettings {
+        port: port.to_string(),
+        baud: 9600,
+        parity: crate::endpoint::Parity::Even,
+        stop_bits: 1,
+    })
+}
+
 /// When a search ends, its devices join the open site with what was learnt about them.
 fn keep_found(state: &Shared, search: &Search) {
     let found = search.report.lock().expect("report lock").devices.clone();
@@ -256,6 +273,7 @@ pub async fn scan_units(
         request.timeout_ms,
         if endpoint.is_serial_line() { 300 } else { 500 },
     )?;
+    refuse_held(&state, &endpoint)?;
     let search = begin(&state)?;
     let links = state.links.clone();
     run(
@@ -288,6 +306,7 @@ pub async fn find_settings(
         return Err(ApiError::bad_request("give 1 to 20 units from 1 to 247"));
     }
     let timeout = timeout(request.timeout_ms, 200)?;
+    refuse_held(&state, &serial_line(&request.port))?;
     let search = begin(&state)?;
     let links = state.links.clone();
     let task_search = search.clone();
@@ -322,14 +341,10 @@ pub async fn listen(
     {
         return Err(ApiError::conflict("a search is running; stop it first"));
     }
+    let line = serial_line(&request.port);
+    refuse_held(&state, &line)?;
     // modbusio's own connection to the port would hold it
-    let closing = Endpoint::Serial(crate::endpoint::SerialSettings {
-        port: request.port.clone(),
-        baud: 9600,
-        parity: crate::endpoint::Parity::Even,
-        stop_bits: 1,
-    });
-    state.links.close(&closing).await;
+    state.links.close(&line).await;
     let listened = crate::listen::listen(&request.port, Duration::from_secs_f64(seconds))
         .await
         .map_err(|error| ApiError::device(error.to_string()))?;

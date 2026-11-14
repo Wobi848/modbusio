@@ -143,6 +143,7 @@ export default {
   },
   errors: {
     searchRunning: "Una ricerca è in corso; fermarla prima.",
+    analyserListens: "L'analisi del bus ascolta su $1; fermarla prima.",
     locked: "La scrittura è bloccata: sbloccarla prima per questa sessione.",
     noProfile: "Questo apparecchio non ha ancora un profilo: sceglierne uno o crearlo nell'esploratore.",
     notNumber: "$1 non è un numero",

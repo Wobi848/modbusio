@@ -143,6 +143,7 @@ export default {
   },
   errors: {
     searchRunning: "Une recherche est en cours ; l'arrêter d'abord.",
+    analyserListens: "L'analyse de bus écoute sur $1 ; l'arrêter d'abord.",
     locked: "L'écriture est verrouillée : la déverrouiller d'abord pour cette session.",
     noProfile: "Cet appareil n'a pas encore de profil : en choisir un ou en créer un dans l'explorateur.",
     notNumber: "$1 n'est pas un nombre",
