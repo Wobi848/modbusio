@@ -8,12 +8,22 @@ import { chartHtml } from "./chart.js";
 import { updateCheckOn } from "./update.js";
 import { deviceName, readingText, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
+import { sortHead, sortRows } from "./sorting.js";
 
 const deviceOf = (state, key) => state.site.devices.find((device) => device.key === key);
 const timeText = (seconds) => new Date(seconds * 1000).toLocaleString(currentLocale(), { dateStyle: "short", timeStyle: "medium" });
 
 function viewWatch(state) {
-  const rows = state.watch.map((item) => {
+  const sort = state.sorts.watch;
+  const columns = {
+    name: (item) => item.point,
+    device: (item) => {
+      const device = deviceOf(state, item.key);
+      return device ? deviceName(device) : item.key;
+    },
+    value: (item) => state.watchValues[`${item.key}|${item.point}`]?.reading?.value,
+  };
+  const rows = sortRows(state.watch, sort, columns).map((item) => {
     const device = deviceOf(state, item.key);
     const answer = state.watchValues[`${item.key}|${item.point}`];
     const value = answer?.error ? `<span class="chip err">${h(answer.error)}</span>`
@@ -23,7 +33,7 @@ function viewWatch(state) {
       <button type="button" class="quiet" data-act="unwatch" data-key="${h(item.key)}" data-point="${h(item.point)}">${t("watch.remove")}</button></div>`;
   }).join("");
   const body = rows
-    ? `<div class="rows" data-keep="watch"><div class="row mwatch head"><span>${t("col.name")}</span><span>${t("col.device")}</span><span class="num">${t("col.value")}</span><span></span></div>${rows}</div>`
+    ? `<div class="rows" data-keep="watch"><div class="row mwatch head">${sortHead(t("col.name"), "watch", "name", sort)}${sortHead(t("col.device"), "watch", "device", sort)}${sortHead(t("col.value"), "watch", "value", sort, "num")}<span></span></div>${rows}</div>`
     : `<div class="empty"><h2>${t("watch.emptyTitle")}</h2><p>${t("watch.emptyLead")}</p></div>`;
   return {
     title: t("tab.watch"),

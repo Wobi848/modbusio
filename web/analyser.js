@@ -4,6 +4,7 @@
 
 import { h } from "./html.js";
 import { detailBorder } from "./panels.js";
+import { sortHead, sortRows } from "./sorting.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
 import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
@@ -166,10 +167,28 @@ function unitRow(state, unit) {
     <span class="chips">${problems || "–"}</span><span class="num mono">${answer}</span><span class="num mono">${cycle}</span></div>`;
 }
 
+const UNIT_COLUMNS = {
+  unit: (unit) => unit.unit,
+  requests: (unit) => unit.requests,
+  answers: (unit) => unit.answers,
+  problems: (unit) => unit.no_answer + unit.damaged + Object.values(unit.exceptions).reduce((sum, count) => sum + count, 0),
+  answer: (unit) => unit.answer_ms?.max,
+  cycle: (unit) => unit.cycle_ms?.median,
+};
+
+const EXCHANGE_COLUMNS = {
+  time: (exchange) => exchange.at,
+  unit: (exchange) => exchange.unit,
+  request: (exchange) => askedText(exchange),
+  result: (exchange) => resultText(exchange),
+  ms: (exchange) => exchange.answer_micros,
+};
+
 function unitsHtml(state) {
-  const units = state.analyser.heard.units;
+  const sort = state.sorts.units;
+  const units = sortRows(state.analyser.heard.units, sort, UNIT_COLUMNS);
   if (!units.length) return `<div class="empty"><h2>${t("an.nothingYet")}</h2><p>${t("an.nothingYetLead")}</p></div>`;
-  return `<div class="rows" data-keep="analyser-units" role="listbox"><div class="row aunits head" role="row"><span>${t("col.unit")}</span><span class="num">${t("an.requests")}</span><span class="num">${t("an.answers")}</span><span>${t("an.problems")}</span><span class="num">${t("an.answerMs")}</span><span class="num">${t("an.cycleS")}</span></div>
+  return `<div class="rows" data-keep="analyser-units" role="listbox"><div class="row aunits head" role="row">${sortHead(t("col.unit"), "units", "unit", sort)}${sortHead(t("an.requests"), "units", "requests", sort, "num")}${sortHead(t("an.answers"), "units", "answers", sort, "num")}${sortHead(t("an.problems"), "units", "problems", sort)}${sortHead(t("an.answerMs"), "units", "answer", sort, "num")}${sortHead(t("an.cycleS"), "units", "cycle", sort, "num")}</div>
     ${units.map((unit) => unitRow(state, unit)).join("")}</div>`;
 }
 
@@ -186,14 +205,16 @@ function exchangeRow(state, exchange) {
 function exchangesHtml(state) {
   const analyser = state.analyser;
   const units = analyser.heard.units.map((unit) => `<option value="${unit.unit}"${String(unit.unit) === analyser.unitFilter ? " selected" : ""}>${unit.unit}</option>`).join("");
-  const shown = filteredExchanges(analyser);
+  const sort = state.sorts.exchanges;
+  // newest first unless a column is chosen
+  const shown = sortRows(filteredExchanges(analyser), sort, EXCHANGE_COLUMNS);
   const filters = `<div class="toolbar"><label class="form-field inline">${t("col.unit")}<select id="analyser-unit" data-analyser="unitFilter"><option value="">${t("an.allUnits")}</option>${units}</select></label>
     <label class="check"><input type="checkbox" data-act="analyser-check" data-field="problemsOnly"${analyser.problemsOnly ? " checked" : ""}> ${t("an.problemsOnly")}</label>
     <label class="check"><input type="checkbox" data-act="analyser-check" data-field="writesOnly"${analyser.writesOnly ? " checked" : ""}> ${t("an.writesOnly")}</label></div>`;
   const rows = shown.length
     ? shown.slice(0, SHOWN).map((exchange) => exchangeRow(state, exchange)).join("")
     : `<p class="hint pad">${t("an.noExchanges")}</p>`;
-  return `${filters}<div class="rows" data-keep="analyser-exchanges" role="listbox"><div class="row aexch head" role="row"><span>${t("an.time")}</span><span>${t("col.unit")}</span><span>${t("an.request")}</span><span>${t("an.result")}</span><span class="num">ms</span></div>${rows}</div>`;
+  return `${filters}<div class="rows" data-keep="analyser-exchanges" role="listbox"><div class="row aexch head" role="row">${sortHead(t("an.time"), "exchanges", "time", sort)}${sortHead(t("col.unit"), "exchanges", "unit", sort)}${sortHead(t("an.request"), "exchanges", "request", sort)}${sortHead(t("an.result"), "exchanges", "result", sort)}${sortHead("ms", "exchanges", "ms", sort, "num")}</div>${rows}</div>`;
 }
 
 /** The bytes of a frame with their parts named: unit, function, data, CRC. */

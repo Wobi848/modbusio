@@ -6,6 +6,7 @@ import { currentLocale, localNumber, t } from "./i18n.js";
 import { chartHtml } from "./chart.js";
 import { pairHtml } from "./explorer.js";
 import { areaShort } from "./workspace.js";
+import { sortHead, sortRows } from "./sorting.js";
 
 const FRAMES_SHOWN = 300;
 
@@ -86,8 +87,19 @@ export function registersHtml(state) {
   const data = analyser.unitData?.unit === unit ? analyser.unitData : null;
   if (!data) return `${toolbar}<p class="hint pad">${t("an.loading")}</p>`;
   if (!data.registers.length) return `${toolbar}<div class="empty"><h2>${t("an.noRegisters")}</h2><p>${t("an.noRegistersLead")}</p></div>`;
-  return `${toolbar}<div class="rows" data-keep="analyser-registers" role="listbox"><div class="row aregs head" role="row"><span>${t("col.address")}</span><span>${t("an.point")}</span><span class="num">${t("an.reads")}</span><span class="num">${t("an.writesShort")}</span><span class="num">${t("an.changes")}</span><span class="num">${t("an.last")}</span><span class="num">${t("an.range")}</span></div>
-    ${data.registers.map((row) => registerRow(analyser, data, row)).join("")}</div>`;
+  const sort = state.sorts.registers;
+  const columns = {
+    address: (row) => `${areaShort(row.area)} ${String(row.reading.address).padStart(5, "0")}`,
+    point: (row) => pointAt(data, row)?.name,
+    reads: (row) => row.reads,
+    writes: (row) => row.writes,
+    changes: (row) => row.changes,
+    last: (row) => row.reading.value,
+    range: (row) => (row.max === null ? null : row.max - row.min),
+  };
+  const head = (label, key, className) => sortHead(label, "registers", key, sort, className);
+  return `${toolbar}<div class="rows" data-keep="analyser-registers" role="listbox"><div class="row aregs head" role="row">${head(t("col.address"), "address")}${head(t("an.point"), "point")}${head(t("an.reads"), "reads", "num")}${head(t("an.writesShort"), "writes", "num")}${head(t("an.changes"), "changes", "num")}${head(t("an.last"), "last", "num")}${head(t("an.range"), "range", "num")}</div>
+    ${sortRows(data.registers, sort, columns).map((row) => registerRow(analyser, data, row)).join("")}</div>`;
 }
 
 export function registerDetail(state) {

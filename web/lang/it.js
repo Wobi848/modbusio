@@ -227,6 +227,7 @@ export default {
     "an.draftSource": "analisi del bus: i registri usati dal suo master",
     "an.leadStopped": "Terminata · {port} · {settings} · {frames} trame ascoltate; riascoltare con i campi qui sotto",
     "an.frameByListening": "trovata anche ascoltando",
+    "column.resize": "Trascinare per cambiare la larghezza; doppio clic per le larghezze automatiche",
     "panel.resize": "Trascinare per cambiare la larghezza, doppio clic per la larghezza automatica",
     "search.lineTools": "Verificare la linea",
     "search.finding": "Provo velocità e trame: {done} di {total} impostazioni …",

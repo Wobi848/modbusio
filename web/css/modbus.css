@@ -1,7 +1,7 @@
 /* modbusio's own rows and parts, on top of the styles taken from bacnetio. Colours only from
    tokens.css. */
 
-.row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 48px minmax(100px, 1.2fr) minmax(0, 1fr); }
+.row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 64px minmax(100px, 1.2fr) minmax(0, 1fr); }
 .row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) minmax(90px, auto); min-height: 34px; }
 .row.mpoints .value { font-weight: 650; text-align: right; }
 .row.mpoints.err .value { font-weight: 500; }

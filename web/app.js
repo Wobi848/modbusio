@@ -14,6 +14,7 @@ import "./analyser.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";
+import { installColumns } from "./columns.js";
 
 state.areas = AREAS;
 
@@ -166,6 +167,7 @@ async function tick() {
 async function start() {
   recall();
   installPanels();
+  installColumns();
   const hashed = areaOfHash(location.hash);
   if (location.hash) state.area = hashed;
   render();
