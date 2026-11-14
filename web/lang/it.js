@@ -228,6 +228,8 @@ export default {
     "an.draftSource": "analisi del bus: i registri usati dal suo master",
     "an.leadStopped": "Terminata · {port} · {settings} · {frames} trame ascoltate; riascoltare con i campi qui sotto",
     "an.frameByListening": "trovata anche ascoltando",
+    "search.finding": "Provo velocità e trame: {done} di {total} impostazioni …",
+    "search.foundNext": "Velocità e trama sono impostate su {settings}: Cerca ora interroga ogni unit così.",
   },
   notes: {
     misses_answers: "La unit {unit} non risponde a {missing} richieste su {requests} ({percent} %): verificare cablaggio e alimentazione, e se il master attende abbastanza.",

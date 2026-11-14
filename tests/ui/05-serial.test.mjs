@@ -16,9 +16,10 @@ export default {
     const heard = await page.locator(".modal .strip").boundingBox();
     assert.ok(heard.y >= 0 && heard.y + heard.height <= 700, `the answer is on screen: ${JSON.stringify(heard)}`);
     await page.setViewportSize(size);
+    // the dialog stays open: how far it is, then what it found, and the fields set to it
     await page.click("[data-act=find-settings]");
-    await page.waitForSelector(".status:has-text('Ready')", { timeout: 30000 });
-    await page.click("#search-settings");
+    await page.waitForSelector(".modal .strip:has-text('Devices answer at 9600 8E1')", { timeout: 30000 });
+    assert.match(await page.textContent(".modal"), /Search now asks every unit there/);
     assert.equal(await page.inputValue("#search-baud"), "9600");
     await page.fill("#search-to", "8");
     await page.fill("#search-timeout", "150");

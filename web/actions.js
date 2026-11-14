@@ -65,9 +65,12 @@ export async function pollScan() {
   render();
 }
 
-async function startSearch(start) {
+/** Starts a search in the background. The settings search keeps the dialog open: its result is
+ * the next step there (`keepDialog`); the others close it and fill the device list. */
+async function startSearch(start, keepDialog = false) {
   if (await attempt(start) === null) return;
-  state.menu = null;
+  state.findingSettings = keepDialog;
+  if (!keepDialog) state.menu = null;
   state.scan = { ...state.scan, finished: false, phase: "", done: 0, total: 0 };
   render();
   await attempt(pollScan);
@@ -115,7 +118,7 @@ export const actions = {
   ...profileActions,
   ...analyserActions,
   go: (element) => go(element.dataset.area),
-  "close-menu": () => { state.menu = null; render(); },
+  "close-menu": () => { state.menu = null; state.findingSettings = false; render(); },
   "site-menu": () => { state.menu = state.menu === "sites" ? null : "sites"; render(); },
   "site-open": async (element) => {
     if (await attempt(() => api.openSite(element.dataset.id)) === null) return;
@@ -134,7 +137,7 @@ export const actions = {
     if (!state.search.serialPort && state.serialPorts.length) state.search.serialPort = state.serialPorts[0].name;
     render();
   },
-  "search-mode": (element) => { state.search.mode = element.dataset.mode; remember(); render(); },
+  "search-mode": (element) => { state.search.mode = element.dataset.mode; state.findingSettings = false; remember(); render(); },
   search: () => {
     const request = searchRequest(state.search);
     if (request.error) { toast(request.error, true); return; }
@@ -143,7 +146,8 @@ export const actions = {
   },
   "find-settings": () => {
     if (!state.search.serialPort) { toast(t("search.needPort"), true); return; }
-    return startSearch(() => api.findSettings({ port: state.search.serialPort }));
+    state.listened = null;
+    return startSearch(() => api.findSettings({ port: state.search.serialPort }), true);
   },
   listen: async () => {
     if (!state.search.serialPort) { toast(t("search.needPort"), true); return; }
