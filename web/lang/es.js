@@ -133,7 +133,6 @@ export default {
     "an.stop": "Terminar la escucha",
     "an.startTitle": "Escuchar una línea sin transmitir",
     "an.startLead": "Conectar un adaptador USB RS-485 en paralelo a la línea. modbusio solo lee y muestra lo que pregunta el maestro de la instalación y lo que responden los equipos.",
-    "an.wiring": "  Maestro ────┬──────── equipo ──── equipo ──┤ 120 Ω\n             │  A, B y GND en paralelo\n       [ adaptador USB ]   terminación y polarización: OFF",
     "an.wiringLabel": "Cableado: el adaptador en paralelo en A, B y GND, su terminación y polarización desactivadas",
     "an.swapped": "¿Nada legible? A y B suelen estar invertidos: los fabricantes los rotulan de forma distinta.",
     "an.heldHint": "Mientras escucha, modbusio no transmite nada por este puerto.",
@@ -241,6 +240,10 @@ export default {
     "search.whereAnswered": "Dónde respondió cada unit",
     "search.damagedAt": "dañada con {settings}",
     "search.joinedAtTheirs": "Los equipos encontrados están en la instalación con el ajuste con el que responden.",
+    "an.wiringMaster": "Maestro",
+    "an.wiringUnit": "Equipo",
+    "an.wiringAdapter": "Adaptador USB",
+    "an.wiringOff": "terminación y polar.: OFF",
   },
   notes: {
     all_at_trunk: "Las {count} units encontradas responden todas con {trunk}, el ajuste de la línea.",

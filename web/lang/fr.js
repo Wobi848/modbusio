@@ -133,7 +133,6 @@ export default {
     "an.stop": "Arrêter l'écoute",
     "an.startTitle": "Écouter une ligne sans émettre",
     "an.startLead": "Brancher un adaptateur USB RS-485 en parallèle sur la ligne. modbusio ne fait que lire et montre ce que demande le maître de l'installation et ce que répondent les appareils.",
-    "an.wiring": "  Maître ────┬──────── appareil ──── appareil ──┤ 120 Ω\n             │  A, B et GND en parallèle\n       [ adaptateur USB ]   terminaison et polarisation : OFF",
     "an.wiringLabel": "Câblage : l'adaptateur en parallèle sur A, B et GND, sa terminaison et sa polarisation désactivées",
     "an.swapped": "Rien de lisible ? A et B sont souvent inversés : les fabricants les marquent différemment.",
     "an.heldHint": "Pendant l'écoute, modbusio n'émet rien lui-même sur ce port.",
@@ -241,6 +240,10 @@ export default {
     "search.whereAnswered": "Où chaque unit a répondu",
     "search.damagedAt": "endommagée à {settings}",
     "search.joinedAtTheirs": "Les appareils trouvés sont dans l'installation au réglage auquel ils répondent.",
+    "an.wiringMaster": "Maître",
+    "an.wiringUnit": "Appareil",
+    "an.wiringAdapter": "Adaptateur USB",
+    "an.wiringOff": "terminaison et polar. : OFF",
   },
   notes: {
     all_at_trunk: "Les {count} units trouvées répondent toutes à {trunk}, le réglage de la ligne.",
