@@ -3,7 +3,7 @@
 
 import { api } from "./api.js";
 import { codeText, setLanguage, t } from "./i18n.js";
-import { attempt, deviceName, go, remember, render, selectedDevice, state, toast } from "./store.js";
+import { attempt, deviceName, go, pickFile, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
 import { analyserActions, analyserField } from "./analyser-actions.js";
 import { refreshSession } from "./session.js";
@@ -320,17 +320,6 @@ export const actions = {
   "capture-start": async () => { state.capture = (await attempt(api.captureStart)) ?? state.capture; render(); },
   "capture-stop": async () => { state.capture = (await attempt(api.captureStop)) ?? state.capture; render(); },
 };
-
-/** Opens the file chooser for one file. */
-export function pickFile(accept, use) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = accept;
-  input.addEventListener("change", () => {
-    if (input.files?.[0]) use(input.files[0]);
-  });
-  input.click();
-}
 
 /** Fields that change the state as they are typed or chosen. */
 export function onField(element) {
