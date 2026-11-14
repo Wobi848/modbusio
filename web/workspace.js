@@ -3,6 +3,7 @@
 
 import { h } from "./html.js";
 import { listBorders } from "./panels.js";
+import { sortHead, sortRows } from "./sorting.js";
 import { codeText, counted, localNumber, noteText, t } from "./i18n.js";
 import { askHtml, writeHtml } from "./asking.js";
 import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
@@ -59,6 +60,21 @@ function notesHtml(notes) {
   return `<div class="strips">${notes.map((note) => `<div class="strip info">${h(noteText(note))}</div>`).join("")}</div>`;
 }
 
+const DEVICE_COLUMNS = {
+  name: (device) => deviceNameOnLine(device),
+  line: (device) => device.line,
+  unit: (device) => device.unit,
+  profile: (device) => device.profile_name,
+  vendor: (device) => [device.vendor, device.product].filter(Boolean).join(" "),
+};
+
+const POINT_COLUMNS = {
+  name: (point) => point.name,
+  // by area, then by address as a number
+  address: (point) => `${areaShort(point.area)} ${String(point.address).padStart(5, "0")}`,
+  value: (point) => point.reading?.value ?? point.reading?.text,
+};
+
 function deviceRow(state, device) {
   const active = device.key === state.selected ? " active" : "";
   const maker = [device.vendor, device.product].filter(Boolean).join(" ");
@@ -78,8 +94,9 @@ function devicesHtml(state) {
     return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="empty"><h2>${t("dev.emptyTitle")}</h2><p>${t("dev.emptyLead")}</p>
       <div class="actions"><button type="button" class="tonal" data-act="add-device-menu">${t("dev.addByHand")}</button></div></div></section>`;
   }
-  const head = `<div class="row mdevices head" role="row"><span>${t("col.device")}</span><span>${t("col.line")}</span><span class="num">${t("col.unit")}</span><span>${t("col.profile")}</span><span>${t("col.vendor")}</span></div>`;
-  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${devices.map((device) => deviceRow(state, device)).join("")}</div></section>`;
+  const sort = state.sorts.devices;
+  const head = `<div class="row mdevices head" role="row">${sortHead(t("col.device"), "devices", "name", sort)}${sortHead(t("col.line"), "devices", "line", sort)}${sortHead(t("col.unit"), "devices", "unit", sort, "num")}${sortHead(t("col.profile"), "devices", "profile", sort)}${sortHead(t("col.vendor"), "devices", "vendor", sort)}</div>`;
+  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${sortRows(devices, sort, DEVICE_COLUMNS).map((device) => deviceRow(state, device)).join("")}</div></section>`;
 }
 
 function exportMenu(state) {
@@ -172,9 +189,11 @@ function pointsHtml(state, device) {
     <button type="button" class="tonal" data-act="read-device">${t("pts.readAgain")}</button></div></div>`;
   const failed = reading.failed ? `<div class="strip warn">${counted("pts.failed", reading.failed)}</div>` : "";
   const strips = failed || reading.notes?.length ? `<div class="strips">${failed}${(reading.notes ?? []).map((note) => `<div class="strip info">${h(noteText(note))}</div>`).join("")}</div>` : "";
-  const head = `<div class="row mpoints head" role="row"><span>${t("col.name")}</span><span>${t("col.address")}</span><span class="num">${t("col.value")}</span><span></span></div>`;
+  const sort = state.sorts.points;
+  const head = `<div class="row mpoints head" role="row">${sortHead(t("col.name"), "points", "name", sort)}${sortHead(t("col.address"), "points", "address", sort)}${sortHead(t("col.value"), "points", "value", sort, "num")}<span></span></div>`;
+  // sorted within each group: the groups are the plant's parts and stay as they are
   const rows = groupPoints(points).map(([group, members]) =>
-    `${group ? `<div class="row group" role="presentation"><span class="name">${h(group)}</span><span class="hint">${members.length}</span></div>` : ""}${members.map((point) => pointRow(state, point)).join("")}`).join("");
+    `${group ? `<div class="row group" role="presentation"><span class="name">${h(group)}</span><span class="hint">${members.length}</span></div>` : ""}${sortRows(members, sort, POINT_COLUMNS).map((point) => pointRow(state, point)).join("")}`).join("");
   return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="points" role="listbox">${head}${rows || `<div class="empty"><p>${t("pts.none")}</p></div>`}</div></section>`;
 }
 

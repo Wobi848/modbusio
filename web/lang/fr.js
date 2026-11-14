@@ -227,6 +227,7 @@ export default {
     "an.draftSource": "analyse de bus : les registres utilisés par son maître",
     "an.leadStopped": "Arrêtée · {port} · {settings} · {frames} trames entendues ; réécouter avec les champs ci-dessous",
     "an.frameByListening": "trouvée aussi par l'écoute",
+    "column.resize": "Faire glisser pour changer la largeur ; double-clic pour les largeurs automatiques",
     "panel.resize": "Faire glisser pour changer la largeur, double-clic pour la largeur automatique",
     "search.lineTools": "Vérifier la ligne",
     "search.finding": "Essai des vitesses et trames : {done} sur {total} réglages …",

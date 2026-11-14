@@ -3,6 +3,7 @@
 
 import { h } from "./html.js";
 import { detailBorder } from "./panels.js";
+import { sortHead, sortRows } from "./sorting.js";
 import { askHtml } from "./asking.js";
 import { codeText, counted, localNumber, t } from "./i18n.js";
 import { ORDERS, TYPES } from "./explorer.js";
@@ -21,8 +22,15 @@ export function parseStates(text) {
   return text.split(/[;\n]/).map((part) => /^\s*(-?\d+)\s*[=:]\s*(.+?)\s*$/.exec(part)).filter(Boolean).map((match) => [Number(match[1]), match[2]]);
 }
 
+const PROFILE_COLUMNS = {
+  name: (profile) => profile.name,
+  vendor: (profile) => [profile.vendor, profile.model].filter(Boolean).join(" "),
+  points: (profile) => profile.points,
+};
+
 function listHtml(state) {
-  const rows = state.profiles.map((profile) => {
+  const sort = state.sorts.profiles;
+  const rows = sortRows(state.profiles, sort, PROFILE_COLUMNS).map((profile) => {
     const active = profile.id === state.profileId ? " active" : "";
     return `<div class="row mprofiles${active}" data-act="open-profile" data-id="${h(profile.id)}" role="option"><span class="name">${h(profile.name)}</span><span class="cut">${h([profile.vendor, profile.model].filter(Boolean).join(" "))}</span><span class="mono num">${profile.points}</span><span class="num">${profile.used_by ? t("prof.usedBy", { n: profile.used_by }) : ""}</span></div>`;
   }).join("");
@@ -32,7 +40,7 @@ function listHtml(state) {
   if (!state.profiles.length) {
     return `<section class="listwrap">${detailBorder()}${toolbar}<div class="empty"><h2>${t("prof.emptyTitle")}</h2><p>${t("prof.emptyLead")}</p></div></section>`;
   }
-  const head = `<div class="row mprofiles head"><span>${t("col.name")}</span><span>${t("col.vendor")}</span><span class="num">${t("prof.points")}</span><span></span></div>`;
+  const head = `<div class="row mprofiles head">${sortHead(t("col.name"), "profiles", "name", sort)}${sortHead(t("col.vendor"), "profiles", "vendor", sort)}${sortHead(t("prof.points"), "profiles", "points", sort, "num")}<span></span></div>`;
   return `<section class="listwrap">${detailBorder()}${toolbar}<div class="rows" data-keep="profiles" role="listbox">${head}${rows}</div></section>`;
 }
 
@@ -46,11 +54,22 @@ function editorHtml(state) {
     <label class="form-field">${t("prof.model")}<input id="profile-model" data-profile="model" value="${h(draft.model)}"></label>
     <label class="form-field">${t("prof.order")}${select("profile-order", 'data-profile="order"', ORDERS.map((order) => [order, order]), draft.order)}</label>
     <div class="end"><button type="button" data-act="save-profile"${state.profileDirty ? "" : " disabled"}>${t("prof.save")}</button><button type="button" class="quiet" data-act="close-profile">${t("prof.close")}</button></div></div>`;
-  const rows = draft.points.map((point, index) => {
+  const sort = state.sorts.profilePoints;
+  const columns = {
+    name: ([point]) => point.name,
+    group: ([point]) => point.group,
+    address: ([point]) => `${areaShort(point.area)} ${String(point.address).padStart(5, "0")}`,
+    type: ([point]) => point.type,
+    factor: ([point]) => point.factor,
+    unit: ([point]) => point.unit,
+  };
+  // sorted for the eye only: each row keeps the index of its point in the profile
+  const rows = sortRows(draft.points.map((point, index) => [point, index]), sort, columns).map(([point, index]) => {
     const active = index === state.pointIndex ? " active" : "";
     return `<div class="row mprofile-points${active}" data-act="edit-point" data-index="${index}" role="option"><span class="name">${h(point.name)}</span><span class="cut">${h(point.group)}</span><span class="mono">${areaShort(point.area)} ${h(point.address)}</span><span class="mono">${h(point.type)}</span><span class="mono num">${point.factor !== 1 ? `× ${h(localNumber(point.factor))}` : ""}</span><span>${h(point.unit)}</span><span>${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}</span></div>`;
   }).join("");
-  const tableHead = `<div class="row mprofile-points head"><span>${t("col.name")}</span><span>${t("pt.group")}</span><span>${t("col.address")}</span><span>${t("pt.type")}</span><span class="num">${t("pt.factor")}</span><span>${t("pt.unit")}</span><span></span></div>`;
+  const sorting = (label, key, className) => sortHead(label, "profilePoints", key, sort, className);
+  const tableHead = `<div class="row mprofile-points head">${sorting(t("col.name"), "name")}${sorting(t("pt.group"), "group")}${sorting(t("col.address"), "address")}${sorting(t("pt.type"), "type")}${sorting(t("pt.factor"), "factor", "num")}${sorting(t("pt.unit"), "unit")}<span></span></div>`;
   const tools = `<div class="toolbar"><span class="hint">${counted("prof.pointCount", draft.points.length)}${draft.source ? ` · ${t("prof.source", { source: h(draft.source) })}` : ""}</span><div class="end">
     <button type="button" class="tonal" data-act="add-profile-point">${t("prof.addPoint")}</button>
     ${draft.id ? `<a class="button quiet" href="/api/profile.csv?id=${encodeURIComponent(draft.id)}" download>CSV</a><a class="button quiet" href="/api/profile.xlsx?id=${encodeURIComponent(draft.id)}" download>Excel</a>` : ""}

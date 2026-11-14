@@ -48,6 +48,8 @@ export const state = {
     view: "units", chosen: null, unitFilter: "", problemsOnly: false, writesOnly: false,
     registersUnit: "", register: null, unitData: null, history: null,
   },
+  /** How each list is sorted: `{ key, descending }` by the list's name (sorting.js). */
+  sorts: {},
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,

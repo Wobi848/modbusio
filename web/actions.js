@@ -8,6 +8,7 @@ import { profileActions } from "./profile-actions.js";
 import { analyserActions, analyserField } from "./analyser-actions.js";
 import { refreshSession } from "./session.js";
 import { setUpdateCheck } from "./update.js";
+import { nextSort } from "./sorting.js";
 
 export async function loadSite() {
   const [site, sites, profiles] = await Promise.all([api.site(), api.sites(), api.profiles()]);
@@ -138,6 +139,10 @@ export const actions = {
   ...profileActions,
   ...analyserActions,
   go: (element) => go(element.dataset.area),
+  sort: (element) => {
+    state.sorts[element.dataset.list] = nextSort(state.sorts[element.dataset.list], element.dataset.key);
+    render();
+  },
   "close-menu": () => { state.menu = null; state.findingSettings = false; render(); },
   "site-menu": () => { state.menu = state.menu === "sites" ? null : "sites"; render(); },
   "site-open": async (element) => {
