@@ -39,7 +39,7 @@ test("every language has every key, note, error and code of English, with the sa
 test("every key the interface uses exists in English", () => {
   const used = new Set(sources.flatMap((source) => [...source.matchAll(/\bt\("([^"]+)"/g)].map((match) => match[1])));
   for (const key of used) assert.ok(key in LANGUAGE_FILES.en.texts, `${key} is used but not in en.js`);
-  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "tab.analyser", "an.role.request", "an.role.answer", "phase.hosts", "phase.units", "phase.settings", "phase.identify",
+  for (const prefix of ["tab.workspace", "tab.explorer", "tab.profiles", "tab.watch", "tab.recording", "tab.changed", "tab.analyser", "an.role.request", "an.role.answer", "phase.hosts", "phase.units", "phase.settings", "phase.identify", "phase.listening", "phase.other_settings",
     "area.holding_register", "area.input_register", "area.coil", "area.discrete_input", "conv.zero_based", "conv.one_based", "conv.reference",
     "search.lead.tcp", "search.lead.gateway", "search.lead.serial"]) {
     assert.ok(prefix in LANGUAGE_FILES.en.texts, `${prefix} is built in code but not in en.js`);

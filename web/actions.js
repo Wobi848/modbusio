@@ -107,7 +107,8 @@ export async function readDevice(quiet = false) {
   }
   const answer = await attempt(() => api.read(device.key));
   state.busy = null;
-  if (answer) state.readings[device.key] = answer;
+  // the time it was read: the same values read again still show they were read
+  if (answer) state.readings[device.key] = { ...answer, readAt: new Date() };
   render();
 }
 
@@ -290,7 +291,11 @@ export const actions = {
     render();
   },
   "record-stop": async () => { state.recording = (await attempt(api.recordStop)) ?? state.recording; render(); },
-  "record-clear": async () => { state.recording = (await attempt(api.recordClear)) ?? state.recording; render(); },
+  "record-clear": async () => {
+    const recording = await attempt(api.recordClear);
+    if (recording) { state.recording = recording; toast(t("rec.cleared")); }
+    render();
+  },
   "record-remove": async (element) => {
     const recording = await attempt(() => api.recordRemove(element.dataset.key, element.dataset.point));
     if (recording) state.recording = recording;
@@ -319,7 +324,7 @@ export const actions = {
   },
   "rename-site": async () => {
     const site = await attempt(() => api.renameSite(state.siteNameDraft ?? state.site.name));
-    if (site) { state.site = site; state.siteNameDraft = null; }
+    if (site) { state.site = site; state.siteNameDraft = null; toast(t("set.renamed", { name: site.name })); }
     state.sites = (await attempt(api.sites)) ?? state.sites;
     render();
   },

@@ -4,7 +4,7 @@
 import { h } from "./html.js";
 import { listBorders } from "./panels.js";
 import { sortHead, sortRows } from "./sorting.js";
-import { codeText, counted, localNumber, noteText, t } from "./i18n.js";
+import { codeText, counted, currentLocale, localNumber, noteText, t } from "./i18n.js";
 import { askHtml, writeHtml } from "./asking.js";
 import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
 
@@ -184,7 +184,7 @@ function pointsHtml(state, device) {
   }
   const points = filterPoints(reading.points, state.pointFilter);
   const toolbar = `<div class="toolbar"><button type="button" class="quiet phone-back" data-act="select-device" data-key="">← ${t("tab.workspace")}</button><input id="point-filter" type="search" placeholder="${t("pts.filter")}" value="${h(state.pointFilter)}" autocomplete="off">
-    <span class="hint">${t("pts.count", { n: points.length, all: reading.points.length })}</span>
+    <span class="hint">${t("pts.count", { n: points.length, all: reading.points.length })}${reading.readAt ? ` · ${t("pts.readAt", { time: reading.readAt.toLocaleTimeString(currentLocale(), { hour12: false }) })}` : ""}</span>
     <div class="end"><button type="button" class="quiet narrow-only" data-act="open-device-detail">${t("dev.details")}</button><label class="check"><input type="checkbox" id="live" data-act="toggle-live"${state.live ? " checked" : ""}> ${t("pts.live")}</label>
     <button type="button" class="tonal" data-act="read-device">${t("pts.readAgain")}</button></div></div>`;
   const failed = reading.failed ? `<div class="strip warn">${counted("pts.failed", reading.failed)}</div>` : "";
