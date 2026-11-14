@@ -9,7 +9,7 @@
 //! that never answers. Faults, unless `--clean`: unit 12 misses every third answer after unit 5;
 //! every eighth answer of unit 5 arrives damaged. Every tenth cycle the master writes the drive's
 //! set frequency (HR 1), every twentieth it writes to all units at once (unit 0).
-//! `--second-master` lets another master ask unit 1 in between. `--cycle-ms 2000` sets the cycle.
+//! `--second-master` lets another master ask unit 1 while unit 5's answer is due. `--cycle-ms 2000` sets the cycle.
 
 mod sim;
 

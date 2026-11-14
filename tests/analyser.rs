@@ -84,3 +84,74 @@ async fn a_clean_trunk_has_no_faults_but_the_silent_unit_and_the_refused_block()
     assert_eq!(analysis.units[&12].no_answer, 0);
     assert_eq!(analysis.units[&9].no_answer, 10);
 }
+
+#[tokio::test(start_paused = true)]
+async fn the_trunks_faults_are_said_in_words() {
+    use modbusio::diagnosis::Note;
+    let analysis = analyse(40, Options::default()).await;
+    let said = modbusio::analyser::notes::notes(&analysis, "COM3", 0.3);
+    let has = |wanted: fn(&Note) -> bool| said.iter().any(wanted);
+    assert!(
+        has(|note| matches!(
+            note,
+            Note::MissesAfter {
+                unit: 12,
+                after: 5,
+                ..
+            }
+        )),
+        "{said:?}"
+    );
+    assert!(
+        has(|note| matches!(note, Note::NeverAnswers { unit: 9, .. })),
+        "{said:?}"
+    );
+    assert!(
+        has(|note| matches!(
+            note,
+            Note::RefusedEveryTime {
+                unit: 7,
+                first: 100,
+                last: 120,
+                ..
+            }
+        )),
+        "{said:?}"
+    );
+    assert!(
+        has(|note| matches!(note, Note::SlowAnswers { unit: 12, .. })),
+        "{said:?}"
+    );
+    assert!(
+        has(|note| matches!(note, Note::DamagedFromOne { unit: 5, count: 5 })),
+        "{said:?}"
+    );
+    assert!(
+        has(|note| matches!(note, Note::Broadcasts { count: 2 })),
+        "{said:?}"
+    );
+    assert!(
+        !has(|note| matches!(note, Note::TwoMasters { .. })),
+        "{said:?}"
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_second_master_is_noticed() {
+    use modbusio::diagnosis::Note;
+    let analysis = analyse(
+        10,
+        Options {
+            clean: true,
+            second_master: true,
+            ..Options::default()
+        },
+    )
+    .await;
+    let said = modbusio::analyser::notes::notes(&analysis, "COM3", 0.3);
+    assert!(
+        said.iter()
+            .any(|note| matches!(note, Note::TwoMasters { count: 10, .. })),
+        "{said:?}"
+    );
+}
