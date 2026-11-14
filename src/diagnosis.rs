@@ -170,7 +170,7 @@ impl fmt::Display for Note {
             ),
             Note::NeverAnswers { unit, requests } => write!(
                 f,
-                "The master asks unit {unit}, which never answered ({requests} requests): a device missing, switched off or at another address."
+                "The master asks unit {unit}, which never answered ({requests} requests): a device missing, switched off, at another address or at other serial settings (Search settings, Serial line, Find devices at other settings)."
             ),
             Note::RefusedEveryTime {
                 unit,
@@ -192,7 +192,7 @@ impl fmt::Display for Note {
             ),
             Note::DamagedFromOne { unit, count } => write!(
                 f,
-                "{count} answers of unit {unit} arrived damaged, the master's requests did not: check the wiring at unit {unit}."
+                "{count} answers of unit {unit} arrived damaged, the master's requests did not: check the wiring at unit {unit}, or its parity and stop bits."
             ),
             Note::MasterUnanswered { line } => write!(
                 f,

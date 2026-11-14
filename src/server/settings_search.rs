@@ -27,6 +27,9 @@ pub struct OtherSettings {
     /// 1200, 2400, 4800 and 57600 as well.
     #[serde(default)]
     all_speeds: bool,
+    /// Only say how long it would take, for the question in the page; nothing is sent.
+    #[serde(default)]
+    check: bool,
 }
 
 pub async fn start(
@@ -73,6 +76,12 @@ pub async fn start(
         listen_each: LISTEN_EACH,
     };
     let estimate = asking.estimate().as_secs();
+    if request.check {
+        let settings = crate::other_settings::candidates(&asking.trunk, asking.all_speeds).len();
+        return Ok(Json(
+            json!({ "estimate_seconds": estimate, "settings": settings }),
+        ));
+    }
     let search = begin(&state)?;
     let links = state.links.clone();
     let task_search = search.clone();

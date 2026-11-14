@@ -48,6 +48,26 @@ export function searchRequest(search) {
   return { kind: "units", body: { endpoint: `serial:${search.serialPort}:${search.baud}:${search.frame}`, from, to, timeout_ms: timeout, retries } };
 }
 
+/** The search for devices at other settings from the dialog's fields: the speed and frame there
+ * are the trunk's. An error text when a field is wrong. */
+export function otherSettingsRequest(search) {
+  const request = searchRequest({ ...search, mode: "serial" });
+  if (request.error) return request;
+  const { from, to, timeout_ms: timeoutMs } = request.body;
+  return { body: { port: search.serialPort, baud: Number(search.baud), frame: search.frame, from, to, timeout_ms: timeoutMs, all_speeds: Boolean(search.allSpeeds) } };
+}
+
+/** Asks how long the search at other settings would take, and puts the question in the dialog. */
+async function askOtherSettings() {
+  const request = otherSettingsRequest(state.search);
+  if (request.error) { toast(request.error, true); return; }
+  const check = await attempt(() => api.otherSettings({ ...request.body, check: true }));
+  if (!check) return;
+  state.findingSettings = false;
+  state.asking = { kind: "other-settings", minutes: Math.max(1, Math.round(check.estimate_seconds / 60)), settings: check.settings };
+  render();
+}
+
 export async function pollScan() {
   state.scan = await api.scan();
   if (!state.scan.finished) {
@@ -158,6 +178,15 @@ export const actions = {
     render();
   },
   "stop-search": () => attempt(api.stopScan),
+  "other-settings-ask": () => askOtherSettings(),
+  "other-settings": () => {
+    const request = otherSettingsRequest(state.search);
+    if (request.error) { toast(request.error, true); return; }
+    state.asking = null;
+    state.listened = null;
+    remember();
+    return startSearch(() => api.otherSettings(request.body), true);
+  },
   unlock: async () => {
     const session = await attempt(() => api.setSession(true));
     if (session) state.unlocked = session.unlocked;
@@ -329,7 +358,13 @@ export const actions = {
 export function onField(element) {
   const { dataset } = element;
   if (dataset.search) { state.search[dataset.search] = element.value; remember(); return false; }
-  if (dataset.searchCheck) { state.search[dataset.searchCheck] = element.checked; remember(); return false; }
+  if (dataset.searchCheck) {
+    state.search[dataset.searchCheck] = element.checked;
+    remember();
+    // the question names the time, which depends on the speeds asked
+    if (state.asking?.kind === "other-settings") attempt(askOtherSettings);
+    return false;
+  }
   if (dataset.analyser) return analyserField(element);
   if (element.id === "point-filter") { state.pointFilter = element.value; return true; }
   if (element.id === "write-value" && state.asking) { state.asking.value = element.value; return false; }
