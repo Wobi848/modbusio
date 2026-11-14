@@ -1,6 +1,6 @@
 # Concept: bus analyser for Modbus RTU
 
-Status: **proposal** (branch `concept-analyser`), 2026-11-14. Mockup:
+Status: **approved on 2026-11-14** (branch `concept-analyser`; answers at the end). Mockup:
 [mockup/analyser.html](mockup/analyser.html).
 
 ## Why
@@ -231,21 +231,14 @@ Each step a pull request of its own, everything working after each:
 7. **Into a profile**, **open a pcapng file**.
 8. Field test on a real trunk (M3), then the README and the help.
 
-## Open for the decision
+## Answers
 
-1. **Its own area in the sidebar** (key 7, *Settings* to 8)? Alternative: a tab under *Registers*
-   or inside the search settings. *Recommendation:* its own area; it is a tool of its own and runs
-   on in the background like a recording.
-2. **Name**: English *Bus analyser*, German *Busanalyse*? *Recommendation:* yes; "Sniffer" says
-   little to a technician.
-3. **Opening pcapng files**, also from other tools, in this concept (step 7) or later?
-   *Recommendation:* in it; analysing a capture at the desk is half the use.
-4. **Modbus TCP and RTU over TCP** cannot be heard passively without a mirror port on a switch.
-   Leave them out, and later open Modbus TCP pcapng files from Wireshark in the same views?
-   *Recommendation:* leave out now; pcapng of Modbus TCP as a follow-up once RTU is proven.
-5. **How long it may run**: the frames kept in memory up to a limit (200,000, as the capture today),
-   counts and register values without limit. Enough for a day at 19200 baud? *Recommendation:* yes,
-   with the limit named in the page; for longer, save in between. A rolling file on disk only if a
-   field case needs it.
-6. **Draft profile from traffic** (*Into a profile …*): wanted? *Recommendation:* yes, small, using
-   the existing editor.
+Answered by the maintainer on 2026-11-14; each recommendation taken:
+
+1. **Its own area** *Bus analyser* (key 7; *Settings* moves to 8).
+2. **Name:** *Bus analyser*, German *Busanalyse*.
+3. **Opening pcapng files**, also from other tools, is part of this concept (step 7).
+4. **Modbus TCP and RTU over TCP** stay out: they cannot be heard without a mirror port.
+5. **Memory:** frames up to 200,000 in memory, counts and register values without limit; for
+   longer, start again. No rolling file on disk.
+6. **Draft profile from traffic:** yes, small, in the existing editor.
