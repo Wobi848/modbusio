@@ -17,7 +17,7 @@ const { pairHtml } = await import("../../web/explorer.js");
 const { versionText } = await import("../../web/pages.js");
 const { listenedHtml } = await import("../../web/shell.js");
 const { askedText, bytesHtml, filteredExchanges, heardChanged, resultText, takeHeard, KEPT } = await import("../../web/analyser.js");
-const { startRequest } = await import("../../web/analyser-actions.js");
+const { foundSettings, startRequest } = await import("../../web/analyser-actions.js");
 const { profileFrom, registersUnit, stepSamples } = await import("../../web/analyser-registers.js");
 
 const webDir = new URL("../../web/", import.meta.url);
@@ -359,4 +359,12 @@ test("a failed line names its reason in the page's language", () => {
   const note = { code: "line_failed", line: "COM3", reason: "cannot open the connection: COM3 is used by another program; close it there first", text: "" };
   assert.match(noteText(note), /^Die Abfrage auf COM3 brach ab: COM3 wird von einem anderen Programm benutzt/);
   setLanguage("en");
+});
+
+test("the start fields take the speed and frame listening found", () => {
+  const before = { port: "COM3", speed: "listen", frame: "8E1" };
+  assert.deepEqual(foundSettings(before, "9600 8N1"), { port: "COM3", speed: "9600", frame: "8N1" });
+  // a file has no settings: the fields stay
+  assert.deepEqual(foundSettings(before, null), before);
+  assert.deepEqual(foundSettings(before, "300 8X9"), before);
 });
