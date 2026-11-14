@@ -64,6 +64,8 @@ pub struct UnitStats {
     /// Answers heard without their request.
     pub answer_only: u64,
     pub answer_times: Times,
+    /// The recent answer times with when they were asked, for a chart.
+    pub answer_history: VecDeque<(u64, u64)>,
     /// Time between two of the same request.
     pub cycle: Times,
     /// When each distinct request was last heard, by its PDU.
@@ -101,6 +103,10 @@ impl UnitStats {
             .filter(|_| !exchange.outcome.failed())
         {
             self.answer_times.add(micros);
+            if self.answer_history.len() == RECENT_TIMES {
+                self.answer_history.pop_front();
+            }
+            self.answer_history.push_back((exchange.at, micros));
         }
         if let Some(pdu) = exchange.request_pdu() {
             self.note_cycle(pdu, exchange.at);

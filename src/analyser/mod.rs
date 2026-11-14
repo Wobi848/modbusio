@@ -5,6 +5,8 @@
 pub mod exchanges;
 pub mod frames;
 pub mod port;
+pub mod registers;
+pub mod tables;
 pub mod units;
 
 use std::collections::{BTreeMap, VecDeque};
@@ -15,6 +17,7 @@ use serde::Serialize;
 use crate::capture::{self, Direction, MOST_FRAMES};
 use exchanges::{Exchange, Outcome, Pairer};
 use frames::{Framer, Heard};
+use registers::Registers;
 use units::UnitStats;
 
 /// Counts for the whole trunk.
@@ -78,6 +81,7 @@ pub struct Analysis {
     pairer: Pairer,
     pub bus: Bus,
     pub units: BTreeMap<u8, UnitStats>,
+    pub registers: Registers,
     frames: VecDeque<Numbered<Seen>>,
     exchanges: VecDeque<Numbered<Exchange>>,
     next_frame: u64,
@@ -148,18 +152,24 @@ impl Analysis {
                 }
             };
             keep(&mut self.frames, &mut self.next_frame, seen);
-            for exchange in done {
-                self.count(&exchange);
+            for mut exchange in done {
+                self.count(&mut exchange);
                 keep(&mut self.exchanges, &mut self.next_exchange, exchange);
             }
         }
     }
 
-    fn count(&mut self, exchange: &Exchange) {
+    fn count(&mut self, exchange: &mut Exchange) {
         if exchange.outcome == Outcome::Broadcast {
             self.bus.broadcasts += 1;
             return;
         }
+        if let Some(asked) = exchange.asked.as_ref().filter(|asked| asked.write) {
+            exchange.before =
+                self.registers
+                    .before(exchange.unit, asked.area, asked.address, asked.count);
+        }
+        self.registers.add(exchange);
         self.units.entry(exchange.unit).or_default().add(exchange);
     }
 }
@@ -241,6 +251,25 @@ mod tests {
         let damaged: u64 = analysis.units.values().map(|unit| unit.damaged).sum();
         assert_eq!((requests, answers, damaged), (500, 450, 50));
         assert_eq!(analysis.bus.damaged, 50);
+    }
+
+    #[test]
+    fn a_write_of_the_master_knows_the_value_read_before_it() {
+        let mut analysis = Analysis::default();
+        analysis.push(0, &rtu::frame(12, &[0x03, 0, 1, 0, 1]));
+        analysis.push(1, &rtu::frame(12, &[0x03, 2, 0x10, 0x68]));
+        let write = rtu::frame(12, &[0x06, 0, 1, 0x11, 0x94]);
+        analysis.push(2, &write);
+        analysis.push(3, &write);
+        let written = &analysis.exchanges().back().unwrap().item;
+        assert_eq!(written.outcome, Outcome::Written);
+        assert_eq!(written.before, Some(vec![4200]));
+        assert_eq!(written.asked.as_ref().unwrap().values, [4500]);
+        let seen = analysis
+            .registers
+            .get(&(12, crate::protocol::Area::HoldingRegister, 1))
+            .unwrap();
+        assert_eq!((seen.reads, seen.writes, seen.last), (1, 1, Some(4500)));
     }
 
     #[test]
