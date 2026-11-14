@@ -138,6 +138,7 @@ export default {
     "an.startTitle": "Listen to a trunk without sending",
     "an.startLead": "Hang a USB RS-485 adapter on the trunk in parallel. modbusio only reads and shows what the plant's master asks and what the units answer.",
     "an.wiringLabel": "Wiring: the adapter in parallel on A, B and GND, its termination and bias off",
+    "an.howToConnect": "How to connect",
     "an.swapped": "Nothing readable? A and B are often swapped: vendors label them differently.",
     "an.heldHint": "While the analyser listens, modbusio itself sends nothing on this port.",
     "an.findSpeed": "Find by listening",

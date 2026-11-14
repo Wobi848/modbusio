@@ -139,6 +139,7 @@ export default {
     "an.startTitle": "Den Strang mithören, ohne zu senden",
     "an.startLead": "Einen USB-RS-485-Adapter parallel an den Strang hängen. modbusio liest nur und zeigt, was der Master der Anlage fragt und was die Geräte antworten.",
     "an.wiringLabel": "Verdrahtung: der Adapter parallel an A, B und GND, sein Abschluss und Bias aus",
+    "an.howToConnect": "So wird angeschlossen",
     "an.swapped": "Nichts Lesbares? A und B sind oft vertauscht: die Hersteller beschriften sie verschieden.",
     "an.heldHint": "Solange die Analyse läuft, sendet modbusio selbst nichts über diesen Anschluss.",
     "an.findSpeed": "Durch Hören herausfinden",

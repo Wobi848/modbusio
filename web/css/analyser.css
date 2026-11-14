@@ -3,6 +3,7 @@
 .analyser-page { flex: 0 0 auto; }
 .analyser-page .cards { grid-template-columns: minmax(0, 720px); }
 /* on a phone the drawing keeps a readable size and scrolls within its box, not the page */
+.analyser-start .wiring-fold summary { cursor: pointer; margin: 4px 0; font-weight: 600; color: var(--accent); }
 .analyser-start .wiring-box { max-width: 600px; margin: 8px 0; overflow-x: auto; border-radius: 8px; background: var(--sunken); }
 .analyser-start .wiring { display: block; width: 100%; min-width: 440px; height: auto; padding: 8px; }
 .wiring .wire { stroke: var(--line-strong); stroke-width: 2; }
