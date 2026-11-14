@@ -227,6 +227,7 @@ export default {
     "an.draftName": "Unit {unit} de la ligne",
     "an.draftSource": "analyse de bus : les registres utilisés par son maître",
     "an.leadStopped": "Arrêtée · {port} · {settings} · {frames} trames entendues ; réécouter avec les champs ci-dessous",
+    "an.frameByListening": "trouvée aussi par l'écoute",
   },
   notes: {
     misses_answers: "L'unit {unit} ne répond pas à {missing} requêtes sur {requests} ({percent} %) : vérifier son câblage et son alimentation, et si le maître attend assez longtemps.",

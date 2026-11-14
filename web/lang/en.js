@@ -220,6 +220,7 @@ export default {
     "an.draftName": "Unit {unit} from the trunk",
     "an.draftSource": "bus analyser: the registers its master used",
     "an.leadStopped": "Stopped · {port} · {settings} · {frames} frames heard; listen again with the fields below",
+    "an.frameByListening": "found by listening too",
   },
   notes: {},
   errors: {},

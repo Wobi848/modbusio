@@ -221,6 +221,7 @@ export default {
     "an.draftName": "Unit {unit} vom Strang",
     "an.draftSource": "Busanalyse: die Register, die ihr Master benutzte",
     "an.leadStopped": "Beendet · {port} · {settings} · {frames} Rahmen gehört; mit den Feldern darunter neu mithören",
+    "an.frameByListening": "wird mitgefunden",
   },
   notes: {
     misses_answers: "Unit {unit} antwortet auf {missing} von {requests} Anfragen nicht ({percent} %): Verdrahtung und Speisung prüfen, und ob der Master lange genug wartet.",

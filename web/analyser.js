@@ -102,7 +102,10 @@ function startFields(state) {
   return `<div class="port-field"><label class="form-field">${t("search.serialPort")}<select id="analyser-port" data-analyser="port">${ports || `<option value="">${t("an.noPort")}</option>`}</select></label>
       <button type="button" class="quiet" data-act="analyser-ports">${t("an.lookAgain")}</button></div>
     <label class="form-field">${t("search.baud")}<select id="analyser-speed" data-analyser="speed">${speeds}</select></label>
-    <label class="form-field">${t("search.frame")}<select id="analyser-frame" data-analyser="frame"${analyser.speed === "listen" ? " disabled" : ""}>${frames}</select></label>`;
+    <label class="form-field">${t("search.frame")}${analyser.speed === "listen"
+    // listening finds speed and frame together: nothing to choose here
+    ? `<select id="analyser-frame" disabled><option>${t("an.frameByListening")}</option></select>`
+    : `<select id="analyser-frame" data-analyser="frame">${frames}</select>`}</label>`;
 }
 
 /** Before anything was heard: how to connect, the fields, opening a capture. */
