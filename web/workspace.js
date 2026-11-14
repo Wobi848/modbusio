@@ -43,14 +43,16 @@ export function filterPoints(points, filter) {
 }
 
 function treeHtml(state) {
-  const all = `<div class="node level-1${state.selected ? "" : " active"}" role="treeitem" aria-selected="${!state.selected}" data-act="select-device" data-key=""><span class="label">${h(state.site.name)}</span><span class="end"><span class="count">${state.site.devices.length}</span></span></div>`;
+  const site = !state.selected && !state.selectedLine;
+  const all = `<div class="node level-1${site ? " active" : ""}" role="treeitem" aria-selected="${site}" data-act="select-device" data-key=""><span class="label">${h(state.site.name)}</span><span class="end"><span class="count">${state.site.devices.length}</span></span></div>`;
   const groups = lines(state.site.devices).map((group) => {
     const devices = group.devices.map((device) => {
       const active = device.key === state.selected;
       const failed = (state.readings[device.key]?.failed ?? 0) > 0 ? `<span class="chip err">${state.readings[device.key].failed}</span>` : "";
       return `<div class="node level-3${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${failed}<span class="count mono">${device.unit}</span></span></div>`;
     }).join("");
-    return `<div class="node level-2 heading" role="presentation"><span class="label mono">${h(group.line)}</span></div>${devices}`;
+    const chosen = !state.selected && state.selectedLine === group.line;
+    return `<div class="node level-2 heading${chosen ? " active" : ""}" role="treeitem" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}"><span class="label mono">${h(group.line)}</span><span class="end"><span class="count">${group.devices.length}</span></span></div>${devices}`;
   }).join("");
   return `<nav class="tree" role="tree" aria-label="${t("tree.label")}" data-keep="tree">${all}${groups}</nav>`;
 }
@@ -84,12 +86,15 @@ function deviceRow(state, device) {
 }
 
 function devicesHtml(state) {
-  const devices = state.site.devices;
+  const line = state.selectedLine;
+  const devices = line ? state.site.devices.filter((device) => device.line === line) : state.site.devices;
   const strips = notesHtml(state.scan.notes);
   const toolbar = `<div class="toolbar"><div class="end">
     <button type="button" class="quiet" data-act="add-device-menu" aria-expanded="${state.menu === "add-device"}">${t("dev.addByHand")}</button>
-    <span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span></div></div>
-    ${state.menu === "add-device" ? addDeviceHtml(state) : ""}`;
+    <span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span>
+    ${line ? `<button type="button" class="quiet" data-act="ask-remove-line">${t("dev.removeLine")}</button>` : ""}</div></div>
+    ${state.menu === "add-device" ? addDeviceHtml(state) : ""}
+    ${line && state.asking?.kind === "remove-line" ? `<div class="strips">${askHtml(t("dev.removeLineAsk", { line: h(line), n: devices.length }), t("dev.removeLineWhy"), [["remove-line", t("dev.removeLine")]])}</div>` : ""}`;
   if (!devices.length) {
     return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="empty"><h2>${t("dev.emptyTitle")}</h2><p>${t("dev.emptyLead")}</p>
       <div class="actions"><button type="button" class="tonal" data-act="add-device-menu">${t("dev.addByHand")}</button></div></div></section>`;
@@ -144,11 +149,11 @@ function deviceDetailHtml(state) {
       <button type="button" class="quiet" data-act="explore-device">${t("dev.explore")}</button>
       <button type="button" class="quiet" data-act="import-for-device">${t("dev.importList")}</button>
       <button type="button" class="quiet" data-act="identify">${t("dev.identify")}</button>
+      <button type="button" class="quiet" data-act="ask-remove-device">${t("dev.remove")}</button>
     </div>
+    ${removing}
     <dl class="facts">${facts}</dl>
     ${device.profile ? `<div class="actions"><a class="button quiet" href="/api/points.csv?key=${encodeURIComponent(device.key)}" download>${t("export.pointsCsv")}</a><a class="button quiet" href="/api/points.xlsx?key=${encodeURIComponent(device.key)}" download>${t("export.pointsXlsx")}</a></div>` : ""}
-    <div class="actions"><button type="button" class="quiet" data-act="ask-remove-device">${t("dev.remove")}</button></div>
-    ${removing}
   </aside>`;
 }
 
@@ -241,9 +246,11 @@ export function viewWorkspace(state) {
   const lead = device
     ? [device.name ? `${h(device.line)} · ${t("unit")} ${device.unit}` : "", device.profile_name ? counted("ws.leadProfile", device.points, { profile: h(device.profile_name) }) : t("dev.noProfile")].filter(Boolean).join(" · ")
     : devices === 0 ? t("ws.leadEmpty") : devices === 1 ? t("ws.leadOne") : t("ws.lead", { n: devices });
+  const line = !device && state.selectedLine;
+  const lineCount = line ? state.site.devices.filter((item) => item.line === line).length : 0;
   return {
-    title: device ? deviceName(device) : state.site.name || t("tab.workspace"),
-    lead,
+    title: device ? deviceName(device) : line || state.site.name || t("tab.workspace"),
+    lead: line ? (lineCount === 1 ? t("ws.lineOne") : t("ws.lineMany", { n: lineCount })) : lead,
     next: nextStep(state),
     html: `<div class="workspace">${treeHtml(state)}${table}${detail}</div>`,
   };

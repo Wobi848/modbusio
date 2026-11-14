@@ -27,6 +27,8 @@ export const state = {
   listened: null,
   /** The device chosen in the workspace, by key; its points as read. */
   selected: null,
+  /** A line chosen in the tree instead of a device: the list shows its devices. */
+  selectedLine: null,
   readings: {},
   pointFilter: "",
   selectedPoint: null,
