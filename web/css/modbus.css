@@ -110,3 +110,16 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 .node.heading[data-act] { cursor: pointer; }
 .node.heading[data-act]:hover { background: var(--sunken); }
 .node.heading.active { background: var(--accent-soft); color: var(--accent); }
+/* the tree by wire: a wire folds open and shut, its devices hang from it on guide lines */
+.node.port { gap: 4px; padding-left: 6px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.node.port .label { color: var(--text); }
+.node.port .hint { font-size: 11.5px; }
+.node .twisty { flex: none; width: 22px; height: 22px; min-height: 0; padding: 0; justify-content: center; border: 0; background: none; color: var(--muted); font-size: 12px; }
+.node .twisty:hover { color: var(--text); background: var(--sunken); }
+.node.branch { position: relative; padding-left: 40px; }
+.node.branch::before { content: ""; position: absolute; left: 17px; top: 0; bottom: 0; border-left: 1px solid var(--line-strong); }
+.node.branch.last::before { bottom: 50%; }
+.node.branch::after { content: ""; position: absolute; left: 17px; top: 50%; width: 14px; border-top: 1px solid var(--line-strong); }
+.node.branch .chip.warn { font-family: var(--mono); }
+.node.port .end { gap: 10px; }
+.node .twisty, .node .twisty[aria-expanded] { background: none; box-shadow: none; }

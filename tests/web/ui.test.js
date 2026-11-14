@@ -83,8 +83,14 @@ test("the search request is built from the dialog and refused where a field is w
 });
 
 test("devices group by line and points by group, those without a group last", () => {
-  const devices = [{ line: "a", key: "1" }, { line: "b", key: "2" }, { line: "a", key: "3" }];
-  assert.deepEqual(lines(devices).map((group) => [group.line, group.devices.length]), [["a", 2], ["b", 1]]);
+  // grouped by wire, whatever the settings: the setting most devices use is the wire's
+  const devices = [
+    { line: "COM3 9600 8E1", key: "serial:COM3:9600:8E1/1" },
+    { line: "10.0.0.5:502", key: "tcp:10.0.0.5:502/1" },
+    { line: "COM3 19200 8N2", key: "serial:COM3:19200:8N2/5" },
+    { line: "COM3 9600 8E1", key: "serial:COM3:9600:8E1/2" },
+  ];
+  assert.deepEqual(lines(devices).map((group) => [group.line, group.settings, group.devices.length]), [["COM3", "9600 8E1", 3], ["10.0.0.5:502", "", 1]]);
   const points = [{ name: "x", group: "" }, { name: "y", group: "Pump" }, { name: "z", group: "Boiler" }];
   assert.deepEqual(groupPoints(points).map(([group]) => group), ["Boiler", "Pump", ""]);
 });

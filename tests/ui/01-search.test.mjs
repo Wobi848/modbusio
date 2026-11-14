@@ -34,9 +34,9 @@ export default {
 
     // a whole line leaves the site at once, after a question; the other lines stay
     const line = `127.0.0.2:${SIM_PORT}`;
-    const lines = () => page.$$eval(".tree .node.heading", (nodes) => nodes.map((node) => node.querySelector(".label").textContent));
+    const lines = () => page.$$eval(".tree .node.port", (nodes) => nodes.map((node) => node.querySelector(".label").textContent));
     assert.ok((await lines()).includes(line));
-    await page.click(`.tree .node.heading[data-line="${line}"]`);
+    await page.click(`.tree .node.port[data-line="${line}"] .label`);
     assert.equal(await page.textContent(".pagehead h1"), line);
     const keys = await page.$$eval(".row.mdevices:not(.head)", (rows) => rows.map((row) => row.dataset.key));
     assert.ok(keys.length >= 2 && keys.every((key) => key.startsWith(`tcp:${line}/`)), `${keys}`);

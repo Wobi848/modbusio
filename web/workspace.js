@@ -12,13 +12,33 @@ const AREA_SHORT = { coil: "coil", discrete_input: "DI", input_register: "IR", h
 export const areaShort = (area) => AREA_SHORT[area] ?? area;
 
 /** The devices grouped by their line, in the order of the site. */
+/** The wire a device hangs on: the serial port or the TCP address, whatever the settings. */
+export function portOf(device) {
+  const serial = /^serial:(.+):\d+:\w+\/\d+$/.exec(device.key);
+  if (serial) return serial[1];
+  const tcp = /^(rtu-tcp|tcp):(.+)\/\d+$/.exec(device.key);
+  if (tcp) return tcp[1] === "rtu-tcp" ? `${tcp[2]} (RTU)` : tcp[2];
+  return device.line;
+}
+
+/** A device's serial settings (`9600 8E1`), or "" off a serial port. */
+export const settingsOf = (device) => (device.key.startsWith("serial:") ? device.line.slice(portOf(device).length).trim() : "");
+
+/** The devices grouped by their wire, in the order of the site; `settings` is the setting most of
+ * them use, so a device set otherwise stands out. */
 export function lines(devices) {
   const groups = new Map();
   for (const device of devices) {
-    if (!groups.has(device.line)) groups.set(device.line, []);
-    groups.get(device.line).push(device);
+    const port = portOf(device);
+    if (!groups.has(port)) groups.set(port, []);
+    groups.get(port).push(device);
   }
-  return [...groups.entries()].map(([line, members]) => ({ line, devices: members }));
+  return [...groups.entries()].map(([line, members]) => {
+    const counts = new Map();
+    for (const device of members) counts.set(settingsOf(device), (counts.get(settingsOf(device)) ?? 0) + 1);
+    const settings = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    return { line, settings, devices: members };
+  });
 }
 
 /** Points grouped by their group, those without one last. */
@@ -46,13 +66,18 @@ function treeHtml(state) {
   const site = !state.selected && !state.selectedLine;
   const all = `<div class="node level-1${site ? " active" : ""}" role="treeitem" aria-selected="${site}" data-act="select-device" data-key=""><span class="label">${h(state.site.name)}</span><span class="end"><span class="count">${state.site.devices.length}</span></span></div>`;
   const groups = lines(state.site.devices).map((group) => {
-    const devices = group.devices.map((device) => {
+    const open = !state.collapsed[group.line];
+    const devices = !open ? "" : group.devices.map((device, index) => {
       const active = device.key === state.selected;
       const failed = (state.readings[device.key]?.failed ?? 0) > 0 ? `<span class="chip err">${state.readings[device.key].failed}</span>` : "";
-      return `<div class="node level-3${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${failed}<span class="count mono">${device.unit}</span></span></div>`;
+      // set otherwise than most devices on its wire: that is worth seeing at once
+      const other = settingsOf(device) !== group.settings ? `<span class="chip warn" title="${t("tree.otherSettings")}">${h(settingsOf(device))}</span>` : "";
+      const last = index === group.devices.length - 1 ? " last" : "";
+      return `<div class="node level-3 branch${last}${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${other}${failed}<span class="count mono">${device.unit}</span></span></div>`;
     }).join("");
     const chosen = !state.selected && state.selectedLine === group.line;
-    return `<div class="node level-2 heading${chosen ? " active" : ""}" role="treeitem" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}"><span class="label mono">${h(group.line)}</span><span class="end"><span class="count">${group.devices.length}</span></span></div>${devices}`;
+    const toggle = `<button type="button" class="quiet twisty" data-act="toggle-line" data-line="${h(group.line)}" aria-expanded="${open}" aria-label="${open ? t("tree.close") : t("tree.open")}">${open ? "▾" : "▸"}</button>`;
+    return `<div class="node level-2 port${chosen ? " active" : ""}" role="treeitem" aria-expanded="${open}" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}">${toggle}<span class="label mono">${h(group.line)}</span><span class="end">${group.settings ? `<span class="hint mono">${h(group.settings)}</span>` : ""}<span class="count">${group.devices.length}</span></span></div><div class="branches" role="group">${devices}</div>`;
   }).join("");
   return `<nav class="tree" role="tree" aria-label="${t("tree.label")}" data-keep="tree">${all}${groups}</nav>`;
 }
@@ -87,7 +112,7 @@ function deviceRow(state, device) {
 
 function devicesHtml(state) {
   const line = state.selectedLine;
-  const devices = line ? state.site.devices.filter((device) => device.line === line) : state.site.devices;
+  const devices = line ? state.site.devices.filter((device) => portOf(device) === line) : state.site.devices;
   const strips = notesHtml(state.scan.notes);
   const toolbar = `<div class="toolbar"><div class="end">
     <button type="button" class="quiet" data-act="add-device-menu" aria-expanded="${state.menu === "add-device"}">${t("dev.addByHand")}</button>
@@ -247,7 +272,7 @@ export function viewWorkspace(state) {
     ? [device.name ? `${h(device.line)} · ${t("unit")} ${device.unit}` : "", device.profile_name ? counted("ws.leadProfile", device.points, { profile: h(device.profile_name) }) : t("dev.noProfile")].filter(Boolean).join(" · ")
     : devices === 0 ? t("ws.leadEmpty") : devices === 1 ? t("ws.leadOne") : t("ws.lead", { n: devices });
   const line = !device && state.selectedLine;
-  const lineCount = line ? state.site.devices.filter((item) => item.line === line).length : 0;
+  const lineCount = line ? state.site.devices.filter((item) => portOf(item) === line).length : 0;
   return {
     title: device ? deviceName(device) : line || state.site.name || t("tab.workspace"),
     lead: line ? (lineCount === 1 ? t("ws.lineOne") : t("ws.lineMany", { n: lineCount })) : lead,
