@@ -3,8 +3,8 @@
 
 import { h } from "./html.js";
 import { codeText, currentLocale, localNumber, t } from "./i18n.js";
-import { deviceName, registerView, selectedDevice } from "./store.js";
-import { areaShort, filterPoints, groupPoints, viewWorkspace } from "./workspace.js";
+import { deviceName, selectedDevice, wrapView } from "./store.js";
+import { areaShort, filterPoints, groupPoints } from "./workspace.js";
 
 function factsHtml(state, device, reading, shown) {
   const filter = state.pointFilter.trim();
@@ -62,8 +62,8 @@ export function printable(state) {
   return Boolean(state.area === "workspace" && device && state.readings[device.key]);
 }
 
-registerView("workspace", (state) => {
+wrapView("workspace", (view) => (state) => {
   const device = selectedDevice();
   const reading = device && state.readings[device.key];
-  return state.printing && reading ? viewPrint(state, device, reading) : viewWorkspace(state);
+  return state.printing && reading ? viewPrint(state, device, reading) : view(state);
 });

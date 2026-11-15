@@ -120,7 +120,9 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |
 | Sidebar, tree and details resized by dragging their border or with the arrow keys, kept in this browser, double-click back to automatic (`docs/concept-bacnetio-sync.md`) | wide windows | `ui/07-settings` |
 | Lists sorted by a click on a column head (up, down, back), columns as wide as their border is dragged, kept per list: devices, points (within their groups), profiles and their points, watch list, the analyser's units, exchanges and registers | the lists' heads | `ui/07-settings` |
-| Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `?` for the help, `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
+| Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `?` for the help, `/` for the search over the site, `f` for the search of the points, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
+| Search over the whole site: devices by name, line, unit and maker, points of the devices read by name, group, address and description; what is found opens | sidebar, key `/` | `ui/13-search-compare` |
+| Two devices of one profile side by side, their points matched by name, what differs marked and shown alone, both read again | a device's details, *Compare with* | `ui/13-search-compare` |
 | Help: guides for the usual tasks in the interface's language, naming buttons by the interface's own words, each with a button to the place of its first step (it only opens it); the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
 | A device's points as a page to print or save as PDF, with the list's groups and search; Ctrl+P opens it | open device, *Print …* | `ui/12-print` |
 | Excel files with column heads, sheet names and a title line in the reader's language (a profile's keeps the English heads its import reads) | every Excel link | `export.rs`, `api.rs`, `tests/web/ui.test.js`, `ui/12-print` |

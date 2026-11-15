@@ -69,6 +69,10 @@ First version.
 - Excel files carry their column heads and a title line in the interface's language; the CSV files
   keep English heads. The unit ID's column is headed `Unit ID` in the device list and the bus
   analyser's tables.
+- A search over the whole site in the sidebar (key `/`): devices and the points of the devices
+  read; `f` now goes to the search of the points.
+- *Compare with* in a device's details puts two devices of one profile side by side and marks
+  what differs.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

@@ -65,6 +65,7 @@ export function sideHtml(state) {
       <div class="side-meta"><span class="side-detail">${searchState(state)}</span>
         <button type="button" id="search-settings" class="quiet side-tool" data-act="search-dialog" aria-label="${t("side.search")}" title="${t("side.search")}">${SLIDERS_ICON}<span class="side-tool-label">${t("side.search")}</span></button></div>
     </section></div>
+    <label class="site-search"><input id="site-search" type="search" placeholder="${t("found.search")}" aria-label="${t("found.search")}" aria-keyshortcuts="/" value="${h(state.siteSearch)}" autocomplete="off"><kbd aria-hidden="true">/</kbd></label>
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}</nav>
     <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${state.areas.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>

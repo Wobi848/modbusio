@@ -46,7 +46,7 @@ export function helpText(text) {
 /** The keys and what they do, in the order of the keyboard's use. */
 function keysHtml(state) {
   const count = state.areas.length;
-  const keys = [[`1 – ${count}`, t("keys.areas")], [String(count + 1), t("tab.settings")], ["?", t("help.title")], ["/", t("keys.filter")], ["↑ ↓", t("keys.move")],
+  const keys = [[`1 – ${count}`, t("keys.areas")], [String(count + 1), t("tab.settings")], ["?", t("help.title")], ["/", t("found.search")], ["f", t("keys.filter")], ["↑ ↓", t("keys.move")],
     ["Home End ⇞ ⇟", t("keys.jump")], ["Enter", t("keys.open")], ["Tab", t("keys.tab")], ["Esc", t("keys.close")]];
   return `<dl class="facts">${keys.map(([key, what]) => `<dt><kbd>${key}</kbd></dt><dd>${what}</dd>`).join("")}</dl>`;
 }

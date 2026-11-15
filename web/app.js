@@ -13,6 +13,8 @@ import "./pages.js";
 import "./analyser.js";
 import "./help.js";
 import "./print.js";
+import "./compare.js";
+import "./site-search.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";

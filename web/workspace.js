@@ -183,6 +183,10 @@ function deviceDetailHtml(state) {
     [t("dev.revision"), h(device.revision ?? "–")],
     [t("dev.limits"), h(limitsText(device.limits))],
   ].map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`).join("");
+  const others = comparable(state, device);
+  const comparing = others.length
+    ? `<label class="form-field">${t("compare.with")}<select id="compare-with"><option value="">${t("compare.choose")}</option>${others.map((other) => `<option value="${h(other.key)}">${h(deviceNameOnLine(other))} · ${h(other.key)}</option>`).join("")}</select></label>`
+    : "";
   const removing = state.asking?.kind === "remove-device"
     ? askHtml(t("dev.removeAsk"), t("dev.removeWhy"), [["remove-device", t("dev.remove")]]) : "";
   return `<aside class="detail${open}" data-keep="device-detail">
@@ -190,6 +194,7 @@ function deviceDetailHtml(state) {
     <div class="dhead"><b>${h(deviceName(device))}</b><span class="sub mono">${h(device.key)}</span></div>
     <label class="form-field">${t("dev.name")}<input id="device-name" data-device-name="${h(device.key)}" value="${h(device.name)}" placeholder="${h(device.product ?? "")}"></label>
     <label class="form-field">${t("col.profile")}${profileSelect(state, device)}</label>
+    ${comparing}
     <div class="actions">
       ${device.profile ? `<button type="button" class="tonal" data-act="read-device">${t("dev.read")}</button>` : ""}
       <button type="button" class="quiet" data-act="explore-device">${t("dev.explore")}</button>
@@ -201,6 +206,12 @@ function deviceDetailHtml(state) {
     <dl class="facts">${facts}</dl>
     ${device.profile ? `<div class="actions"><a class="button quiet" href="/api/points.csv?key=${encodeURIComponent(device.key)}" download>${t("export.pointsCsv")}</a><a class="button quiet" href="${excelHref(state, `/api/points.xlsx?key=${encodeURIComponent(device.key)}`, [deviceName(device)])}" download>${t("export.pointsXlsx")}</a></div>` : ""}
   </aside>`;
+}
+
+/** The other devices a device can be compared with (compare.js): those with its profile. */
+export function comparable(state, device) {
+  if (!device?.profile) return [];
+  return state.site.devices.filter((other) => other.key !== device.key && other.profile === device.profile);
 }
 
 /** What modbusio learnt about a device, in words. */
