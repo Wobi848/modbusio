@@ -117,6 +117,20 @@ export async function readDevice(quiet = false) {
   render();
 }
 
+/** Reads the open device and the one it is compared with, one after the other. */
+async function readCompared() {
+  const keys = [state.selected, state.compare.other];
+  state.compare.reading = true;
+  render();
+  for (const key of keys) {
+    const answer = await attempt(() => api.read(key));
+    if (answer) state.readings[key] = { ...answer, readAt: new Date() };
+  }
+  // closed or another device chosen meanwhile: nothing left to mark
+  if (state.compare) state.compare.reading = false;
+  render();
+}
+
 async function writePoint() {
   const device = selectedDevice();
   const asking = state.asking;
@@ -134,6 +148,7 @@ const pointOf = (name) => state.readings[state.selected]?.points.find((point) =>
 function selectDevice(key) {
   state.selected = key;
   state.printing = false;
+  state.compare = null;
   state.selectedLine = null;
   state.selectedPoint = null;
   state.deviceDetailOpen = false;
@@ -230,6 +245,16 @@ export const actions = {
     else toast(t("dev.added", { name: named }));
     render();
   },
+  // what the search over the site found: the device, and the point in it
+  "found-open": (element) => {
+    go("workspace");
+    selectDevice(element.dataset.key);
+    state.selectedPoint = element.dataset.point ?? null;
+    render();
+  },
+  "compare-view": (element) => { state.compare.onlyDifferent = element.dataset.view === "different"; render(); },
+  "compare-read": () => readCompared(),
+  "compare-close": () => { state.compare = null; render(); },
   "print-open": () => { state.printing = true; render(); },
   "print-now": () => window.print(),
   "print-close": () => { state.printing = false; render(); },
@@ -424,6 +449,13 @@ export function onField(element) {
   }
   if (dataset.analyser) return analyserField(element);
   if (element.id === "point-filter") { state.pointFilter = element.value; return true; }
+  if (element.id === "site-search") {
+    state.siteSearch = element.value;
+    // the results are a page of their own while something is searched for
+    if (state.siteSearch.trim()) state.area = "search";
+    else if (state.area === "search") state.area = "workspace";
+    return true;
+  }
   if (element.id === "write-value" && state.asking) { state.asking.value = element.value; return false; }
   if (element.id === "add-key") { state.addKey = element.value; return false; }
   if (element.id === "add-name") { state.addName = element.value; return false; }
@@ -436,6 +468,12 @@ export function onField(element) {
 /** Fields that act when their choice is made. */
 export async function onChange(element) {
   const { dataset } = element;
+  if (element.id === "compare-with") {
+    if (!element.value) return;
+    state.compare = { other: element.value, onlyDifferent: false, reading: false };
+    state.selectedPoint = null;
+    return readCompared();
+  }
   if (dataset.deviceName !== undefined) {
     const site = await attempt(() => api.updateDevice({ key: dataset.deviceName, name: element.value }));
     if (site) state.site = site;

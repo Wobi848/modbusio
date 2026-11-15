@@ -47,7 +47,7 @@ export default {
     await page.keyboard.press("ArrowUp");
     assert.equal(await chosen(), one);
     // typing in the filter keeps its arrows
-    await page.keyboard.press("/");
+    await page.keyboard.press("f");
     await page.keyboard.press("ArrowDown");
     assert.equal(await chosen(), one);
     await page.evaluate(() => document.activeElement.blur());

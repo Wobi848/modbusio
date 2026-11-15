@@ -62,6 +62,10 @@ export const state = {
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,
+  /** What is typed into the search over the whole site (site-search.js). */
+  siteSearch: "",
+  /** The device the open one is compared with (compare.js): { other, onlyDifferent, reading }. */
+  compare: null,
   /** The open device's points shown as a page to print (print.js). */
   printing: false,
   /** The guide open in the help (help.js). */
@@ -102,6 +106,11 @@ const views = {};
 /** Each page registers its view: `(state) => { title, lead, next, html }`. */
 export function registerView(area, view) {
   views[area] = view;
+}
+
+/** Lays a view over an area's own: `wrap(view)` gives the view that decides which one draws. */
+export function wrapView(area, wrap) {
+  views[area] = wrap(views[area]);
 }
 
 let frame = { side: () => "", nextbar: () => "", status: () => "", dialog: () => "" };
@@ -202,6 +211,8 @@ export function go(area) {
   // the explorer starts with the device chosen in the workspace, unless it shows another one's result
   if (area === "explorer" && state.selected && !state.explorer.result && !state.explorer.busy) state.explorer.key = state.selected;
   state.area = area;
+  state.siteSearch = "";
+  state.compare = null;
   state.printing = false;
   state.menu = null;
   state.asking = null;

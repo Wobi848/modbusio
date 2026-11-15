@@ -19,6 +19,9 @@ has no serial port (Android).
 Step 7 (Excel, print; the accents came earlier) built on `excel-print`. The Excel heads are
 worded by the page as in bacnetio (`heads` and `title` in the link); the print view shows the
 points with the list's groups and search.
+Step 8 (site search, compare) built on `site-search-compare`. As in bacnetio `/` now goes to the
+search over the site and `f` to the search of the list on screen. The comparison is offered in a
+device's details for the devices with its profile.
 
 ## Why
 
@@ -84,6 +87,7 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Charts: values under the pointer, a span looked at closer, key figures | recording, bus analyser | `ui/06-live` |
 | Help with guides and the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
 | Print view of a device's points; Excel worded for its reader | open device; every Excel link | `ui/12-print` |
+| Search over the site; two devices compared | sidebar; a device's details | `ui/13-search-compare` |
 
 ## Compatibility
 

@@ -7,7 +7,7 @@ import { printable } from "./print.js";
 import { attempt, go, render, state } from "./store.js";
 
 /** Rows whose choice replaces the list: the arrows mark, Enter opens. */
-const LEADS_AWAY = new Set(["select-device", "open-profile"]);
+const LEADS_AWAY = new Set(["select-device", "open-profile", "found-open"]);
 const PAGE_ROWS = 10;
 const MOVE_KEYS = { ArrowDown: 1, ArrowUp: -1, PageDown: PAGE_ROWS, PageUp: -PAGE_ROWS, Home: -Infinity, End: Infinity };
 
@@ -65,6 +65,7 @@ function keepInDialog(event) {
 /** Closes what lies on top; false when nothing was open. */
 function closeTopmost() {
   if (state.printing) state.printing = false;
+  else if (state.compare) state.compare = null;
   else if (state.importing) state.importing = null;
   else if (state.menu) state.menu = null;
   else if (state.asking) state.asking = null;
@@ -103,9 +104,11 @@ document.addEventListener("keydown", (event) => {
   if (number >= 1 && number <= state.areas.length) { go(state.areas[number - 1]); return; }
   if (number === state.areas.length + 1) { go("settings"); return; }
   if (event.key === "?") { go("help"); return; }
-  if (event.key === "/" && document.getElementById("point-filter")) {
+  // / searches the whole site, f the list on screen
+  const field = { "/": "site-search", f: "point-filter" }[event.key];
+  if (field && document.getElementById(field)) {
     event.preventDefault();
-    document.getElementById("point-filter").focus();
+    document.getElementById(field).focus();
     return;
   }
   // a dialog or a question lies over the list
