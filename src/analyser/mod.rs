@@ -10,7 +10,7 @@ pub mod registers;
 pub mod tables;
 pub mod units;
 
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::time::{Duration, SystemTime};
 
 use serde::Serialize;
@@ -76,6 +76,21 @@ pub struct Numbered<T> {
     pub item: T,
 }
 
+/// How one read went each time the master asked it.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ReadTally {
+    pub times: u64,
+    /// The exception it got, while every answer was the same one.
+    pub exception: Option<u8>,
+    /// It got something else at least once.
+    pub varied: bool,
+}
+
+/// A read by its unit, area, first address and count.
+pub type ReadKey = (u8, crate::protocol::Area, u16, u16);
+/// Distinct reads tallied at most, so a master sweeping a map cannot fill the memory.
+const MOST_READS: usize = 10_000;
+
 #[derive(Default)]
 pub struct Analysis {
     framer: Framer,
@@ -83,6 +98,10 @@ pub struct Analysis {
     pub bus: Bus,
     pub units: BTreeMap<u8, UnitStats>,
     pub registers: Registers,
+    /// How each read went, counted as it is heard: the notes need not go through every exchange.
+    pub reads: HashMap<ReadKey, ReadTally>,
+    /// The unit of the exchange before, for what a unit misses after its neighbour.
+    last_unit: Option<u8>,
     frames: VecDeque<Numbered<Seen>>,
     exchanges: VecDeque<Numbered<Exchange>>,
     next_frame: u64,
@@ -170,6 +189,7 @@ impl Analysis {
             keep(&mut self.frames, &mut self.next_frame, seen);
             for mut exchange in done {
                 self.count(&mut exchange);
+                self.last_unit = Some(exchange.unit);
                 keep(&mut self.exchanges, &mut self.next_exchange, exchange);
             }
         }
@@ -186,7 +206,34 @@ impl Analysis {
                     .before(exchange.unit, asked.area, asked.address, asked.count);
         }
         self.registers.add(exchange);
-        self.units.entry(exchange.unit).or_default().add(exchange);
+        self.tally_read(exchange);
+        let before = self.last_unit.filter(|before| *before != exchange.unit);
+        let stats = self.units.entry(exchange.unit).or_default();
+        stats.add(exchange);
+        if let (Outcome::NoAnswer, Some(before)) = (&exchange.outcome, before) {
+            *stats.missed_after.entry(before).or_default() += 1;
+        }
+    }
+
+    fn tally_read(&mut self, exchange: &Exchange) {
+        let Some(read) = exchange.asked.as_ref().filter(|asked| !asked.write) else {
+            return;
+        };
+        if exchange.outcome == Outcome::NoAnswer {
+            return;
+        }
+        let key = (exchange.unit, read.area, read.address, read.count);
+        if !self.reads.contains_key(&key) && self.reads.len() >= MOST_READS {
+            return;
+        }
+        let tally = self.reads.entry(key).or_default();
+        tally.times += 1;
+        match exchange.outcome {
+            Outcome::Exception { code } if tally.exception.is_none_or(|first| first == code) => {
+                tally.exception = Some(code);
+            }
+            _ => tally.varied = true,
+        }
     }
 }
 

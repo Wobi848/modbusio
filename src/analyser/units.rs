@@ -63,6 +63,9 @@ pub struct UnitStats {
     pub writes: u64,
     /// Answers heard without their request.
     pub answer_only: u64,
+    /// For each other unit: how many of this unit's unanswered requests came right after a
+    /// request to it.
+    pub missed_after: HashMap<u8, u64>,
     pub answer_times: Times,
     /// The recent answer times with when they were asked, for a chart.
     pub answer_history: VecDeque<(u64, u64)>,
