@@ -2,7 +2,10 @@
 
 ## Unreleased
 
-First version.
+## v0.1.0 (15.11.2026)
+
+First version, a pre-release: tested against the simulators in `examples/`, not yet on real
+devices or a real RS-485 line. Take care before writing to a plant.
 
 ### Added
 
