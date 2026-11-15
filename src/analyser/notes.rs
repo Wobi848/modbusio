@@ -1,10 +1,8 @@
 //! What the analysis means, in words (docs/concept-analyser.md, *Diagnosis in words*; concept
 //! section 8). Each note has a threshold, so a single slip on a long run says nothing.
 
-use std::collections::HashMap;
-
 use super::Analysis;
-use super::exchanges::{Exchange, Outcome};
+use super::units::UnitStats;
 use crate::diagnosis::Note;
 
 /// Unanswered requests a unit needs, and their share, before it is named.
@@ -36,7 +34,6 @@ pub fn notes(analysis: &Analysis, line: &str, load: f64) -> Vec<Note> {
         notes.push(Note::MasterUnanswered { line: line.into() });
         return notes;
     }
-    let exchanges: Vec<&Exchange> = analysis.exchanges().iter().map(|item| &item.item).collect();
     for (&unit, stats) in &analysis.units {
         // answers without their request: the unit does answer, see the note on two masters
         if stats.answers == 0 && stats.answer_only == 0 && stats.no_answer >= MISSING_AT_LEAST {
@@ -49,7 +46,7 @@ pub fn notes(analysis: &Analysis, line: &str, load: f64) -> Vec<Note> {
         let share = stats.no_answer as f64 / stats.requests.max(1) as f64;
         if stats.no_answer >= MISSING_AT_LEAST && share >= MISSING_SHARE {
             let percent = (share * 100.0).round().max(1.0) as u32;
-            notes.push(match missed_after(&exchanges, unit) {
+            notes.push(match missed_after(stats) {
                 Some(after) => Note::MissesAfter {
                     unit,
                     missing: stats.no_answer,
@@ -75,7 +72,7 @@ pub fn notes(analysis: &Analysis, line: &str, load: f64) -> Vec<Note> {
             });
         }
     }
-    notes.extend(refused_every_time(&exchanges));
+    notes.extend(refused_every_time(analysis));
     let damaged: Vec<(u8, u64)> = analysis
         .units
         .iter()
@@ -113,75 +110,33 @@ pub fn notes(analysis: &Analysis, line: &str, load: f64) -> Vec<Note> {
     notes
 }
 
-/// The other unit asked right before nearly every request `unit` left unanswered.
-fn missed_after(exchanges: &[&Exchange], unit: u8) -> Option<u8> {
-    let mut before: HashMap<u8, u64> = HashMap::new();
-    let mut missed = 0;
-    for pair in exchanges.windows(2) {
-        if pair[1].unit == unit && pair[1].outcome == Outcome::NoAnswer {
-            missed += 1;
-            if pair[0].unit != unit {
-                *before.entry(pair[0].unit).or_default() += 1;
-            }
-        }
-    }
-    let (after, count) = before.into_iter().max_by_key(|(_, count)| *count)?;
-    (count as f64 >= missed as f64 * AFTER_SHARE).then_some(after)
-}
-
-/// How one read went each time it was asked.
-#[derive(Default)]
-struct Tally {
-    times: u64,
-    exception: Option<u8>,
-    /// Every answer was that exception.
-    always: bool,
+/// The other unit asked right before nearly every request this unit left unanswered.
+fn missed_after(stats: &UnitStats) -> Option<u8> {
+    let (after, count) = stats.missed_after.iter().max_by_key(|(_, count)| **count)?;
+    (*count as f64 >= stats.no_answer as f64 * AFTER_SHARE).then_some(*after)
 }
 
 /// Reads that got the same exception every time they were asked.
-fn refused_every_time(exchanges: &[&Exchange]) -> Vec<Note> {
-    // by unit, area, first address and count
-    let mut asked: HashMap<(u8, &str, u16, u16), Tally> = HashMap::new();
-    for exchange in exchanges {
-        let Some(read) = exchange.asked.as_ref().filter(|asked| !asked.write) else {
-            continue;
-        };
-        if exchange.outcome == Outcome::NoAnswer {
-            continue;
-        }
-        let key = (exchange.unit, read.area.short(), read.address, read.count);
-        let tally = asked.entry(key).or_insert(Tally {
-            always: true,
-            ..Tally::default()
-        });
-        tally.times += 1;
-        match exchange.outcome {
-            Outcome::Exception { code } if tally.exception.is_none_or(|first| first == code) => {
-                tally.exception = Some(code);
-            }
-            _ => tally.always = false,
-        }
-    }
-    let mut notes: Vec<Note> = asked
-        .into_iter()
+fn refused_every_time(analysis: &Analysis) -> Vec<Note> {
+    let mut refused: Vec<(u8, u16, Note)> = analysis
+        .reads
+        .iter()
         .filter_map(|((unit, area, first, count), tally)| {
             let code = tally
                 .exception
-                .filter(|_| tally.always && tally.times >= REFUSED_AT_LEAST)?;
-            Some(Note::RefusedEveryTime {
-                unit,
-                area: area.into(),
-                first,
+                .filter(|_| !tally.varied && tally.times >= REFUSED_AT_LEAST)?;
+            let note = Note::RefusedEveryTime {
+                unit: *unit,
+                area: area.short().into(),
+                first: *first,
                 last: first.saturating_add(count.saturating_sub(1)),
                 exception: format!("{code:02X}"),
-            })
+            };
+            Some((*unit, *first, note))
         })
         .collect();
-    notes.sort_by_key(|note| match note {
-        Note::RefusedEveryTime { unit, first, .. } => (*unit, *first),
-        _ => (0, 0),
-    });
-    notes
+    refused.sort_by_key(|(unit, first, _)| (*unit, *first));
+    refused.into_iter().map(|(_, _, note)| note).collect()
 }
 
 #[cfg(test)]
