@@ -2,6 +2,7 @@
 // (the device list, or a device's points from its profile) and the details beside it.
 
 import { h } from "./html.js";
+import { RECORD_ICON, WATCH_ICON } from "./icons.js";
 import { listBorders } from "./panels.js";
 import { sortHead, sortRows } from "./sorting.js";
 import { codeText, counted, currentLocale, localNumber, noteText, t } from "./i18n.js";
@@ -229,9 +230,12 @@ function pointRow(state, point) {
   const failed = reading?.error ? " err" : "";
   const value = reading?.error ? `<span class="chip err" title="${h(codeText(reading.error))}">${h(codeText(reading.error))}</span>` : `<span class="num">${h(localNumber(reading?.text ?? ""))}</span>`;
   const watched = state.watch.some((item) => item.key === state.selected && item.point === point.name);
+  const recorded = state.recording.series.some((series) => series.device === state.selected && series.point === point.name);
+  const quick = (act, on, icon, label) => `<button type="button" class="quick${on ? " on" : ""}" data-act="${act}" aria-pressed="${on}" title="${label}" aria-label="${label}">${icon}</button>`;
+  const quicks = `<span class="quicks">${quick("quick-watch", watched, WATCH_ICON, t("quick.watch"))}${quick("quick-record", recorded, RECORD_ICON, t("quick.record"))}</span>`;
   return `<div class="row mpoints${active}${failed}" data-act="select-point" data-point="${h(point.name)}" role="option" aria-selected="${Boolean(active)}">
     <span class="name">${h(point.name)}</span><span class="mono cut">${areaShort(point.area)} ${point.address}</span>
-    <span class="value">${value}</span><span class="chips">${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}${watched ? `<span class="chip accent">${t("pts.watched")}</span>` : ""}</span></div>`;
+    <span class="value">${value}</span><span class="chips">${point.writable ? `<span class="chip">${t("pts.writable")}</span>` : ""}${watched ? `<span class="chip accent">${t("pts.watched")}</span>` : ""}${quicks}</span></div>`;
 }
 
 function pointsHtml(state, device) {

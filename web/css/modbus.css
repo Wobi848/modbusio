@@ -2,7 +2,7 @@
    tokens.css. */
 
 .row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 64px minmax(100px, 1.2fr) minmax(100px, 1fr); }
-.row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) minmax(90px, auto); min-height: 34px; }
+.row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) 12.5rem; min-height: 34px; }
 .row.mpoints .value { font-weight: 650; text-align: right; }
 .row.mpoints.err .value { font-weight: 500; }
 .row.registers { grid-template-columns: 90px 64px 64px 56px 48px minmax(90px, 1fr) minmax(90px, 1fr); min-height: 30px; }
@@ -16,6 +16,11 @@
 .row.mwatch { grid-template-columns: minmax(140px, 1.5fr) minmax(120px, 1.2fr) minmax(120px, 1fr) 8rem; }
 .row.mwatch > button, .row.mrecord > button { justify-self: end; }
 .row.mwatch .value { font-weight: 650; text-align: right; }
+.row.mproblems { grid-template-columns: minmax(120px, 1fr) minmax(140px, 1.3fr) minmax(140px, 1.5fr) max-content; cursor: pointer; }
+.row.mproblems .chip { white-space: nowrap; }
+/* a long choice (a device with its address) stays inside the details */
+.detail .form-field select { width: 100%; min-width: 0; }
+.row.mpoints .chips { display: flex; align-items: center; gap: 4px; }
 /* what the search over the site found; two devices of one profile side by side */
 .row.found { grid-template-columns: minmax(140px, 1.3fr) minmax(120px, 1.3fr) minmax(100px, 1fr); cursor: pointer; }
 .row.mcompare { grid-template-columns: minmax(140px, 1.5fr) minmax(80px, .7fr) minmax(90px, 1fr) minmax(90px, 1fr) 6.5rem; }
@@ -95,15 +100,19 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
   .row.mdevices .narrow-only { display: inline-flex; }
 }
 @container (max-width: 540px) {
-  .row.mpoints { grid-template-columns: minmax(0, 1fr) auto; }
+  /* the switches stay; the words beside them are in the details */
+  .row.mpoints { grid-template-columns: minmax(0, 1fr) auto auto; }
   /* the name on a line of its own, both values under it; what differs keeps its colour */
   .row.mcompare { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); row-gap: 2px; padding-block: 6px; }
   .row.mcompare > :first-child { grid-column: 1 / -1; }
   .row.mcompare > :nth-child(2), .row.mcompare > :nth-child(5) { display: none; }
   .row.mcompare .num { text-align: left; overflow: hidden; text-overflow: ellipsis; }
+  .row.mproblems { grid-template-columns: minmax(0, 1fr) auto; row-gap: 2px; padding-block: 6px; }
+  .row.mproblems > :nth-child(1), .row.mproblems > :nth-child(3) { grid-column: 1 / -1; }
+  .row.mproblems.head { display: none; }
   .row.found { grid-template-columns: minmax(0, 1fr) auto; }
   .row.found > :nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-  .row.mpoints > :nth-child(2), .row.mpoints > :nth-child(4) { display: none; }
+  .row.mpoints > :nth-child(2), .row.mpoints .chips .chip { display: none; }
   .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
   .row.mrecord > :nth-child(3) { display: none; }
 }
@@ -166,3 +175,5 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 .node .twisty, .node .twisty[aria-expanded] { background: none; box-shadow: none; }
 .set-otherwise { color: var(--warn); font-weight: 700; }
 .node.branch .hint { font-size: 11.5px; }
+/* no pointer to hover with: the switches of the point list show at full strength */
+@media (hover: none) { button.quick { opacity: 1; } }

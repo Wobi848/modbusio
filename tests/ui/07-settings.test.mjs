@@ -59,7 +59,7 @@ export default {
     await page.click("[data-act=background][data-background=navy]");
     for (const width of [390, 1000, 1440]) {
       await page.setViewportSize({ width, height: 844 });
-      for (const area of ["workspace", "explorer", "profiles", "watch", "recording", "changed", "settings"]) {
+      for (const area of ["workspace", "explorer", "profiles", "watch", "recording", "changed", "problems", "help", "settings"]) {
         await page.goto(`${base}/#/${area}`);
         await page.waitForSelector("h1", { state: "attached" });
         await noSidewaysScroll(page);

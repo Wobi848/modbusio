@@ -73,6 +73,11 @@ First version.
   read; `f` now goes to the search of the points.
 - *Compare with* in a device's details puts two devices of one profile side by side and marks
   what differs.
+- Watch and record are switched in the point list too; press on one switch and drag over the rows
+  to switch many.
+- *Problems* lists what needs a look across the site: devices that do not answer, points that
+  could not be read, values written and not put back. The bus analyser's key is now `8`, the
+  settings' `9`.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

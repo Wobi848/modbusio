@@ -6,7 +6,7 @@ import { drawCursor } from "./cursor.js";
 import { codeText, t } from "./i18n.js";
 import { placeMenus } from "./menus.js";
 
-export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed", "analyser"];
+export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed", "problems", "analyser"];
 /** Pages reached from the sidebar's foot, outside the numbered areas. */
 export const OTHER_AREAS = ["settings", "help"];
 const MEMORY_KEY = "modbusio.memory";
@@ -62,6 +62,8 @@ export const state = {
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,
+  /** While every device is read for the problems page: { done, total }. */
+  readingAll: null,
   /** What is typed into the search over the whole site (site-search.js). */
   siteSearch: "",
   /** The device the open one is compared with (compare.js): { other, onlyDifferent, reading }. */

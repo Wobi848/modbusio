@@ -23,7 +23,7 @@ const UNSET = "minmax(60px, 1fr)";
  */
 const LAYOUTS = {
   devices: { from: 581, rows: ".rows .row.mdevices", columns: ["name", "line", "unit", "profile", "vendor"] },
-  points: { from: 541, rows: ".rows .row.mpoints:not(.group)", columns: ["name", "address", "value", { fixed: "minmax(90px, auto)" }] },
+  points: { from: 541, rows: ".rows .row.mpoints:not(.group)", columns: ["name", "address", "value", { fixed: "12.5rem" }] },
   profiles: { from: 591, rows: ".rows .row.mprofiles", columns: ["name", "vendor", "points", { fixed: "110px" }] },
   profilePoints: { from: 741, rows: ".rows .row.mprofile-points", columns: ["name", "group", "address", "type", "factor", "unit", { fixed: "80px" }] },
   watch: { from: 581, rows: ".rows .row.mwatch", columns: ["name", "device", "value", { fixed: "8rem" }] },
