@@ -92,6 +92,7 @@ document.addEventListener("keydown", (event) => {
   const number = Number(event.key);
   if (number >= 1 && number <= state.areas.length) { go(state.areas[number - 1]); return; }
   if (number === state.areas.length + 1) { go("settings"); return; }
+  if (event.key === "?") { go("help"); return; }
   if (event.key === "/" && document.getElementById("point-filter")) {
     event.preventDefault();
     document.getElementById("point-filter").focus();

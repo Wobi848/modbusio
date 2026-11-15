@@ -63,6 +63,8 @@ First version.
   the search settings are open.
 - Charts name every line's value at the time under the pointer, show a span drawn with the pointer
   closer (*Show everything* goes back) and give each line's lowest, highest and mean.
+- Help (sidebar or the key `?`): guides for the usual tasks, from searching a network, a gateway or
+  an RS-485 line to register lists, writing, recording and the bus analyser, and the keys.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

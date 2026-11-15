@@ -7,6 +7,8 @@ import { codeText, t } from "./i18n.js";
 import { placeMenus } from "./menus.js";
 
 export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed", "analyser"];
+/** Pages reached from the sidebar's foot, outside the numbered areas. */
+export const OTHER_AREAS = ["settings", "help"];
 const MEMORY_KEY = "modbusio.memory";
 
 export const state = {
@@ -60,6 +62,8 @@ export const state = {
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,
+  /** The guide open in the help (help.js). */
+  helpGuide: "find",
   busy: null,
   notes: [],
   error: null,
@@ -81,7 +85,7 @@ export function remember() {
 export function recall() {
   try {
     const memory = JSON.parse(localStorage.getItem(MEMORY_KEY) ?? "{}");
-    if (AREAS.includes(memory.area) || memory.area === "settings") state.area = memory.area;
+    if (AREAS.includes(memory.area) || OTHER_AREAS.includes(memory.area)) state.area = memory.area;
     state.selected = memory.selected ?? null;
     Object.assign(state.search, memory.search ?? {});
     state.watch = Array.isArray(memory.watch) ? memory.watch : [];
@@ -204,7 +208,7 @@ export function go(area) {
 
 export const areaOfHash = (hash) => {
   const area = hash.replace(/^#\//, "");
-  return AREAS.includes(area) || area === "settings" ? area : "workspace";
+  return AREAS.includes(area) || OTHER_AREAS.includes(area) ? area : "workspace";
 };
 
 /** The chosen device of the site, or null. */

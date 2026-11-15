@@ -13,6 +13,9 @@ Step 5 (charts) built on `bacnetio-charts`. modbusio keeps its own drawing (one 
 several lines, the axis texts beside a stretched SVG), so `analysis.js` is copied and the crosshair
 and the span are written anew on it: laid over the drawing as HTML, drawn again after every
 drawing of the page.
+Step 6 (help) built on `bacnetio-help`: bacnetio's frame (`help.js`, guides per language in
+`web/help/`), eleven Modbus guides. The guides about a serial line are left out where the system
+has no serial port (Android).
 
 ## Why
 
@@ -76,6 +79,7 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Menus placed against the window | workspace | `ui/10-keyboard` |
 | Adapters and ports read again | search settings | `ui/10-keyboard` |
 | Charts: values under the pointer, a span looked at closer, key figures | recording, bus analyser | `ui/06-live` |
+| Help with guides and the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
 
 ## Compatibility
 
