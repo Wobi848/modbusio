@@ -134,7 +134,7 @@ function devicesHtml(state) {
   const strips = `${mixed ? `<div class="strips">${mixed}</div>` : ""}${notesHtml(state.scan.notes)}`;
   const toolbar = `<div class="toolbar"><div class="end">
     <button type="button" class="quiet" data-act="add-device-menu" aria-expanded="${state.menu === "add-device"}">${t("dev.addByHand")}</button>
-    <span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span>
+    <span class="menu-host"><button type="button" id="export-menu" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span>
     ${line ? `<button type="button" class="quiet" data-act="ask-remove-line">${t("dev.removeLine")}</button>` : ""}</div></div>
     ${state.menu === "add-device" ? addDeviceHtml(state) : ""}
     ${line && state.asking?.kind === "remove-line" ? `<div class="strips">${askHtml(t("dev.removeLineAsk", { line: h(line), n: devices.length }), t("dev.removeLineWhy"), [["remove-line", t("dev.removeLine")]])}</div>` : ""}`;
@@ -152,9 +152,9 @@ function devicesHtml(state) {
 function exportMenu(state) {
   if (state.menu !== "export") return "";
   return `<div class="menu end exports" role="menu">
-    <a class="quiet" href="/api/devices.csv" download>${t("export.devicesCsv")}</a>
-    <a class="quiet" href="/api/site.xlsx" download>${t("export.siteXlsx")}</a>
-    <a class="quiet" href="/api/site.json" download>${t("export.siteFile")}</a></div>`;
+    <a id="export-devices-csv" class="quiet" href="/api/devices.csv" download>${t("export.devicesCsv")}</a>
+    <a id="export-site-xlsx" class="quiet" href="/api/site.xlsx" download>${t("export.siteXlsx")}</a>
+    <a id="export-site-json" class="quiet" href="/api/site.json" download>${t("export.siteFile")}</a></div>`;
 }
 
 function addDeviceHtml(state) {

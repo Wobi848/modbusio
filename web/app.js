@@ -15,6 +15,8 @@ import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";
 import { installColumns } from "./columns.js";
+import { watchSearchChoices } from "./adapter-actions.js";
+import "./keys.js";
 
 state.areas = AREAS;
 
@@ -64,32 +66,6 @@ document.addEventListener("input", (event) => {
   const element = event.target;
   if (element.tagName === "SELECT" || element.type === "checkbox") return;
   if (onField(element)) render();
-});
-
-/** Keys as in bacnetio: 1 to n the areas, the next one the settings, Escape closes, / the point filter. */
-document.addEventListener("keydown", (event) => {
-  const typing = event.target.closest("input, select, textarea");
-  if (event.key === "Escape") {
-    if (state.importing) state.importing = null;
-    else if (state.menu) state.menu = null;
-    else if (state.asking) state.asking = null;
-    else if (state.selectedPoint) state.selectedPoint = null;
-    else return;
-    render();
-    return;
-  }
-  if (event.key === "Enter" && event.target.id === "write-value") {
-    attempt(() => actions[state.asking?.kind === "raw-write" ? "raw-write-check" : "write-check"]());
-    return;
-  }
-  if (typing || event.ctrlKey || event.metaKey || event.altKey) return;
-  const number = Number(event.key);
-  if (number >= 1 && number <= state.areas.length) go(state.areas[number - 1]);
-  else if (number === state.areas.length + 1) go("settings");
-  else if (event.key === "/" && document.getElementById("point-filter")) {
-    event.preventDefault();
-    document.getElementById("point-filter").focus();
-  }
 });
 
 window.addEventListener("hashchange", () => {
@@ -168,6 +144,9 @@ async function start() {
   recall();
   installPanels();
   installColumns();
+  watchSearchChoices();
+  // a menu placed against the window follows the window: drawn anew, it is placed anew
+  window.addEventListener("resize", () => { if (state.menu) render(); });
   const hashed = areaOfHash(location.hash);
   if (location.hash) state.area = hashed;
   render();

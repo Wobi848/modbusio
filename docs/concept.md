@@ -120,6 +120,9 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Sidebar, tree and details resized by dragging their border or with the arrow keys, kept in this browser, double-click back to automatic (`docs/concept-bacnetio-sync.md`) | wide windows | `ui/07-settings` |
 | Lists sorted by a click on a column head (up, down, back), columns as wide as their border is dragged, kept per list: devices, points (within their groups), profiles and their points, watch list, the analyser's units, exchanges and registers | the lists' heads | `ui/07-settings` |
 | Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
+| Arrows, Page Up/Down, Home and End through the list on screen: they choose where the choice stays (points, registers, profile points, the analyser's lists) and mark where it leads away (devices, profiles), Enter opens the marked row; up and down through an open menu; Tab stays inside a dialog | every list | `ui/10-keyboard` |
+| Toolbar menus placed against the window, never cut off, following the window | workspace | `ui/10-keyboard` |
+| Network adapters and serial ports read again while the search settings are open; a choice that is gone handed back | search settings | `ui/10-keyboard` |
 | Only pages of this modbusio may use the API | server | `api.rs` (`foreign_pages_are_refused`) |
 | Bus analyser: listen to a trunk without sending, settings found by listening, the port refused to modbusio's own requests meanwhile (`docs/concept-analyser.md`) | *Bus analyser*, *Start listening* | `analyser/port.rs`, `link.rs` (held line), `api.rs` (analyser), `ui/08-analyser` |
 | Frames found in chunked bytes, requests and answers paired: no answer, exceptions, damaged answers, broadcasts, answer times | *Bus analyser*, *Exchanges* | `analyser/frames.rs`, `analyser/exchanges.rs`, `tests/analyser.rs` |
