@@ -1,4 +1,4 @@
-import { assert, driveWithProfile, headsOverValues, noSidewaysScroll, open } from "./helpers.mjs";
+import { assert, driveWithProfile, headsOverValues, noSidewaysScroll, open, tablesFit } from "./helpers.mjs";
 
 export default {
   name: "settings and layout: sites, German, dark, phone width without sideways scrolling",
@@ -92,6 +92,20 @@ export default {
     await page.dblclick("#resize-side");
     assert.equal(await width(".side"), side);
 
+    // at every width between phone and wide the tables fit their list, in German's longer words
+    await page.goto(`${base}/?lang=de#/workspace`);
+    for (const wide of [1000, 1150, 1280, 1500]) {
+      await page.setViewportSize({ width: wide, height: 900 });
+      for (const area of ["workspace", "profiles", "watch", "recording", "changed"]) {
+        await page.goto(`${base}/?lang=de#/${area}`);
+        await page.waitForSelector("h1", { state: "attached" });
+        await tablesFit(page, `${area} ${wide} px`);
+      }
+    }
+    await page.setViewportSize({ width: 1500, height: 900 });
+    await page.goto(`${base}/?lang=en#/workspace`);
+    await page.waitForSelector(".tree");
+
     // a click on a column head sorts the list: up, down, back to the site's own order
     await page.click(".tree [data-act=select-device][data-key='']");
     await page.waitForSelector(".row.mdevices:not(.head)");
@@ -107,11 +121,12 @@ export default {
     // a column as wide as its border is dragged, kept after a reload, back on a double-click
     const lineWidth = () => page.$eval(".row.mdevices.head > :nth-child(2)", (cell) => Math.round(cell.getBoundingClientRect().width));
     const before = await lineWidth();
-    await drag(".row.mdevices.head [data-key=line] + .col-border", 50);
-    assert.ok(Math.abs(await lineWidth() - (before + 50)) <= 3, "the column grew by the drag");
+    // a column grows by what the first one can give: little, with the tree widened above
+    await drag(".row.mdevices.head [data-key=line] + .col-border", 15);
+    assert.ok(Math.abs(await lineWidth() - (before + 15)) <= 3, "the column grew by the drag");
     await page.reload();
     await page.waitForSelector(".row.mdevices.head");
-    assert.ok(Math.abs(await lineWidth() - (before + 50)) <= 3, "the column kept its width");
+    assert.ok(Math.abs(await lineWidth() - (before + 15)) <= 3, "the column kept its width");
     await page.dblclick(".row.mdevices.head [data-key=line] + .col-border");
     assert.ok(Math.abs(await lineWidth() - before) <= 3, "the column is back");
     await headsOverValues(page, "mdevices");
