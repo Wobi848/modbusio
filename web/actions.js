@@ -229,6 +229,17 @@ export const actions = {
     else toast(t("dev.added", { name: named }));
     render();
   },
+  "help-guide": (element) => {
+    state.helpGuide = element.dataset.guide;
+    render();
+    document.getElementById("help-guide")?.scrollIntoView({ block: "nearest" });
+  },
+  // a guide only opens the place of its first step, it never acts
+  "help-go": (element) => {
+    if (element.dataset.target !== "search") { go(element.dataset.target); return; }
+    go("workspace");
+    return actions["search-dialog"]();
+  },
   "chart-whole": (element) => { showWhole(element.dataset.chart); render(); },
   theme: (element) => { setTheme(element.dataset.theme); render(); },
   accent: (element) => { setAccent(element.dataset.accent); render(); },

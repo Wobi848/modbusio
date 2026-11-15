@@ -17,6 +17,7 @@ const AREA_ICONS = {
   analyser: ICON('<path d="M2 12h3.5l2.5-6 4 12 3-9 2 3h5"/>'),
 };
 const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/>');
+const HELP_ICON = ICON('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17.5v.5"/>');
 const SLIDERS_ICON = ICON('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>');
 const CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 
@@ -67,6 +68,7 @@ export function sideHtml(state) {
     </div>
     <nav class="tabs" aria-label="${t("areas")}">${areas}</nav>
     <a class="quiet settings-link" href="#/settings" data-area="settings"${settingsCurrent} title="${t("tab.settings")} (${state.areas.length + 1})">${SETTINGS_ICON}<span class="side-label">${t("tab.settings")}</span></a>
+    <a class="quiet settings-link help-link" href="#/help" data-area="help"${state.area === "help" ? ' aria-current="page"' : ""} title="${t("help.title")} (?)">${HELP_ICON}<span class="side-label">${t("help.title")}</span></a>
     ${resizeHandle("side")}`;
 }
 

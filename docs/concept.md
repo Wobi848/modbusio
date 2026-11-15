@@ -120,7 +120,8 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |
 | Sidebar, tree and details resized by dragging their border or with the arrow keys, kept in this browser, double-click back to automatic (`docs/concept-bacnetio-sync.md`) | wide windows | `ui/07-settings` |
 | Lists sorted by a click on a column head (up, down, back), columns as wide as their border is dragged, kept per list: devices, points (within their groups), profiles and their points, watch list, the analyser's units, exchanges and registers | the lists' heads | `ui/07-settings` |
-| Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
+| Keys `1`–`7` for the areas, `8` for the settings (on Android without the analyser one less), `?` for the help, `/`, Enter, Escape | everywhere | `ui/06-live` (keys 4, 5), `ui/08-analyser` (keys 7, 8) |
+| Help: guides for the usual tasks in the interface's language, naming buttons by the interface's own words, each with a button to the place of its first step (it only opens it); the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
 | Arrows, Page Up/Down, Home and End through the list on screen: they choose where the choice stays (points, registers, profile points, the analyser's lists) and mark where it leads away (devices, profiles), Enter opens the marked row; up and down through an open menu; Tab stays inside a dialog | every list | `ui/10-keyboard` |
 | Toolbar menus placed against the window, never cut off, following the window | workspace | `ui/10-keyboard` |
 | Network adapters and serial ports read again while the search settings are open; a choice that is gone handed back | search settings | `ui/10-keyboard` |

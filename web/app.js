@@ -6,11 +6,12 @@ import { actions, loadJournal, loadSite, onChange, onField, pollScan, readDevice
 import { loadPorts, pollAnalyser } from "./analyser-actions.js";
 import { dialogHtml, nextbarHtml, sideHtml, statusHtml } from "./shell.js";
 import { importHtml } from "./profiles.js";
-import { AREAS, areaOfHash, attempt, go, recall, registerFrame, render, selectedDevice, state } from "./store.js";
+import { AREAS, OTHER_AREAS, areaOfHash, attempt, go, recall, registerFrame, render, selectedDevice, state } from "./store.js";
 import "./workspace.js";
 import "./explorer.js";
 import "./pages.js";
 import "./analyser.js";
+import "./help.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";
@@ -154,7 +155,7 @@ async function start() {
   const info = await attempt(api.info);
   state.info = info;
   state.areas = areasOf(info);
-  if (!state.areas.includes(state.area) && state.area !== "settings") state.area = "workspace";
+  if (!state.areas.includes(state.area) && !OTHER_AREAS.includes(state.area)) state.area = "workspace";
   await attempt(loadSite);
   await attempt(loadJournal);
   const [session, recording, capture, scan] = await Promise.all([attempt(api.session), attempt(api.recording), attempt(api.capture), attempt(api.scan)]);
