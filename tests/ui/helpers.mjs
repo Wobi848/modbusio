@@ -82,3 +82,24 @@ export async function headsOverValues(page, rowClass) {
   assert.ok(grids.length >= 2, `a head and rows of .${rowClass}`);
   for (const grid of grids.slice(1)) assert.equal(grid, grids[0], `the columns of .${rowClass} differ from its head`);
 }
+
+/** Every table on screen fits its list, and no column head runs into the next one. */
+export async function tablesFit(page, where) {
+  const faults = await page.evaluate(() => {
+    const out = [];
+    for (const head of document.querySelectorAll(".row.head")) {
+      if (head.offsetParent === null) continue;
+      const kind = head.className.replace("row ", "").replace(" head", "");
+      const rows = head.parentElement;
+      if (rows.scrollWidth > rows.clientWidth + 1) out.push(`${kind}: wider than its list by ${rows.scrollWidth - rows.clientWidth} px`);
+      const cells = [...head.children].filter((cell) => cell.offsetParent !== null && cell.textContent.trim());
+      cells.forEach((cell, index) => {
+        const box = (cell.querySelector("button.sort") ?? cell).getBoundingClientRect();
+        const next = cells[index + 1] && (cells[index + 1].querySelector("button.sort") ?? cells[index + 1]).getBoundingClientRect();
+        if (next && box.right > next.left + 1 && Math.abs(box.top - next.top) < 8) out.push(`${kind}: head "${cell.textContent.trim()}" runs into the next`);
+      });
+    }
+    return out;
+  });
+  assert.deepEqual(faults, [], `tables at ${where}`);
+}

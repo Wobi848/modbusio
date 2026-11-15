@@ -20,7 +20,7 @@ export default {
     "set.renamed": "Instalación llamada {name}",
     "pts.readAt": "leído a las {time}",
     "chip.changed": "{n} cambiados por ti", "chip.recording": "Registrando", "chip.capture": "Captura: {n} tramas", "chip.unlocked": "Escritura desbloqueada",
-    "tree.label": "Instalación", "tree.otherSettings": "ajustado distinto que la mayoría de los equipos en este puerto", "tree.open": "Desplegar", "tree.close": "Plegar", "ws.lead": "{n} equipos en esta instalación. Elegir uno para ver sus puntos.",
+    "tree.label": "Instalación", "tree.mixed": "los equipos en este puerto no tienen todos el mismo ajuste", "dev.mixedSettings": "Los equipos en {line} no tienen todos el mismo ajuste: {list}. Un maestro solo alcanza los ajustados como él: ponerlos todos en el mismo ajuste.", "tree.otherSettings": "ajustado distinto que la mayoría de los equipos en este puerto", "tree.open": "Desplegar", "tree.close": "Plegar", "ws.lead": "{n} equipos en esta instalación. Elegir uno para ver sus puntos.",
     "ws.leadProfile": "perfil {profile}, {n} puntos", "ws.leadProfileOne": "perfil {profile}, 1 punto", "ws.leadEmpty": "Aún no hay equipos: buscarlos o añadir uno a mano.",
     "ws.leadOne": "1 equipo en esta instalación. Elegirlo para ver sus puntos.", "dev.details": "Equipo …",
     "col.device": "Equipo", "col.line": "Línea", "col.unit": "Unidad", "col.profile": "Perfil", "col.vendor": "Fabricante",

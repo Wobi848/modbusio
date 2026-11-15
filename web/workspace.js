@@ -37,7 +37,8 @@ export function lines(devices) {
     const counts = new Map();
     for (const device of members) counts.set(settingsOf(device), (counts.get(settingsOf(device)) ?? 0) + 1);
     const settings = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
-    return { line, settings, devices: members };
+    // one wire carries one setting: devices set differently cannot all be reached by one master
+    return { line, settings, devices: members, mixed: counts.size > 1, others: members.filter((device) => settingsOf(device) !== settings).length };
   });
 }
 
@@ -71,13 +72,17 @@ function treeHtml(state) {
       const active = device.key === state.selected;
       const failed = (state.readings[device.key]?.failed ?? 0) > 0 ? `<span class="chip err">${state.readings[device.key].failed}</span>` : "";
       // set otherwise than most devices on its wire: that is worth seeing at once
-      const other = settingsOf(device) !== group.settings ? `<span class="chip warn" title="${t("tree.otherSettings")}">${h(settingsOf(device))}</span>` : "";
+      // on a wire set unevenly every device says its setting; the ones off the usual stand out
+      const other = !group.mixed ? ""
+        : settingsOf(device) !== group.settings ? `<span class="chip warn" title="${t("tree.otherSettings")}">${h(settingsOf(device))}</span>`
+          : `<span class="hint mono">${h(settingsOf(device))}</span>`;
       const last = index === group.devices.length - 1 ? " last" : "";
       return `<div class="node level-3 branch${last}${active ? " active" : ""}" role="treeitem" aria-selected="${active}" data-act="select-device" data-key="${h(device.key)}"><span class="label">${h(deviceNameOnLine(device))}</span><span class="end">${other}${failed}<span class="count mono">${device.unit}</span></span></div>`;
     }).join("");
     const chosen = !state.selected && state.selectedLine === group.line;
+    const mixed = group.mixed ? `<span class="chip err" title="${t("tree.mixed")}">⚠ ${group.others}</span>` : "";
     const toggle = `<button type="button" class="quiet twisty" data-act="toggle-line" data-line="${h(group.line)}" aria-expanded="${open}" aria-label="${open ? t("tree.close") : t("tree.open")}">${open ? "▾" : "▸"}</button>`;
-    return `<div class="node level-2 port${chosen ? " active" : ""}" role="treeitem" aria-expanded="${open}" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}">${toggle}<span class="label mono">${h(group.line)}</span><span class="end">${group.settings ? `<span class="hint mono">${h(group.settings)}</span>` : ""}<span class="count">${group.devices.length}</span></span></div><div class="branches" role="group">${devices}</div>`;
+    return `<div class="node level-2 port${chosen ? " active" : ""}" role="treeitem" aria-expanded="${open}" aria-selected="${chosen}" data-act="select-line" data-line="${h(group.line)}">${toggle}<span class="label mono">${h(group.line)}</span><span class="end">${mixed || (group.settings ? `<span class="hint mono">${h(group.settings)}</span>` : "")}<span class="count">${group.devices.length}</span></span></div><div class="branches" role="group">${devices}</div>`;
   }).join("");
   return `<nav class="tree" role="tree" aria-label="${t("tree.label")}" data-keep="tree">${all}${groups}</nav>`;
 }
@@ -102,18 +107,31 @@ const POINT_COLUMNS = {
   value: (point) => point.reading?.value ?? point.reading?.text,
 };
 
-function deviceRow(state, device) {
+/** A strip for each wire in `devices` whose devices are not all set alike, naming each one's setting. */
+export function mixedStrips(devices) {
+  return lines(devices).filter((group) => group.mixed).map((group) => {
+    const list = group.devices.map((device) => `${deviceNameOnLine(device)} ${settingsOf(device)}`).join(" · ");
+    return `<div class="strip err">${t("dev.mixedSettings", { line: h(group.line), list: h(list) })}</div>`;
+  }).join("");
+}
+
+function deviceRow(state, device, wires) {
   const active = device.key === state.selected ? " active" : "";
+  const settings = settingsOf(device);
+  const off = settings && settings !== wires.get(portOf(device));
+  // the wire, then its setting; a setting off the wire's usual one stands out
+  const line = settings ? `${h(portOf(device))} <span class="${off ? "set-otherwise" : ""}"${off ? ` title="${t("tree.otherSettings")}"` : ""}>${h(settings)}</span>` : h(device.line);
   const maker = [device.vendor, device.product].filter(Boolean).join(" ");
   return `<div class="row mdevices${active}" data-act="select-device" data-key="${h(device.key)}" role="option" aria-selected="${Boolean(active)}">
-    <span class="name">${h(deviceNameOnLine(device))}</span><span class="mono cut">${h(device.line)}<span class="narrow-only">/${device.unit}</span></span><span class="mono num">${device.unit}</span>
+    <span class="name">${h(deviceNameOnLine(device))}</span><span class="mono cut">${line}<span class="narrow-only">/${device.unit}</span></span><span class="mono num">${device.unit}</span>
     <span class="cut">${device.profile_name ? h(device.profile_name) : `<span class="chip">${t("dev.noProfile")}</span>`}</span><span class="cut">${h(maker)}</span></div>`;
 }
 
 function devicesHtml(state) {
   const line = state.selectedLine;
   const devices = line ? state.site.devices.filter((device) => portOf(device) === line) : state.site.devices;
-  const strips = notesHtml(state.scan.notes);
+  const mixed = mixedStrips(devices);
+  const strips = `${mixed ? `<div class="strips">${mixed}</div>` : ""}${notesHtml(state.scan.notes)}`;
   const toolbar = `<div class="toolbar"><div class="end">
     <button type="button" class="quiet" data-act="add-device-menu" aria-expanded="${state.menu === "add-device"}">${t("dev.addByHand")}</button>
     <span class="menu-host"><button type="button" class="quiet" data-act="export-menu" aria-expanded="${state.menu === "export"}">${t("export")}</button>${exportMenu(state)}</span>
@@ -125,8 +143,10 @@ function devicesHtml(state) {
       <div class="actions"><button type="button" class="tonal" data-act="add-device-menu">${t("dev.addByHand")}</button></div></div></section>`;
   }
   const sort = state.sorts.devices;
+  // each wire's usual setting, from all its devices, also when one line is shown
+  const wires = new Map(lines(state.site.devices).map((group) => [group.line, group.settings]));
   const head = `<div class="row mdevices head" role="row">${sortHead(t("col.device"), "devices", "name", sort)}${sortHead(t("col.line"), "devices", "line", sort)}${sortHead(t("col.unit"), "devices", "unit", sort, "num")}${sortHead(t("col.profile"), "devices", "profile", sort)}${sortHead(t("col.vendor"), "devices", "vendor", sort)}</div>`;
-  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${sortRows(devices, sort, DEVICE_COLUMNS).map((device) => deviceRow(state, device)).join("")}</div></section>`;
+  return `<section class="listwrap">${listBorders()}${toolbar}${strips}<div class="rows" data-keep="devices" role="listbox">${head}${sortRows(devices, sort, DEVICE_COLUMNS).map((device) => deviceRow(state, device, wires)).join("")}</div></section>`;
 }
 
 function exportMenu(state) {

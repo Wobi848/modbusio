@@ -1,4 +1,4 @@
-import { assert, headsOverValues, noSidewaysScroll, open } from "./helpers.mjs";
+import { assert, headsOverValues, noSidewaysScroll, open, tablesFit } from "./helpers.mjs";
 
 export default {
   name: "bus analyser: listen to the simulated trunk, units, exchanges, add a unit",
@@ -66,6 +66,17 @@ export default {
     await page.click(".row.aregs[data-place='holding_register:1']");
     await page.waitForSelector(".detail.open .facts.pairs");
     await page.waitForSelector(".detail.open .chart path[d^='M']", { timeout: 10000 });
+
+    // the analyser's tables fit their list at every width, also the seven columns of the registers
+    for (const wide of [1000, 1150, 1280, 1500]) {
+      await page.setViewportSize({ width: wide, height: 900 });
+      for (const view of ["units", "exchanges", "registers"]) {
+        await page.click(`[data-act=analyser-view][data-view=${view}]`);
+        await page.waitForSelector(".row.head");
+        await tablesFit(page, `analyser ${view} ${wide} px`);
+      }
+    }
+    await page.setViewportSize({ width: 1500, height: 900 });
 
     await page.click("[data-act=analyser-view][data-view=frames]");
     await page.waitForSelector(".row.aframes:has-text('01 03 00 00 00 08 44 0C')");

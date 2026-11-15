@@ -1,15 +1,15 @@
 /* modbusio's own rows and parts, on top of the styles taken from bacnetio. Colours only from
    tokens.css. */
 
-.row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 64px minmax(100px, 1.2fr) minmax(0, 1fr); }
+.row.mdevices { grid-template-columns: minmax(120px, 2fr) minmax(110px, 1.4fr) 64px minmax(100px, 1.2fr) minmax(100px, 1fr); }
 .row.mpoints { grid-template-columns: minmax(160px, 2fr) 96px minmax(120px, 1.2fr) minmax(90px, auto); min-height: 34px; }
 .row.mpoints .value { font-weight: 650; text-align: right; }
 .row.mpoints.err .value { font-weight: 500; }
 .row.registers { grid-template-columns: 90px 64px 64px 56px 48px minmax(90px, 1fr) minmax(90px, 1fr); min-height: 30px; }
 .row.registers.missing { grid-template-columns: 90px minmax(0, 1fr); color: var(--muted); }
 .row.registers .num { text-align: right; }
-.row.mprofiles { grid-template-columns: minmax(160px, 2fr) minmax(100px, 1fr) 70px 110px; }
-.row.mprofile-points { grid-template-columns: minmax(140px, 2fr) minmax(80px, 1fr) 90px 64px 70px 60px 80px; min-height: 32px; }
+.row.mprofiles { grid-template-columns: minmax(160px, 2fr) minmax(110px, 1fr) 130px 110px; }
+.row.mprofile-points { grid-template-columns: minmax(140px, 2fr) minmax(84px, 1fr) 96px 64px 80px 84px 80px; min-height: 32px; }
 .row.mimport { grid-template-columns: minmax(140px, 2fr) 70px 80px 60px 50px minmax(90px, 1fr); min-height: 28px; }
 /* Columns never sized by their content: the head row is a grid of its own, and an empty head cell
    over a column of buttons would make its columns narrower than the rows'. */
@@ -27,8 +27,10 @@
 .big-value { margin: 4px 0 12px; font-size: 32px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; overflow-wrap: anywhere; }
 .big-value.err { font-size: 16px; color: var(--err); }
 
+/* the details beside the list from where they are shown beside it (layout.css: below 1200 px they
+   slide over the list, and a column kept for them would stay empty) */
 .split { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 1000px) {
+@media (min-width: 1200px) {
   .split { grid-template-columns: minmax(0, 1fr) var(--detail-width, clamp(300px, 26vw, 440px)); }
   .split.single { grid-template-columns: minmax(0, 1fr); }
 }
@@ -72,26 +74,46 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 .sites .site-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0; }
 .sites .site-line .cut { flex: 1 1 160px; }
 
-@media (max-width: 999px) {
+/* A table shows all its columns while its list has room for them, and folds to the few that
+   matter below that: by the width of the list (.listwrap is the container), not of the window, so
+   a list beside a tree and details folds earlier than one alone. columns.js names the same widths. */
+@container (max-width: 580px) {
   .row.mdevices { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mdevices > :nth-child(n + 3) { display: none; }
+  .row.mdevices .narrow-only { display: inline-flex; }
+}
+@container (max-width: 540px) {
   .row.mpoints { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mpoints > :nth-child(2), .row.mpoints > :nth-child(4) { display: none; }
+  .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .row.mrecord > :nth-child(3) { display: none; }
+}
+@container (max-width: 620px) {
   .row.registers { grid-template-columns: 80px 60px minmax(0, 1fr); }
   .row.registers > :nth-child(n + 4):not(:nth-child(6)) { display: none; }
+}
+@container (max-width: 590px) {
   .row.mprofiles { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mprofiles > :nth-child(2), .row.mprofiles > :nth-child(3) { display: none; }
-  .row.mprofile-points { grid-template-columns: minmax(0, 1fr) 90px; }
+}
+@container (max-width: 740px) {
+  .row.mprofile-points { grid-template-columns: minmax(0, 1fr) 96px; }
   .row.mprofile-points > :nth-child(n + 4), .row.mprofile-points > :nth-child(2) { display: none; }
+}
+@container (max-width: 640px) {
   .row.mlog { grid-template-columns: minmax(0, 1fr) auto; }
   .row.mlog > :nth-child(1), .row.mlog > :nth-child(2) { display: none; }
   .row.mlog > .chips { grid-column: 1 / -1; padding-bottom: 6px; }
   .row.mlog > .where { white-space: normal; overflow-wrap: anywhere; }
+}
+@container (max-width: 580px) {
   /* the device under the point's name, as its own column is hidden */
   .row.mwatch > .name .sub { display: block; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
-  .row.mwatch { padding-top: 4px; padding-bottom: 4px; }
-  .row.mwatch, .row.mrecord { grid-template-columns: minmax(0, 1fr) auto auto; }
-  .row.mwatch > :nth-child(2), .row.mrecord > :nth-child(3) { display: none; }
+  .row.mwatch { grid-template-columns: minmax(0, 1fr) auto auto; padding-top: 4px; padding-bottom: 4px; }
+  .row.mwatch > :nth-child(2) { display: none; }
+}
+/* the import's preview lives in a dialog, not a list: by the window */
+@media (max-width: 999px) {
   .row.mimport { grid-template-columns: minmax(0, 1fr) 80px minmax(80px, auto); }
   .row.mimport > :nth-child(2), .row.mimport > :nth-child(4), .row.mimport > :nth-child(5) { display: none; }
 }
@@ -123,3 +145,5 @@ ul.plain { margin: 6px 0; padding-left: 18px; }
 .node.branch .chip.warn { font-family: var(--mono); }
 .node.port .end { gap: 10px; }
 .node .twisty, .node .twisty[aria-expanded] { background: none; box-shadow: none; }
+.set-otherwise { color: var(--warn); font-weight: 700; }
+.node.branch .hint { font-size: 11.5px; }

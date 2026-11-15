@@ -7,7 +7,7 @@ import { readFileSync, readdirSync } from "node:fs";
 globalThis.document = { documentElement: {} };
 const { LANGUAGE_FILES, LANGUAGES, codeText, counted, errorText, noteText, setLanguage, t } = await import("../../web/i18n.js");
 const { searchRequest } = await import("../../web/actions.js");
-const { filterPoints, groupPoints, lines, viewWorkspace } = await import("../../web/workspace.js");
+const { filterPoints, groupPoints, lines, mixedStrips, viewWorkspace } = await import("../../web/workspace.js");
 const { parseStates, statesText } = await import("../../web/profiles.js");
 const { draftProblem, pointFromExplorer, typedNumber, unsavedChanges } = await import("../../web/profile-actions.js");
 const { bounds, byUnit, pathData } = await import("../../web/chart.js");
@@ -91,6 +91,12 @@ test("devices group by line and points by group, those without a group last", ()
     { line: "COM3 9600 8E1", key: "serial:COM3:9600:8E1/2" },
   ];
   assert.deepEqual(lines(devices).map((group) => [group.line, group.settings, group.devices.length]), [["COM3", "9600 8E1", 3], ["10.0.0.5:502", "", 1]]);
+  // a wire whose devices are not all set alike says so, with each device's setting
+  assert.deepEqual(lines(devices).map((group) => [group.mixed, group.others]), [[true, 1], [false, 0]]);
+  setLanguage("en");
+  const strips = mixedStrips(devices.map((device) => ({ ...device, unit: Number(device.key.split("/").pop()) })));
+  assert.match(strips, /The devices on COM3 are not all set alike: .*9600 8E1 · .*19200 8N2 · .*9600 8E1\./);
+  assert.equal(mixedStrips(devices.slice(0, 2)), "");
   const points = [{ name: "x", group: "" }, { name: "y", group: "Pump" }, { name: "z", group: "Boiler" }];
   assert.deepEqual(groupPoints(points).map(([group]) => group), ["Boiler", "Pump", ""]);
 });

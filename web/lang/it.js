@@ -20,7 +20,7 @@ export default {
     "set.renamed": "Impianto chiamato {name}",
     "pts.readAt": "letto alle {time}",
     "chip.changed": "{n} modificati da te", "chip.recording": "Registrazione", "chip.capture": "Cattura: {n} frame", "chip.unlocked": "Scrittura sbloccata",
-    "tree.label": "Impianto", "tree.otherSettings": "impostato diversamente dalla maggior parte dei dispositivi su questa porta", "tree.open": "Aprire", "tree.close": "Chiudere", "ws.lead": "{n} apparecchi in questo impianto. Sceglierne uno per vederne i punti.",
+    "tree.label": "Impianto", "tree.mixed": "i dispositivi su questa porta non hanno tutti la stessa impostazione", "dev.mixedSettings": "I dispositivi su {line} non hanno tutti la stessa impostazione: {list}. Un master raggiunge solo quelli impostati come lui: portarli tutti alla stessa impostazione.", "tree.otherSettings": "impostato diversamente dalla maggior parte dei dispositivi su questa porta", "tree.open": "Aprire", "tree.close": "Chiudere", "ws.lead": "{n} apparecchi in questo impianto. Sceglierne uno per vederne i punti.",
     "ws.leadProfile": "profilo {profile}, {n} punti", "ws.leadProfileOne": "profilo {profile}, 1 punto", "ws.leadEmpty": "Ancora nessun apparecchio: cercarli o aggiungerne uno a mano.",
     "ws.leadOne": "1 apparecchio in questo impianto. Sceglierlo per vederne i punti.", "dev.details": "Apparecchio …",
     "col.device": "Apparecchio", "col.line": "Linea", "col.unit": "Unità", "col.profile": "Profilo", "col.vendor": "Produttore",
