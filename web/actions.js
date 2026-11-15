@@ -1,6 +1,7 @@
 // What the buttons do: search, site and devices, reading, writing, the watch list, the recording,
 // the log and the settings. Profiles, explorer and import are in profile-actions.js.
 
+import { loadSearchChoices } from "./adapter-actions.js";
 import { api } from "./api.js";
 import { codeText, setLanguage, t } from "./i18n.js";
 import { attempt, deviceName, go, pickFile, remember, render, selectedDevice, state, toast } from "./store.js";
@@ -160,10 +161,7 @@ export const actions = {
   "search-dialog": async () => {
     state.menu = "search";
     render();
-    const [adapters, ports] = await Promise.all([attempt(api.adapters), state.info?.serial ? attempt(api.serialPorts) : []]);
-    state.adapters = adapters ?? [];
-    state.serialPorts = ports ?? [];
-    if (!state.search.serialPort && state.serialPorts.length) state.search.serialPort = state.serialPorts[0].name;
+    await attempt(loadSearchChoices);
     render();
   },
   "search-mode": (element) => { state.search.mode = element.dataset.mode; state.findingSettings = false; remember(); render(); },

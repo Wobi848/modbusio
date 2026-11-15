@@ -47,10 +47,10 @@ function siteMenu(state) {
   if (state.menu !== "sites") return "";
   const sites = state.sites.map((site) => {
     const act = site.open ? 'data-act="close-menu"' : `data-act="site-open" data-id="${h(site.id)}"`;
-    return `<button type="button" class="quiet" role="option" aria-checked="${Boolean(site.open)}" ${act}><span class="cut">${h(site.name)}</span></button>`;
+    return `<button type="button" id="site-choice-${h(site.id)}" class="quiet" role="option" aria-checked="${Boolean(site.open)}" ${act}><span class="cut">${h(site.name)}</span></button>`;
   }).join("");
   return `<div class="menu site-choices" role="listbox" aria-label="${t("side.site")}">${sites}
-    <hr role="separator"><button type="button" class="quiet all-sites" data-act="go" data-area="settings">${t("side.allSites")}</button></div>`;
+    <hr role="separator"><button type="button" id="site-choice-all" class="quiet all-sites" data-act="go" data-area="settings">${t("side.allSites")}</button></div>`;
 }
 
 export function sideHtml(state) {

@@ -59,6 +59,8 @@
 /* chosen row: blue stroke on the left (structure, not a state) */
 .rows .row.active { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--brand); }
 .rows:focus-visible .row.active { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* where the arrow keys stand in a list whose rows lead away; Enter opens it */
+.rows .row.cursor { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--sunken); }
 .row .name { min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .cut { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row .num { text-align: right; }

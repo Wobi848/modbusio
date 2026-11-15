@@ -1,7 +1,9 @@
 // The page's state and its drawing. Every action changes `state` and calls render(); the views
 // are functions of the state. Scroll positions and the focused field survive a redraw.
 
+import { drawCursor } from "./cursor.js";
 import { codeText, t } from "./i18n.js";
+import { placeMenus } from "./menus.js";
 
 export const AREAS = ["workspace", "explorer", "profiles", "watch", "recording", "changed", "analyser"];
 const MEMORY_KEY = "modbusio.memory";
@@ -151,6 +153,8 @@ export function render() {
       }
     }
   }
+  placeMenus();
+  drawCursor();
 }
 
 let toastTimer = null;

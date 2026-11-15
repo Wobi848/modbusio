@@ -5,6 +5,10 @@ Status: **approved on 2026-11-14** (the maintainer: "ok gogog"); step 1 built on
 its sorting head) on `bacnetio-columns`. Columns: modbusio switches its table layouts by the
 window's width, so the widths set hold from 1000 px of window up. Not yet sortable: the explorer,
 the recording, the log and the analyser's frames, whose own order is the one that matters.
+Step 4 (keyboard, menus, adapters) built on `bacnetio-keyboard`. Other than bacnetio, a device
+or a profile opens when its row is chosen, so the arrows mark such a row and Enter opens it; the
+adapters (and the serial ports) are read again only while the search settings are open, the one
+place that shows them.
 
 ## Why
 
@@ -64,6 +68,9 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Function | Place | Test |
 | --- | --- | --- |
 | Sidebar, tree and details resized, kept, back to automatic | every page with them | `ui/07-settings` |
+| Arrows through lists and menus, Enter opens a marked row, Tab inside a dialog | every list | `ui/10-keyboard` |
+| Menus placed against the window | workspace | `ui/10-keyboard` |
+| Adapters and ports read again | search settings | `ui/10-keyboard` |
 
 ## Compatibility
 
