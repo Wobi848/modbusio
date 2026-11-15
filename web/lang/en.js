@@ -123,6 +123,7 @@ export default {
     "prob.lead": "{n} things on this site need a look.", "prob.leadOne": "1 thing on this site needs a look.", "prob.leadNone": "Nothing on this site needs a look.", "prob.unread": "{n} devices are not read yet: nothing is known about their points.", "prob.unreadOne": "1 device is not read yet: nothing is known about its points.", "prob.allRead": "Every device with a profile is read.",
     "prob.readAll": "Read every device", "prob.reading": "Reading {done} of {total} …", "prob.noneTitle": "No problems", "prob.none": "No device is silent, every point read, nothing written by you stands.", "prob.noProfile": "No device has a profile yet: give one a profile and read it.",
     "quick.watch": "Watch this point", "quick.record": "Record this point",
+    "an.notes": "{n} notes", "an.notesOne": "1 note", "an.notesResize": "Drag to give the notes or the table more room, double-click for the automatic height",
     "log.lead": "Every write, with the value before it.", "log.leadStanding": "{n} values written are not put back yet.",
     "log.count": "{n} writes", "log.countOne": "1 write", "log.leadStandingOne": "1 value written is not put back yet.", "log.restoreOne": "Put it back", "log.restoreOneAsk": "Put back the old value of this write?", "log.restoreAll": "Put back all {n}", "log.restore": "Put back", "log.number": "No.", "log.time": "Time",
     "log.where": "Where", "log.change": "Before → written", "log.refused": "refused", "log.keptOther": "device kept another value",

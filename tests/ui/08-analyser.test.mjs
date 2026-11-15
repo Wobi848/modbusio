@@ -31,6 +31,30 @@ export default {
     // and in words
     await page.waitForSelector(".analyser-notes .strip:has-text('unit 9, which never answered')");
     await page.waitForSelector(".analyser-notes .strip:has-text('exception 02 every time')");
+    // the notes give room: their border is dragged, kept through a redraw, and they fold away
+    const tall = () => page.evaluate(() => Math.round(document.querySelector(".analyser-notes").getBoundingClientRect().height));
+    const border = await page.locator("#resize-notes").boundingBox();
+    const before = await tall();
+    await page.mouse.move(border.x + border.width / 2, border.y + border.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(border.x + border.width / 2, border.y + border.height / 2 - 60, { steps: 4 });
+    await page.mouse.up();
+    assert.ok(Math.abs((await tall()) - (before - 60)) <= 2, `dragged up by 60: ${before} to ${await tall()}`);
+    await page.evaluate(async () => (await import("/store.js")).render());
+    assert.ok(Math.abs((await tall()) - (before - 60)) <= 2, "the height stays through a redraw");
+    await page.focus("#resize-notes");
+    await page.keyboard.press("ArrowDown");
+    assert.ok(Math.abs((await tall()) - (before - 44)) <= 2, "the arrow keys move the border");
+    if (process.env.MODBUSIO_SHOTS) await page.screenshot({ path: process.env.MODBUSIO_SHOTS + "/notes.png" });
+    await page.dblclick("#resize-notes");
+    assert.ok(Math.abs((await tall()) - before) <= 2, "a double-click gives the height back");
+    await page.click("#notes-toggle");
+    assert.equal(await page.locator(".analyser-notes").count(), 0);
+    assert.match(await page.textContent("#notes-toggle"), /\d+ notes/);
+    assert.equal(await page.getAttribute("#notes-toggle", "aria-expanded"), "false");
+    if (process.env.MODBUSIO_SHOTS) await page.screenshot({ path: process.env.MODBUSIO_SHOTS + "/notes-folded.png" });
+    await page.click("#notes-toggle");
+    await page.waitForSelector(".analyser-notes .strip");
     const heard = await api("analyser");
     assert.deepEqual(heard.units.map((unit) => unit.unit), [1, 5, 7, 9, 12]);
 

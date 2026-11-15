@@ -78,6 +78,8 @@ First version.
 - *Problems* lists what needs a look across the site: devices that do not answer, points that
   could not be read, values written and not put back. The bus analyser's key is now `8`, the
   settings' `9`.
+- The bus analyser's notes fold away, and their lower border is dragged to give them or the
+  table more room; both are kept in this browser.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

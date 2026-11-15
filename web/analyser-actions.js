@@ -1,6 +1,7 @@
 // What the buttons of the bus analyser do (docs/concept-analyser.md). Listening runs on the server;
 // the page asks once a second for what is new.
 
+import { toggleNotes } from "./analyser-notes.js";
 import { api } from "./api.js";
 import { t } from "./i18n.js";
 import { BAUDS, FRAMES, heardChanged, lastNumber, takeHeard } from "./analyser.js";
@@ -131,6 +132,7 @@ export const analyserActions = {
     state.pointIndex = null;
     go("profiles");
   },
+  "analyser-notes-toggle": () => { toggleNotes(); render(); },
   "analyser-pause": () => { state.analyser.paused = !state.analyser.paused; render(); },
   "analyser-view": async (element) => {
     Object.assign(state.analyser, { view: element.dataset.view, chosen: null, register: null });

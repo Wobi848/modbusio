@@ -17,6 +17,7 @@ import "./compare.js";
 import "./site-search.js";
 import "./problems.js";
 import { installDragToggle } from "./drag-toggle.js";
+import { installAnalyserNotes } from "./analyser-notes.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";
@@ -154,6 +155,7 @@ async function start() {
   installColumns();
   watchSearchChoices();
   installDragToggle();
+  installAnalyserNotes();
   // a menu placed against the window follows the window: drawn anew, it is placed anew
   window.addEventListener("resize", () => { if (state.menu) render(); });
   const hashed = areaOfHash(location.hash);
