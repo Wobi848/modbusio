@@ -6,6 +6,7 @@ import { h } from "./html.js";
 import { detailBorder } from "./panels.js";
 import { sortHead, sortRows } from "./sorting.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
+import { excelHref } from "./excel.js";
 import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
 import { areaShort } from "./workspace.js";
@@ -276,10 +277,10 @@ function detailHtml(state) {
 }
 
 /** CSV of the table in view (the exchanges for the frames), and all tables as one Excel file. */
-function exportLinks(view) {
+function exportLinks(state, view) {
   const offset = -new Date().getTimezoneOffset();
   const table = view === "frames" ? "exchanges" : view;
-  return `<a class="button quiet" href="/api/analyser.csv?table=${table}&offset=${offset}" download>CSV</a><a class="button quiet" href="/api/analyser.xlsx?offset=${offset}" download>Excel</a>`;
+  return `<a class="button quiet" href="/api/analyser.csv?table=${table}&offset=${offset}" download>CSV</a><a class="button quiet" href="${excelHref(state, "/api/analyser.xlsx", [t("tab.analyser")])}" download>Excel</a>`;
 }
 
 function heardHtml(state) {
@@ -294,7 +295,7 @@ function heardHtml(state) {
   const toolbar = `<div class="toolbar"><span class="seg" role="group" aria-label="${t("an.views")}">${views}</span>
     <div class="end">${analyser.heard.running ? `<button type="button" class="quiet" data-act="analyser-pause">${analyser.paused ? t("an.resume") : t("an.pause")}</button>` : ""}
     <button type="button" class="quiet" data-act="analyser-clear">${t("an.clear")}</button>
-    ${exportLinks(analyser.view)}
+    ${exportLinks(state, analyser.view)}
     <a class="button quiet" href="/api/analyser.pcapng" download>${t("an.savePcap")}</a></div></div>`;
   const bodies = { units: unitsHtml, exchanges: exchangesHtml, registers: registersHtml, frames: framesHtml };
   const body = (bodies[analyser.view] ?? unitsHtml)(state);

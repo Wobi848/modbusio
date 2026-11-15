@@ -3,6 +3,7 @@
 
 import { actions } from "./actions.js";
 import { cursorRow, drawCursor, setCursor } from "./cursor.js";
+import { printable } from "./print.js";
 import { attempt, go, render, state } from "./store.js";
 
 /** Rows whose choice replaces the list: the arrows mark, Enter opens. */
@@ -63,7 +64,8 @@ function keepInDialog(event) {
 
 /** Closes what lies on top; false when nothing was open. */
 function closeTopmost() {
-  if (state.importing) state.importing = null;
+  if (state.printing) state.printing = false;
+  else if (state.importing) state.importing = null;
   else if (state.menu) state.menu = null;
   else if (state.asking) state.asking = null;
   else if (state.selectedPoint) state.selectedPoint = null;
@@ -86,6 +88,14 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key === "Enter" && event.target.id === "write-value") {
     attempt(() => actions[state.asking?.kind === "raw-write" ? "raw-write-check" : "write-check"]());
+    return;
+  }
+  // the browser would print the list with modbusio around it: the print view is made for paper
+  if ((event.ctrlKey || event.metaKey) && event.key === "p" && printable(state) && !state.printing) {
+    event.preventDefault();
+    state.printing = true;
+    render();
+    window.print();
     return;
   }
   if (typing || event.ctrlKey || event.metaKey || event.altKey) return;

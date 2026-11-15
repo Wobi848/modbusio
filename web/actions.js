@@ -133,6 +133,7 @@ const pointOf = (name) => state.readings[state.selected]?.points.find((point) =>
 /** Chooses a device of the site, or none; the next render shows it. */
 function selectDevice(key) {
   state.selected = key;
+  state.printing = false;
   state.selectedLine = null;
   state.selectedPoint = null;
   state.deviceDetailOpen = false;
@@ -229,6 +230,9 @@ export const actions = {
     else toast(t("dev.added", { name: named }));
     render();
   },
+  "print-open": () => { state.printing = true; render(); },
+  "print-now": () => window.print(),
+  "print-close": () => { state.printing = false; render(); },
   "help-guide": (element) => {
     state.helpGuide = element.dataset.guide;
     render();

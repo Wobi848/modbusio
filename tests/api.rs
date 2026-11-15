@@ -855,6 +855,16 @@ async fn the_analyser_hears_a_trunk_and_modbusio_sends_nothing_there_meanwhile()
     assert_eq!(status, StatusCode::BAD_REQUEST);
     let (status, _) = call(&app, "GET", "/api/analyser.xlsx?offset=60", None).await;
     assert_eq!(status, StatusCode::OK);
+    // worded for its reader: heads as a JSON object of texts and a title line; anything else refused
+    let worded =
+        "/api/analyser.xlsx?offset=60&title=Site&heads=%7B%22Requests%22%3A%22Anfragen%22%7D";
+    let (status, _) = call(&app, "GET", worded, None).await;
+    assert_eq!(status, StatusCode::OK);
+    let (status, refused) = call(&app, "GET", "/api/analyser.xlsx?heads=%5B1%5D", None).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST, "{refused}");
+    let long = format!("/api/analyser.xlsx?title={}", "x".repeat(9000));
+    let (status, _) = call(&app, "GET", &long, None).await;
+    assert_eq!(status, StatusCode::BAD_REQUEST);
 
     let (_, stopped) = call(&app, "POST", "/api/analyser/stop", None).await;
     assert_eq!(stopped["running"], json!(false));

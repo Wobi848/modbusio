@@ -29,6 +29,18 @@ impl Table {
         lines.extend(self.rows.iter().cloned());
         crate::csv::file(&lines)
     }
+    /// The table with its heads and its title in the reader's words: `heads` gives the text for
+    /// each English one; what it does not name stays (a device's name, a recorded point).
+    pub fn worded(mut self, heads: &HashMap<String, String>) -> Table {
+        let word = |text: &mut String| {
+            if let Some(own) = heads.get(text.as_str()) {
+                *text = own.clone();
+            }
+        };
+        word(&mut self.title);
+        self.columns.iter_mut().for_each(word);
+        self
+    }
 }
 
 const PROFILE_COLUMNS: [&str; 15] = [
@@ -317,5 +329,16 @@ mod tests {
         expected.order = Some(crate::values::WordOrder::Cdab);
         expected.source_address = "2".into();
         assert_eq!(imported.points, [expected]);
+    }
+
+    #[test]
+    fn a_table_takes_the_readers_words_and_keeps_the_rest() {
+        let heads = HashMap::from([
+            ("Name".to_string(), "Bezeichnung".to_string()),
+            ("Devices".to_string(), "Geräte".to_string()),
+        ]);
+        let table = Table::new("Devices", &["Name", "Flow [°C]"]).worded(&heads);
+        assert_eq!(table.title, "Geräte");
+        assert_eq!(table.columns, ["Bezeichnung", "Flow [°C]"]);
     }
 }

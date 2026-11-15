@@ -35,7 +35,7 @@ pub fn units(analysis: &Analysis) -> Table {
     let mut table = Table::new(
         "Units",
         &[
-            "Unit",
+            "Unit ID",
             "Requests",
             "Answers",
             "No answer",
@@ -105,7 +105,7 @@ pub fn exchanges(analysis: &Analysis, started: SystemTime, offset_minutes: i32) 
         "Exchanges",
         &[
             "Time",
-            "Unit",
+            "Unit ID",
             "Function",
             "Area",
             "Address",
@@ -165,7 +165,7 @@ pub fn registers(analysis: &Analysis, started: SystemTime, offset_minutes: i32) 
     let mut table = Table::new(
         "Registers",
         &[
-            "Unit",
+            "Unit ID",
             "Area",
             "Address",
             "Reads",

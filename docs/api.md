@@ -253,6 +253,11 @@ the first.
 
 ## Exports
 
+Every Excel file except a profile's takes its wording from the page: `heads`, a JSON object with
+the reader's text for each English column head and sheet name, and `title`, a line that stands
+above the heads (together at most 8192 bytes; `400` otherwise). Without them the heads are the
+CSV's English ones. The column of the unit ID is headed `Unit ID`, the physical unit `Unit`.
+
 `GET /api/devices.csv`: the site's devices. `GET /api/points.csv?key=`, `GET /api/points.xlsx?key=`:
 a device's points, read now. `GET /api/site.xlsx`: the device list and a sheet per device with a
 profile, each read now.

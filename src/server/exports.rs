@@ -5,7 +5,7 @@ use axum::extract::{Query, State};
 use axum::response::Response;
 use serde::Deserialize;
 
-use super::{ApiError, Shared, csv_file, xlsx_file};
+use super::{ApiError, Shared, Wording, csv_file, xlsx_file};
 use crate::endpoint::Target;
 use crate::export::{Table, points_table};
 use crate::scan::line_text;
@@ -16,7 +16,7 @@ fn devices_table(state: &Shared) -> Table {
     let mut table = Table::new(
         "Devices",
         &[
-            "Name", "Line", "Unit", "Profile", "Vendor", "Product", "Version", "Key",
+            "Name", "Line", "Unit ID", "Profile", "Vendor", "Product", "Version", "Key",
         ],
     );
     table.rows = site
@@ -81,13 +81,17 @@ pub async fn points_csv(
 pub async fn points_xlsx(
     State(state): State<Shared>,
     Query(query): Query<Key>,
+    Query(wording): Query<Wording>,
 ) -> Result<Response, ApiError> {
     let table = device_table(&state, &query.key).await?;
-    xlsx_file(&file_name(&table, "xlsx"), &[table])
+    xlsx_file(&file_name(&table, "xlsx"), vec![table], &wording)
 }
 
 /// The device list and a sheet per device with a profile, each read now.
-pub async fn site_xlsx(State(state): State<Shared>) -> Result<Response, ApiError> {
+pub async fn site_xlsx(
+    State(state): State<Shared>,
+    Query(wording): Query<Wording>,
+) -> Result<Response, ApiError> {
     let site = state.site.lock().expect("site lock").clone();
     let mut tables = vec![devices_table(&state)];
     for device in site
@@ -101,6 +105,7 @@ pub async fn site_xlsx(State(state): State<Shared>) -> Result<Response, ApiError
     }
     xlsx_file(
         &format!("{}.xlsx", crate::profile::slug(&site.name)),
-        &tables,
+        tables,
+        &wording,
     )
 }
