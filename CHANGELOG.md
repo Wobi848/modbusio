@@ -65,6 +65,10 @@ First version.
   closer (*Show everything* goes back) and give each line's lowest, highest and mean.
 - Help (sidebar or the key `?`): guides for the usual tasks, from searching a network, a gateway or
   an RS-485 line to register lists, writing, recording and the bus analyser, and the keys.
+- *Print …* shows an open device's points as a page to print or save as PDF (also Ctrl+P).
+- Excel files carry their column heads and a title line in the interface's language; the CSV files
+  keep English heads. The unit ID's column is headed `Unit ID` in the device list and the bus
+  analyser's tables.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

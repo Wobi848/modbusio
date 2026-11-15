@@ -10,7 +10,7 @@ use axum::response::Response;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use super::{ApiError, Shared, Zone, csv_file, xlsx_file};
+use super::{ApiError, Shared, Wording, Zone, csv_file, xlsx_file};
 use crate::export::recording_table;
 use crate::storage;
 
@@ -243,10 +243,11 @@ pub async fn csv(State(state): State<Shared>, Query(zone): Query<Zone>) -> Respo
 pub async fn xlsx(
     State(state): State<Shared>,
     Query(zone): Query<Zone>,
+    Query(wording): Query<Wording>,
 ) -> Result<Response, ApiError> {
     let table = recording_table(
         &state.recording.lock().expect("recording lock"),
         zone.offset,
     );
-    xlsx_file("modbusio-recording.xlsx", &[table])
+    xlsx_file("modbusio-recording.xlsx", vec![table], &wording)
 }

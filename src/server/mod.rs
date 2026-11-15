@@ -262,8 +262,40 @@ fn csv_file(name: &str, table: &crate::export::Table) -> Response {
     download(name, CSV, table.csv())
 }
 
-fn xlsx_file(name: &str, tables: &[crate::export::Table]) -> Result<Response, ApiError> {
-    let bytes = crate::workbook::write(tables)
+/// How an Excel file is worded for its reader (`web/excel.js`): the text for each English column
+/// head and sheet name as a JSON object, and a line to stand above the heads. Without them the
+/// file is as the CSV: English heads, no title.
+#[derive(Default, serde::Deserialize)]
+struct Wording {
+    #[serde(default)]
+    heads: String,
+    #[serde(default)]
+    title: String,
+}
+
+/// The longest wording taken: the page sends a few dozen short texts.
+const MOST_WORDING: usize = 8192;
+
+fn xlsx_file(
+    name: &str,
+    tables: Vec<crate::export::Table>,
+    wording: &Wording,
+) -> Result<Response, ApiError> {
+    if wording.heads.len() + wording.title.len() > MOST_WORDING {
+        return Err(ApiError::bad_request("the wording is too long"));
+    }
+    let heads: std::collections::HashMap<String, String> = if wording.heads.is_empty() {
+        Default::default()
+    } else {
+        serde_json::from_str(&wording.heads)
+            .map_err(|_| ApiError::bad_request("heads must be a JSON object of texts"))?
+    };
+    let tables: Vec<_> = tables
+        .into_iter()
+        .map(|table| table.worded(&heads))
+        .collect();
+    let title = Some(wording.title.trim()).filter(|title| !title.is_empty());
+    let bytes = crate::workbook::write(&tables, title)
         .map_err(|error| ApiError::internal(format!("cannot write the Excel file: {error}")))?;
     Ok(download(name, XLSX, bytes))
 }

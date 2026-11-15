@@ -12,6 +12,7 @@ import "./explorer.js";
 import "./pages.js";
 import "./analyser.js";
 import "./help.js";
+import "./print.js";
 import { heldUntil, sameRecording, withNewSamples } from "./recording.js";
 import { checkForUpdate } from "./update.js";
 import { installPanels } from "./panels.js";
@@ -81,7 +82,8 @@ window.addEventListener("hashchange", () => {
  */
 window.modbusioBack = () => {
   let stepped = true;
-  if (state.importing) state.importing = null;
+  if (state.printing) state.printing = false;
+  else if (state.importing) state.importing = null;
   else if (state.menu) state.menu = null;
   else if (state.asking) state.asking = null;
   else if (state.selectedPoint || state.deviceDetailOpen) {

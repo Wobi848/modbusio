@@ -62,6 +62,8 @@ export const state = {
   /** A question in the details: `{ kind, ... }` for writing, restoring, removing. */
   asking: null,
   menu: null,
+  /** The open device's points shown as a page to print (print.js). */
+  printing: false,
   /** The guide open in the help (help.js). */
   helpGuide: "find",
   busy: null,
@@ -144,6 +146,7 @@ export function render() {
   document.getElementById("status").innerHTML = frame.status(state);
   document.getElementById("dialog").innerHTML = frame.dialog(state);
   document.title = `${view.title} · modbusio`;
+  document.body.classList.toggle("printing", Boolean(view.printing));
   restoreScroll(document.body, kept);
   if (focused) {
     const again = document.getElementById(focused);
@@ -199,6 +202,7 @@ export function go(area) {
   // the explorer starts with the device chosen in the workspace, unless it shows another one's result
   if (area === "explorer" && state.selected && !state.explorer.result && !state.explorer.busy) state.explorer.key = state.selected;
   state.area = area;
+  state.printing = false;
   state.menu = null;
   state.asking = null;
   if (location.hash !== `#/${area}`) history.replaceState(null, "", `#/${area}`);

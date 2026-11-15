@@ -12,7 +12,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use super::views::{EntryView, registers_text};
-use super::{ApiError, Shared, Zone, csv_file, xlsx_file};
+use super::{ApiError, Shared, Wording, Zone, csv_file, xlsx_file};
 use crate::export::journal_table;
 use crate::links::ANSWER_TIMEOUT;
 use crate::profile::{self, Point};
@@ -264,7 +264,8 @@ pub async fn journal_csv(State(state): State<Shared>, Query(zone): Query<Zone>) 
 pub async fn journal_xlsx(
     State(state): State<Shared>,
     Query(zone): Query<Zone>,
+    Query(wording): Query<Wording>,
 ) -> Result<Response, ApiError> {
     let table = journal_table(&state.journal().entries, zone.offset);
-    xlsx_file("modbusio-writes.xlsx", &[table])
+    xlsx_file("modbusio-writes.xlsx", vec![table], &wording)
 }

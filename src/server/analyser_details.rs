@@ -9,7 +9,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use super::analysing::Listening;
-use super::{ApiError, Shared, csv_file, xlsx_file};
+use super::{ApiError, Shared, Wording, csv_file, xlsx_file};
 use crate::analyser::registers::Registers;
 use crate::analyser::{Analysis, tables};
 use crate::endpoint::Target;
@@ -212,6 +212,11 @@ pub async fn csv(
 pub async fn xlsx(
     State(state): State<Shared>,
     Query(export): Query<Export>,
+    Query(wording): Query<Wording>,
 ) -> Result<Response, ApiError> {
-    xlsx_file("modbusio-trunk.xlsx", &all_tables(&state, export.offset)?)
+    xlsx_file(
+        "modbusio-trunk.xlsx",
+        all_tables(&state, export.offset)?,
+        &wording,
+    )
 }

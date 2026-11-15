@@ -4,6 +4,7 @@
 import { h } from "./html.js";
 import { askHtml } from "./asking.js";
 import { LANGUAGES, codeText, currentLocale, languageChoice, localNumber, t } from "./i18n.js";
+import { excelHref } from "./excel.js";
 import { lookHtml } from "./look.js";
 import { chartHtml } from "./chart.js";
 import { updateCheckOn } from "./update.js";
@@ -55,7 +56,7 @@ function viewRecording(state) {
   const toolbar = `<div class="toolbar"><label class="form-field inline">${t("rec.interval")}<select id="record-interval"${recording.running ? " disabled" : ""}>${intervals}</select></label>
     <div class="end">${recording.running ? `<button type="button" class="tonal" data-act="record-stop">${t("rec.stop")}</button>` : `<button type="button" class="tonal" data-act="record-start"${recording.series.length ? "" : " disabled"}>${t("rec.start")}</button>`}
     <button type="button" class="quiet" data-act="record-clear">${t("rec.clear")}</button>
-    <a class="button quiet" href="/api/recording.csv?offset=${-new Date().getTimezoneOffset()}" download>CSV</a><a class="button quiet" href="/api/recording.xlsx?offset=${-new Date().getTimezoneOffset()}" download>Excel</a></div></div>`;
+    <a class="button quiet" href="/api/recording.csv?offset=${-new Date().getTimezoneOffset()}" download>CSV</a><a class="button quiet" href="${excelHref(state, "/api/recording.xlsx", [t("tab.recording")])}" download>Excel</a></div></div>`;
   const body = recording.series.length
     ? `${chartHtml(recording.series, "recording")}<div class="rows" data-keep="recording"><div class="row mrecord head"><span>${t("col.name")}</span><span class="num">${t("rec.last")}</span><span class="num">${t("rec.samples")}</span><span></span></div>${series}</div>`
     : `<div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyLead")}</p></div>`;
@@ -96,7 +97,7 @@ function viewChanged(state) {
     : "";
   const unlock = state.asking?.kind === "restore" && !state.unlocked ? askHtml(t("unlock.title"), t("unlock.why"), [["unlock", t("unlock.allow")]]) : "";
   const toolbar = `<div class="toolbar"><span class="hint">${journal.entries.length === 1 ? t("log.countOne") : t("log.count", { n: journal.entries.length })}</span><div class="end">
-    <a class="button quiet" href="/api/journal.csv?offset=${-new Date().getTimezoneOffset()}" download>CSV</a><a class="button quiet" href="/api/journal.xlsx?offset=${-new Date().getTimezoneOffset()}" download>Excel</a></div></div>`;
+    <a class="button quiet" href="/api/journal.csv?offset=${-new Date().getTimezoneOffset()}" download>CSV</a><a class="button quiet" href="${excelHref(state, "/api/journal.xlsx", [t("tab.changed")])}" download>Excel</a></div></div>`;
   const entries = [...journal.entries].reverse();
   const body = entries.length
     ? `<div class="rows" data-keep="log"><div class="row mlog head"><span class="num">${t("log.number")}</span><span>${t("log.time")}</span><span>${t("log.where")}</span><span>${t("log.change")}</span><span></span></div>${entries.map((entry) => entryRow(state, entry)).join("")}</div>`

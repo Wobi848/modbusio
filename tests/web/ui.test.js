@@ -185,6 +185,20 @@ test("charts group by unit, leave gaps and give a flat line room", () => {
   assert.equal(bounds([series[2]]), null);
 });
 
+test("every Excel head has a text in every language", async () => {
+  const { HEADS } = await import("../../web/excel.js");
+  for (const [language, file] of Object.entries(LANGUAGE_FILES)) {
+    for (const [english, key] of Object.entries(HEADS)) assert.ok(file.texts[key], `${language}: ${english} (${key})`);
+  }
+  // the heads of the server's tables, so a new column is not left in English unnoticed
+  const sources = ["src/export.rs", "src/server/exports.rs", "src/analyser/tables.rs"].map((path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8"));
+  const tables = sources.flatMap((source) => [...source.matchAll(/Table::new\(\s*("[^"]+"),\s*&\[([^\]]*)\]/g)]);
+  assert.ok(tables.length >= 5, "the tables are found");
+  for (const [, title, columns] of tables) {
+    for (const [, head] of `${title},${columns}`.matchAll(/"([^"]+)"/g)) assert.ok(HEADS[head], `no text for the head ${head}`);
+  }
+});
+
 test("key figures weigh by time; thinning keeps spikes and gaps; a window cuts", async () => {
   const { figures, inWindow, thinned } = await import("../../web/analysis.js");
   // 10 held for 3 s, 20 for 1 s: the mean leans to what held longer

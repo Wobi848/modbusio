@@ -5,6 +5,7 @@ import { h } from "./html.js";
 import { listBorders } from "./panels.js";
 import { sortHead, sortRows } from "./sorting.js";
 import { codeText, counted, currentLocale, localNumber, noteText, t } from "./i18n.js";
+import { excelHref } from "./excel.js";
 import { askHtml, writeHtml } from "./asking.js";
 import { deviceName, deviceNameOnLine, readingText, registerView, selectedDevice } from "./store.js";
 
@@ -153,7 +154,7 @@ function exportMenu(state) {
   if (state.menu !== "export") return "";
   return `<div class="menu end exports" role="menu">
     <a id="export-devices-csv" class="quiet" href="/api/devices.csv" download>${t("export.devicesCsv")}</a>
-    <a id="export-site-xlsx" class="quiet" href="/api/site.xlsx" download>${t("export.siteXlsx")}</a>
+    <a id="export-site-xlsx" class="quiet" href="${excelHref(state, "/api/site.xlsx")}" download>${t("export.siteXlsx")}</a>
     <a id="export-site-json" class="quiet" href="/api/site.json" download>${t("export.siteFile")}</a></div>`;
 }
 
@@ -198,7 +199,7 @@ function deviceDetailHtml(state) {
     </div>
     ${removing}
     <dl class="facts">${facts}</dl>
-    ${device.profile ? `<div class="actions"><a class="button quiet" href="/api/points.csv?key=${encodeURIComponent(device.key)}" download>${t("export.pointsCsv")}</a><a class="button quiet" href="/api/points.xlsx?key=${encodeURIComponent(device.key)}" download>${t("export.pointsXlsx")}</a></div>` : ""}
+    ${device.profile ? `<div class="actions"><a class="button quiet" href="/api/points.csv?key=${encodeURIComponent(device.key)}" download>${t("export.pointsCsv")}</a><a class="button quiet" href="${excelHref(state, `/api/points.xlsx?key=${encodeURIComponent(device.key)}`, [deviceName(device)])}" download>${t("export.pointsXlsx")}</a></div>` : ""}
   </aside>`;
 }
 
@@ -236,6 +237,7 @@ function pointsHtml(state, device) {
   const toolbar = `<div class="toolbar"><button type="button" class="quiet phone-back" data-act="select-device" data-key="">← ${t("tab.workspace")}</button><input id="point-filter" type="search" placeholder="${t("pts.filter")}" value="${h(state.pointFilter)}" autocomplete="off">
     <span class="hint">${t("pts.count", { n: points.length, all: reading.points.length })}${reading.readAt ? ` · ${t("pts.readAt", { time: reading.readAt.toLocaleTimeString(currentLocale(), { hour12: false }) })}` : ""}</span>
     <div class="end"><button type="button" class="quiet narrow-only" data-act="open-device-detail">${t("dev.details")}</button><label class="check"><input type="checkbox" id="live" data-act="toggle-live"${state.live ? " checked" : ""}> ${t("pts.live")}</label>
+    <button type="button" class="quiet" data-act="print-open" title="${t("print.openHint")}">${t("print.open")}</button>
     <button type="button" class="tonal" data-act="read-device">${t("pts.readAgain")}</button></div></div>`;
   const failed = reading.failed ? `<div class="strip warn">${counted("pts.failed", reading.failed)}</div>` : "";
   const strips = failed || reading.notes?.length ? `<div class="strips">${failed}${(reading.notes ?? []).map((note) => `<div class="strip info">${h(noteText(note))}</div>`).join("")}</div>` : "";

@@ -228,7 +228,12 @@ pub async fn xlsx(
     let profile = state
         .profile(&query.id)
         .ok_or_else(|| ApiError::not_found(format!("no profile {}", query.id)))?;
-    xlsx_file(&format!("{}.xlsx", profile.id), &[profile_table(&profile)])
+    // English heads always: the import reads this file back by them
+    xlsx_file(
+        &format!("{}.xlsx", profile.id),
+        vec![profile_table(&profile)],
+        &Default::default(),
+    )
 }
 
 /// Standard base64, with or without padding and line breaks; `None` when it is not.

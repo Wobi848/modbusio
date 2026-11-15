@@ -16,6 +16,9 @@ drawing of the page.
 Step 6 (help) built on `bacnetio-help`: bacnetio's frame (`help.js`, guides per language in
 `web/help/`), eleven Modbus guides. The guides about a serial line are left out where the system
 has no serial port (Android).
+Step 7 (Excel, print; the accents came earlier) built on `excel-print`. The Excel heads are
+worded by the page as in bacnetio (`heads` and `title` in the link); the print view shows the
+points with the list's groups and search.
 
 ## Why
 
@@ -80,6 +83,7 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Adapters and ports read again | search settings | `ui/10-keyboard` |
 | Charts: values under the pointer, a span looked at closer, key figures | recording, bus analyser | `ui/06-live` |
 | Help with guides and the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
+| Print view of a device's points; Excel worded for its reader | open device; every Excel link | `ui/12-print` |
 
 ## Compatibility
 
