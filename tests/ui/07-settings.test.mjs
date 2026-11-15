@@ -24,8 +24,39 @@ export default {
     await page.waitForSelector(".site-now:has-text('Site')");
     await page.selectOption("#language", "de");
     await page.waitForSelector("h1:has-text('Einstellungen')");
-    await page.selectOption("#theme", "dark");
+    await page.click("[data-act=theme][data-theme=dark]");
     assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), "dark");
+    // accent and background: each choice shows at once, is marked as chosen and survives a reload
+    const look = () => page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return { accent: style.getPropertyValue("--accent").trim(), surface: style.getPropertyValue("--surface").trim() };
+    });
+    const blueOnNavy = await look();
+    await page.click("[data-act=accent][data-accent=teal]");
+    await page.click("[data-act=background][data-background=black]");
+    const tealOnBlack = await look();
+    assert.notEqual(tealOnBlack.accent, blueOnNavy.accent);
+    assert.notEqual(tealOnBlack.surface, blueOnNavy.surface);
+    assert.equal(await page.getAttribute("button[data-accent=teal]", "aria-pressed"), "true");
+    assert.equal(await page.getAttribute("button[data-background=black]", "aria-pressed"), "true");
+    // the light theme's background is its own choice and leaves the dark one alone
+    await page.click("[data-act=background][data-background=warm]");
+    assert.deepEqual(await look(), tealOnBlack);
+    await page.reload();
+    await page.waitForSelector("button[data-accent=teal][aria-pressed=true]");
+    assert.deepEqual(await look(), tealOnBlack);
+    if (process.env.MODBUSIO_SHOTS) {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.screenshot({ path: process.env.MODBUSIO_SHOTS + "/look-dark.png" });
+      await page.click("[data-act=theme][data-theme=light]");
+      await page.screenshot({ path: process.env.MODBUSIO_SHOTS + "/look-light.png" });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.locator("button[data-accent=teal]").scrollIntoViewIfNeeded();
+      await page.screenshot({ path: process.env.MODBUSIO_SHOTS + "/look-phone.png" });
+      await page.click("[data-act=theme][data-theme=dark]");
+    }
+    await page.click("[data-act=accent][data-accent=blue]");
+    await page.click("[data-act=background][data-background=navy]");
     for (const width of [390, 1000, 1440]) {
       await page.setViewportSize({ width, height: 844 });
       for (const area of ["workspace", "explorer", "profiles", "watch", "recording", "changed", "settings"]) {

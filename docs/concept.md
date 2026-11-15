@@ -115,7 +115,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
 | Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |
-| Language and theme, following the system | *Settings* | `tests/web/ui.test.js`, `ui/07-settings` |
+| Language and theme, following the system; accent colour and the background of the light and of the dark theme, kept in this browser | *Settings* | `tests/web/ui.test.js`, `ui/07-settings` |
 | Phone width: details over the list, the way back, no sideways scrolling | every page | `ui/07-settings` |
 | Sidebar, tree and details resized by dragging their border or with the arrow keys, kept in this browser, double-click back to automatic (`docs/concept-bacnetio-sync.md`) | wide windows | `ui/07-settings` |
 | Lists sorted by a click on a column head (up, down, back), columns as wide as their border is dragged, kept per list: devices, points (within their groups), profiles and their points, watch list, the analyser's units, exchanges and registers | the lists' heads | `ui/07-settings` |

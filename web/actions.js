@@ -3,6 +3,7 @@
 
 import { loadSearchChoices } from "./adapter-actions.js";
 import { api } from "./api.js";
+import { setAccent, setBackground, setTheme } from "./look.js";
 import { codeText, setLanguage, t } from "./i18n.js";
 import { attempt, deviceName, go, pickFile, remember, render, selectedDevice, state, toast } from "./store.js";
 import { profileActions } from "./profile-actions.js";
@@ -227,6 +228,9 @@ export const actions = {
     else toast(t("dev.added", { name: named }));
     render();
   },
+  theme: (element) => { setTheme(element.dataset.theme); render(); },
+  accent: (element) => { setAccent(element.dataset.accent); render(); },
+  background: (element) => { setBackground(element.dataset.scheme, element.dataset.background); render(); },
   "export-menu": () => { state.menu = state.menu === "export" ? null : "export"; render(); },
   "read-device": () => readDevice(),
   identify: async () => {
@@ -430,15 +434,5 @@ export async function onChange(element) {
   }
   if (element.id === "language") { setLanguage(element.value); render(); return; }
   if (element.id === "update-check") { setUpdateCheck(element.checked); return; }
-  if (element.id === "theme") {
-    try {
-      localStorage.setItem("modbusio.theme", element.value);
-    } catch {
-      // the theme then lasts until the page is reloaded
-    }
-    const dark = element.value === "dark" || (element.value === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    return;
-  }
   await profileActions.onChange(element);
 }

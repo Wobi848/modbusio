@@ -120,6 +120,8 @@ export default {
     "set.newSite": "New site", "set.newSiteHint": "e.g. School Rosengarten", "set.create": "Create and open", "set.importSite": "Open a site file …",
     "set.needName": "Give the site a name.", "set.notSiteFile": "This is not a modbusio site file.",
     "set.look": "Language and theme", "set.language": "Language", "set.theme": "Theme", "set.system": "As the system", "set.light": "Light", "set.dark": "Dark",
+    "set.accent": "Accent colour", "set.accent.blue": "Blue", "set.accent.crimson": "Crimson", "set.accent.violet": "Violet", "set.accent.teal": "Teal",
+    "set.background": "Background", "set.background.light": "Light theme", "set.background.dark": "Dark theme", "set.background.white": "White", "set.background.grey": "Grey", "set.background.warm": "Warm", "set.background.navy": "Navy", "set.background.graphite": "Graphite", "set.background.black": "Black",
     "set.writing": "Writing", "set.unlocked": "Writing is unlocked for this session.", "set.locked": "Writing is locked. It is unlocked when you first write a value.",
     "set.lock": "Lock writing", "set.about": "About", "set.version": "Version", "set.dataDir": "Data folder", "set.noDataDir": "none: nothing is kept",
     "set.keys": "Keys", "set.keysText": "1–7 the areas, 8 the settings, / searches the points, Enter checks a value, Escape closes.",

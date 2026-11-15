@@ -121,6 +121,8 @@ export default {
     "set.newSite": "Neue Anlage", "set.newSiteHint": "z. B. Schulhaus Rosengarten", "set.create": "Anlegen und öffnen", "set.importSite": "Anlagedatei öffnen …",
     "set.needName": "Der Anlage einen Namen geben.", "set.notSiteFile": "Das ist keine Anlagedatei von modbusio.",
     "set.look": "Sprache und Darstellung", "set.language": "Sprache", "set.theme": "Darstellung", "set.system": "Wie das System", "set.light": "Hell", "set.dark": "Dunkel",
+    "set.accent": "Akzentfarbe", "set.accent.blue": "Blau", "set.accent.crimson": "Karmesin", "set.accent.violet": "Violett", "set.accent.teal": "Petrol",
+    "set.background": "Hintergrund", "set.background.light": "Helles Design", "set.background.dark": "Dunkles Design", "set.background.white": "Weiss", "set.background.grey": "Grau", "set.background.warm": "Warm", "set.background.navy": "Marine", "set.background.graphite": "Graphit", "set.background.black": "Schwarz",
     "set.writing": "Schreiben", "set.unlocked": "Schreiben ist für diese Sitzung freigeschaltet.", "set.locked": "Schreiben ist gesperrt. Es wird beim ersten Schreiben eines Werts freigeschaltet.",
     "set.lock": "Schreiben sperren", "set.about": "Über", "set.version": "Version", "set.dataDir": "Datenordner", "set.noDataDir": "keiner: nichts wird behalten",
     "set.keys": "Tasten", "set.keysText": "1–7 die Bereiche, 8 die Einstellungen, / sucht Datenpunkte, Enter prüft einen Wert, Escape schliesst.",

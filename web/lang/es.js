@@ -125,6 +125,8 @@ export default {
     "set.newSite": "Nueva instalación", "set.newSiteHint": "p. ej. Escuela Rosengarten", "set.create": "Crear y abrir", "set.importSite": "Abrir un archivo de instalación …",
     "set.needName": "Dar un nombre a la instalación.", "set.notSiteFile": "Esto no es un archivo de instalación de modbusio.",
     "set.look": "Idioma y aspecto", "set.language": "Idioma", "set.theme": "Aspecto", "set.system": "Como el sistema", "set.light": "Claro", "set.dark": "Oscuro",
+    "set.accent": "Color de acento", "set.accent.blue": "Azul", "set.accent.crimson": "Carmesí", "set.accent.violet": "Violeta", "set.accent.teal": "Petróleo",
+    "set.background": "Fondo", "set.background.light": "Tema claro", "set.background.dark": "Tema oscuro", "set.background.white": "Blanco", "set.background.grey": "Gris", "set.background.warm": "Cálido", "set.background.navy": "Azul marino", "set.background.graphite": "Grafito", "set.background.black": "Negro",
     "set.writing": "Escritura", "set.unlocked": "La escritura está desbloqueada para esta sesión.", "set.locked": "La escritura está bloqueada. Se desbloquea al escribir el primer valor.",
     "set.lock": "Bloquear la escritura", "set.about": "Acerca de", "set.version": "Versión", "set.dataDir": "Carpeta de datos", "set.noDataDir": "ninguna: no se guarda nada",
     "set.keys": "Teclas", "set.keysText": "1–7 las áreas, 8 los ajustes, / busca puntos, Intro comprueba un valor, Esc cierra.",
