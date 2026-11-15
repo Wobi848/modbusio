@@ -1,6 +1,5 @@
-// Copied from bacnetio (web/columns.js), adapted: modbusio switches its columns by the window's
-// width (@media in modbus.css and analyser.css), not by the list's (@container), so the widths set
-// here hold from 1000 px of window up; and a column a table ends with that no head names (chips,
+// Copied from bacnetio (web/columns.js), adapted: each table names the width of its list from
+// which it shows all its columns, and a column a table ends with that no head names (chips,
 // buttons) keeps a fixed track. Its own storage key and tables.
 //
 // Columns to resize: each table takes its column widths from the CSS by itself. A user who drags
@@ -10,29 +9,27 @@
 import { t } from "./i18n.js";
 
 const KEY = "modbusio.columns";
-/** Below this width of the list the columns stack and keep their own widths. */
-const NARROW_LIST = 560;
 const NARROWEST = 40;
 /** The first column takes what is left, so the table always fits its list. */
 const FIRST_LEAST = 120;
 const FIRST = `minmax(${FIRST_LEAST}px, 1fr)`;
 /** A column the user has not set: a share of what is left. */
 const UNSET = "minmax(60px, 1fr)";
-/** Where the tables show all their columns (modbus.css, analyser.css). */
-const WIDE = "(min-width: 1000px)";
 /**
  * The columns of each table from left to right, by the keys of their heads; `{ fixed }` for a
- * column no head sorts, with the track it keeps.
+ * column no head sorts, with the track it keeps. `from` is the width of the list from which the
+ * table shows all its columns (modbus.css, analyser.css): below it the columns fold and keep their
+ * own widths.
  */
 const LAYOUTS = {
-  devices: [".rows .row.mdevices", ["name", "line", "unit", "profile", "vendor"]],
-  points: [".rows .row.mpoints:not(.group)", ["name", "address", "value", { fixed: "minmax(90px, auto)" }]],
-  profiles: [".rows .row.mprofiles", ["name", "vendor", "points", { fixed: "110px" }]],
-  profilePoints: [".rows .row.mprofile-points", ["name", "group", "address", "type", "factor", "unit", { fixed: "80px" }]],
-  watch: [".rows .row.mwatch", ["name", "device", "value", { fixed: "8rem" }]],
-  units: [".rows .row.aunits", ["unit", "requests", "answers", "problems", "answer", "cycle"]],
-  exchanges: [".rows .row.aexch", ["time", "unit", "request", "result", "ms"]],
-  registers: [".rows .row.aregs", ["address", "point", "reads", "writes", "changes", "last", "range"]],
+  devices: { from: 581, rows: ".rows .row.mdevices", columns: ["name", "line", "unit", "profile", "vendor"] },
+  points: { from: 541, rows: ".rows .row.mpoints:not(.group)", columns: ["name", "address", "value", { fixed: "minmax(90px, auto)" }] },
+  profiles: { from: 591, rows: ".rows .row.mprofiles", columns: ["name", "vendor", "points", { fixed: "110px" }] },
+  profilePoints: { from: 741, rows: ".rows .row.mprofile-points", columns: ["name", "group", "address", "type", "factor", "unit", { fixed: "80px" }] },
+  watch: { from: 581, rows: ".rows .row.mwatch", columns: ["name", "device", "value", { fixed: "8rem" }] },
+  units: { from: 711, rows: ".rows .row.aunits", columns: ["unit", "requests", "answers", "problems", "answer", "cycle"] },
+  exchanges: { from: 561, rows: ".rows .row.aexch", columns: ["time", "unit", "request", "result", "ms"] },
+  registers: { from: 801, rows: ".rows .row.aregs", columns: ["address", "point", "reads", "writes", "changes", "last", "range"] },
 };
 
 function track(set, column, index) {
@@ -71,8 +68,8 @@ function apply() {
     document.head.append(style);
   }
   style.textContent = Object.entries(widths).filter(([list]) => LAYOUTS[list]).map(([list, set]) => {
-    const [rows, columns] = LAYOUTS[list];
-    return `@media ${WIDE} { ${rows} { grid-template-columns: ${columns.map((column, index) => track(set, column, index)).join(" ")}; } }`;
+    const { from, rows, columns } = LAYOUTS[list];
+    return `@container (min-width: ${from}px) { ${rows} { grid-template-columns: ${columns.map((column, index) => track(set, column, index)).join(" ")}; } }`;
   }).join("\n");
 }
 
@@ -88,7 +85,8 @@ export function installColumns() {
     if (!border || event.button !== 0) return;
     event.preventDefault();
     const head = border.closest(".row.head");
-    if (head.closest(".listwrap").getBoundingClientRect().width <= NARROW_LIST) return;
+    // folded: the columns stack and keep their own widths
+    if (head.closest(".listwrap").getBoundingClientRect().width < (LAYOUTS[border.dataset.list]?.from ?? Infinity)) return;
     // the tracks as laid out, not the heads: a head aligned to the end is narrower than its column
     const tracks = getComputedStyle(head).gridTemplateColumns.split(" ").map((width) => Math.round(parseFloat(width)));
     const keys = [...head.children].filter((cell) => cell.offsetParent !== null).map((cell) => cell.querySelector(".col-border")?.dataset.key);
