@@ -80,13 +80,48 @@ pub async fn settings(port: &str, given: Option<(u32, &str)>) -> Result<SerialSe
     })
 }
 
+/// What the port's reader hands on, with the time it arrived at.
+enum Arrived {
+    Bytes(u64, Vec<u8>),
+    /// The line was quiet for a while.
+    Quiet,
+}
+
 /// Reads `port` into `analysis` until it fails or closes; the time of each chunk is counted from
 /// `started`. Returns why it ended.
+///
+/// Reading never waits for the analysis: the page reads it once a second and holds it meanwhile,
+/// and bytes arriving then would lose the time they arrived at (a request and its answer seeming
+/// to come together). So the reader only stamps and queues; a thread of its own takes the queue
+/// into the analysis.
 pub async fn hear(
-    mut port: impl AsyncRead + Unpin,
+    port: impl AsyncRead + Unpin,
     analysis: Arc<Mutex<Analysis>>,
     started: Instant,
     quiet: Duration,
+) -> String {
+    let (arrived, queue) = std::sync::mpsc::channel();
+    let taking = std::thread::spawn(move || {
+        for item in queue {
+            let mut analysis = analysis.lock().expect("analysis lock");
+            match item {
+                Arrived::Bytes(at, bytes) => analysis.push(at, &bytes),
+                Arrived::Quiet => analysis.quiet(),
+            }
+        }
+    });
+    let why = read(port, started, quiet, &arrived).await;
+    // what is queued still goes in before the end is told
+    drop(arrived);
+    let _ = tokio::task::spawn_blocking(move || taking.join()).await;
+    why
+}
+
+async fn read(
+    mut port: impl AsyncRead + Unpin,
+    started: Instant,
+    quiet: Duration,
+    arrived: &std::sync::mpsc::Sender<Arrived>,
 ) -> String {
     let mut chunk = [0u8; 1024];
     // bytes the port held before listening began arrived at times nobody knows: give them up
@@ -99,17 +134,17 @@ pub async fn hear(
         }
     }
     loop {
-        match tokio::time::timeout(quiet, port.read(&mut chunk)).await {
+        let item = match tokio::time::timeout(quiet, port.read(&mut chunk)).await {
             Ok(Ok(0)) => return "the port closed: adapter unplugged?".into(),
-            Ok(Ok(count)) => {
-                let at = started.elapsed().as_micros() as u64;
-                analysis
-                    .lock()
-                    .expect("analysis lock")
-                    .push(at, &chunk[..count]);
-            }
+            Ok(Ok(count)) => Arrived::Bytes(
+                started.elapsed().as_micros() as u64,
+                chunk[..count].to_vec(),
+            ),
             Ok(Err(error)) => return format!("reading the port failed: {error}"),
-            Err(_) => analysis.lock().expect("analysis lock").quiet(),
+            Err(_) => Arrived::Quiet,
+        };
+        if arrived.send(item).is_err() {
+            return "the analysis ended".into();
         }
     }
 }
@@ -156,5 +191,50 @@ mod tests {
         assert_eq!(analysis.bus.bytes, 15);
         let answer_micros = analysis.exchanges()[0].item.answer_micros.unwrap();
         assert!((30_000..31_000).contains(&answer_micros), "{answer_micros}");
+    }
+
+    /// The page reads the analysis once a second and holds it meanwhile. Bytes arriving then
+    /// must keep the time they arrived at, or request and answer seem to come together.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn times_are_those_of_arrival_also_while_the_analysis_is_being_read() {
+        use tokio::io::AsyncWriteExt;
+        let (mut line, port) = tokio::io::duplex(256);
+        let analysis = Arc::new(Mutex::new(Analysis::default()));
+        let hearing = tokio::spawn(hear(
+            port,
+            analysis.clone(),
+            Instant::now(),
+            quiet_after(9600),
+        ));
+        tokio::time::sleep(Duration::from_millis(60)).await;
+        let held = analysis.clone();
+        let reader = std::thread::spawn(move || {
+            let _held = held.lock().unwrap();
+            std::thread::sleep(Duration::from_millis(150));
+        });
+        // written by a thread with its own clock: a blocked worker would stall this test's timers
+        let runtime = tokio::runtime::Handle::current();
+        let writer = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(20));
+            runtime
+                .block_on(line.write_all(&rtu::frame(3, &[0x03, 0, 0, 0, 1])))
+                .unwrap();
+            std::thread::sleep(Duration::from_millis(40));
+            runtime
+                .block_on(line.write_all(&rtu::frame(3, &[0x03, 2, 0, 9])))
+                .unwrap();
+            std::thread::sleep(Duration::from_millis(200));
+            drop(line);
+        });
+        tokio::task::spawn_blocking(move || {
+            reader.join().unwrap();
+            writer.join().unwrap();
+        })
+        .await
+        .unwrap();
+        hearing.await.unwrap();
+        let analysis = analysis.lock().unwrap();
+        let answer_micros = analysis.exchanges()[0].item.answer_micros.unwrap();
+        assert!((35_000..70_000).contains(&answer_micros), "{answer_micros}");
     }
 }
