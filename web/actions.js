@@ -117,6 +117,38 @@ export async function readDevice(quiet = false) {
   render();
 }
 
+export const isWatched = (key, point) => state.watch.some((one) => one.key === key && one.point === point);
+export const isRecorded = (key, point) => state.recording.series.some((series) => series.device === key && series.point === point);
+
+/** Puts a point on the watch list or takes it off. */
+export function setWatched(key, point, on) {
+  const index = state.watch.findIndex((one) => one.key === key && one.point === point);
+  if (on && index < 0) state.watch.push({ key, point });
+  if (!on && index >= 0) state.watch.splice(index, 1);
+  remember();
+}
+
+/** Adds a point to the recording or removes it; the server answers with the whole recording. */
+export async function setRecorded(key, point, on) {
+  const recording = await attempt(() => (on ? api.recordAdd(key, point) : api.recordRemove(key, point)));
+  if (recording) state.recording = recording;
+}
+
+/** Reads every device that has a profile, one after the other, for the problems across the site. */
+async function readAll() {
+  const devices = state.site.devices.filter((device) => device.profile);
+  state.readingAll = { done: 0, total: devices.length };
+  render();
+  for (const device of devices) {
+    const answer = await attempt(() => api.read(device.key));
+    if (answer) state.readings[device.key] = { ...answer, readAt: new Date() };
+    state.readingAll.done += 1;
+    render();
+  }
+  state.readingAll = null;
+  render();
+}
+
 /** Reads the open device and the one it is compared with, one after the other. */
 async function readCompared() {
   const keys = [state.selected, state.compare.other];
@@ -322,20 +354,23 @@ export const actions = {
   "close-point": () => { state.selectedPoint = null; state.deviceDetailOpen = false; state.asking = null; render(); },
   "open-device-detail": () => { state.deviceDetailOpen = true; state.selectedPoint = null; render(); },
   "toggle-live": () => { state.live = !state.live; render(); },
-  "toggle-watch": () => {
-    const item = { key: state.selected, point: state.selectedPoint };
-    const index = state.watch.findIndex((one) => one.key === item.key && one.point === item.point);
-    if (index >= 0) state.watch.splice(index, 1);
-    else state.watch.push(item);
-    remember();
-    render();
-  },
+  "toggle-watch": () => { setWatched(state.selected, state.selectedPoint, !isWatched(state.selected, state.selectedPoint)); render(); },
   "toggle-record": async () => {
-    const recorded = state.recording.series.some((series) => series.device === state.selected && series.point === state.selectedPoint);
-    const recording = await attempt(() => (recorded ? api.recordRemove(state.selected, state.selectedPoint) : api.recordAdd(state.selected, state.selectedPoint)));
-    if (recording) state.recording = recording;
+    await setRecorded(state.selected, state.selectedPoint, !isRecorded(state.selected, state.selectedPoint));
     render();
   },
+  // the same switches in the point list, for the row they stand in
+  "quick-watch": (element) => {
+    const point = element.closest(".row").dataset.point;
+    setWatched(state.selected, point, !isWatched(state.selected, point));
+    render();
+  },
+  "quick-record": async (element) => {
+    const point = element.closest(".row").dataset.point;
+    await setRecorded(state.selected, point, !isRecorded(state.selected, point));
+    render();
+  },
+  "read-all": () => readAll(),
   "ask-write": async () => {
     await refreshSession();
     const point = pointOf(state.selectedPoint);

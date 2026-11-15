@@ -1,6 +1,6 @@
 # Concept: catching up with bacnetio's interface
 
-Status: **approved on 2026-11-14** (the maintainer: "ok gogog"); step 1 built on branch
+Status: **built on 2026-11-15** (all nine steps; *change many* left for its own concept); approved on 2026-11-14 (the maintainer: "ok gogog"); step 1 built on branch
 `bacnetio-panels`, steps 2 and 3 (columns and sorting, built together: the column's border sits in
 its sorting head) on `bacnetio-columns`. Columns: modbusio switches its table layouts by the
 window's width, so the widths set hold from 1000 px of window up. Not yet sortable: the explorer,
@@ -22,6 +22,9 @@ points with the list's groups and search.
 Step 8 (site search, compare) built on `site-search-compare`. As in bacnetio `/` now goes to the
 search over the site and `f` to the search of the list on screen. The comparison is offered in a
 device's details for the devices with its profile.
+Step 9 (list switches with dragging, problems) built on `list-switches-problems`: the last step.
+*Problems* is a numbered area before the bus analyser, so the analyser's key is `8` and the
+settings' `9`. Open: *change many*, which needs a concept of its own.
 
 ## Why
 
@@ -88,6 +91,7 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Help with guides and the keys | sidebar, key `?` | `tests/web/help.test.js`, `ui/11-help` |
 | Print view of a device's points; Excel worded for its reader | open device; every Excel link | `ui/12-print` |
 | Search over the site; two devices compared | sidebar; a device's details | `ui/13-search-compare` |
+| Switches in the point list with dragging; problems across the site | points; *Problems* | `ui/14-switches-problems` |
 
 ## Compatibility
 

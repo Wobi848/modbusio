@@ -83,9 +83,9 @@ export default {
     await headsOverValues(page, "aframes");
 
     // the areas count up: the analyser is 7, the settings 8
-    await page.keyboard.press("8");
+    await page.keyboard.press("9");
     await page.waitForSelector("h1:has-text('Settings')");
-    await page.keyboard.press("7");
+    await page.keyboard.press("8");
     await page.waitForSelector("h1:has-text('Bus analyser')");
 
     await page.click("[data-act=analyser-view][data-view=units]");
@@ -108,7 +108,7 @@ export default {
     // not saved: closing asks first
     await page.click("[data-act=close-profile]");
     await page.click("[data-act=discard-profile]");
-    await page.keyboard.press("7");
+    await page.keyboard.press("8");
 
     await page.click("#next");
     await page.waitForFunction(() => document.querySelector("#next")?.textContent === "Start listening");

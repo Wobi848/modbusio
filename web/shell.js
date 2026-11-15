@@ -2,18 +2,20 @@
 // next step, status bar, and the search settings as a dialog. Markup as bacnetio's.
 
 import { h } from "./html.js";
+import { ICON, RECORD_ICON, WATCH_ICON } from "./icons.js";
 import { noteText, t } from "./i18n.js";
 import { askHtml } from "./asking.js";
 import { resizeHandle } from "./panels.js";
+import { siteProblems } from "./problems.js";
 
-const ICON = (path) => `<svg class="nav-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${path}</svg>`;
 const AREA_ICONS = {
   workspace: ICON('<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="14" width="8" height="7" rx="2"/>'),
   explorer: ICON('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/><path d="M8.5 11h5M11 8.5v5"/>'),
   profiles: ICON('<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'),
-  watch: ICON('<path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z"/><circle cx="12" cy="12" r="2.5"/>'),
-  recording: ICON('<path d="M3 17l5-6 4 3 5-7 4 4"/><path d="M3 21h18"/>'),
+  watch: WATCH_ICON,
+  recording: RECORD_ICON,
   changed: ICON('<path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12 7l5 5"/>'),
+  problems: ICON('<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.5v.5"/>'),
   analyser: ICON('<path d="M2 12h3.5l2.5-6 4 12 3-9 2 3h5"/>'),
 };
 const SETTINGS_ICON = ICON('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"/>');
@@ -27,6 +29,7 @@ function badge(state, area) {
   if (area === "watch") return `<span class="n">${state.watch.length || ""}</span>`;
   if (area === "recording") return `<span class="n">${state.recording.running ? "●" : ""}</span>`;
   if (area === "changed") return `<span class="n warn">${state.journal.standing || ""}</span>`;
+  if (area === "problems") return `<span class="n warn">${siteProblems(state).length || ""}</span>`;
   if (area === "analyser") return `<span class="n">${state.analyser.heard?.running ? "●" : ""}</span>`;
   return "";
 }
