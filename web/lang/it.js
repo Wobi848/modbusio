@@ -125,6 +125,8 @@ export default {
     "set.newSite": "Nuovo impianto", "set.newSiteHint": "p. es. Scuola Rosengarten", "set.create": "Crea e apri", "set.importSite": "Apri un file di impianto …",
     "set.needName": "Dare un nome all'impianto.", "set.notSiteFile": "Questo non è un file di impianto di modbusio.",
     "set.look": "Lingua e aspetto", "set.language": "Lingua", "set.theme": "Aspetto", "set.system": "Come il sistema", "set.light": "Chiaro", "set.dark": "Scuro",
+    "set.accent": "Colore d’accento", "set.accent.blue": "Blu", "set.accent.crimson": "Cremisi", "set.accent.violet": "Viola", "set.accent.teal": "Petrolio",
+    "set.background": "Sfondo", "set.background.light": "Tema chiaro", "set.background.dark": "Tema scuro", "set.background.white": "Bianco", "set.background.grey": "Grigio", "set.background.warm": "Caldo", "set.background.navy": "Blu notte", "set.background.graphite": "Grafite", "set.background.black": "Nero",
     "set.writing": "Scrittura", "set.unlocked": "La scrittura è sbloccata per questa sessione.", "set.locked": "La scrittura è bloccata. Viene sbloccata alla prima scrittura di un valore.",
     "set.lock": "Blocca la scrittura", "set.about": "Informazioni", "set.version": "Versione", "set.dataDir": "Cartella dati", "set.noDataDir": "nessuna: nulla viene conservato",
     "set.keys": "Tasti", "set.keysText": "1–7 le aree, 8 le impostazioni, / cerca i punti, Invio verifica un valore, Esc chiude.",

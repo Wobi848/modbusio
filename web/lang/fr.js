@@ -125,6 +125,8 @@ export default {
     "set.newSite": "Nouvelle installation", "set.newSiteHint": "p. ex. École Rosengarten", "set.create": "Créer et ouvrir", "set.importSite": "Ouvrir un fichier d'installation …",
     "set.needName": "Donner un nom à l'installation.", "set.notSiteFile": "Ce n'est pas un fichier d'installation de modbusio.",
     "set.look": "Langue et apparence", "set.language": "Langue", "set.theme": "Apparence", "set.system": "Comme le système", "set.light": "Clair", "set.dark": "Sombre",
+    "set.accent": "Couleur d’accent", "set.accent.blue": "Bleu", "set.accent.crimson": "Cramoisi", "set.accent.violet": "Violet", "set.accent.teal": "Bleu canard",
+    "set.background": "Arrière-plan", "set.background.light": "Thème clair", "set.background.dark": "Thème sombre", "set.background.white": "Blanc", "set.background.grey": "Gris", "set.background.warm": "Chaud", "set.background.navy": "Marine", "set.background.graphite": "Graphite", "set.background.black": "Noir",
     "set.writing": "Écriture", "set.unlocked": "L'écriture est déverrouillée pour cette session.", "set.locked": "L'écriture est verrouillée. Elle est déverrouillée à la première écriture d'une valeur.",
     "set.lock": "Verrouiller l'écriture", "set.about": "À propos", "set.version": "Version", "set.dataDir": "Dossier de données", "set.noDataDir": "aucun : rien n'est conservé",
     "set.keys": "Touches", "set.keysText": "1–7 les zones, 8 les réglages, / cherche les points, Entrée vérifie une valeur, Échap ferme.",

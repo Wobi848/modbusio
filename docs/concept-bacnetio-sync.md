@@ -44,7 +44,7 @@ after M2 (AGENTS.md).
 | `drag-toggle.js` | watch and record switched on many points by dragging over them | switches in the details only | first switches in the point list, then this | 9 |
 | `problems.js` | everything that needs a look across the devices read | the *Faults* filter of one device | take over: points that fail, devices that do not answer, values you hold | 9 |
 | `adapter-actions.js` | network adapters read again while the page is open | read when the search settings open | take over | 4 |
-| `theme.js` accents | accent colour and background of each theme | light and dark | take over | 7 |
+| `theme.js` accents | accent colour and background of each theme | light and dark | take over (built ahead of its step on `theme-accents`: the maintainer missed it) || 7 |
 | `change-many.js` | one value written to many points at once | none | **a concept of its own**: it writes to plants | later |
 | `memory.js`, `live-list.js`, `log.js`, `watch.js`, `recording.js`, `capture.js`, `sites.js`, `update.js`, `i18n.js` | the same jobs | done in modbusio's own modules | compare after M2 for a shared crate | – |
 | `bbmd*`, `mstp*`, `sc*`, `structure*`, `properties.js`, `file-actions.js`, `device-commands.js`, `grouping*.js`, `point-query.js`, `plugin*` | BACnet's own (plugins: `concept.md` section 13, not now) | – | not taken | – |

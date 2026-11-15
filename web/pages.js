@@ -4,6 +4,7 @@
 import { h } from "./html.js";
 import { askHtml } from "./asking.js";
 import { LANGUAGES, codeText, currentLocale, languageChoice, localNumber, t } from "./i18n.js";
+import { lookHtml } from "./look.js";
 import { chartHtml } from "./chart.js";
 import { updateCheckOn } from "./update.js";
 import { deviceName, readingText, registerView } from "./store.js";
@@ -140,13 +141,6 @@ export function versionText(info) {
 
 function viewSettings(state) {
   const languages = [["auto", t("set.system")], ...LANGUAGES].map(([code, name]) => `<option value="${code}"${languageChoice() === code ? " selected" : ""}>${h(name)}</option>`).join("");
-  let theme = "auto";
-  try {
-    theme = localStorage.getItem("modbusio.theme") || "auto";
-  } catch {
-    // the system's theme then
-  }
-  const themes = [["auto", t("set.system")], ["light", t("set.light")], ["dark", t("set.dark")]].map(([code, name]) => `<option value="${code}"${theme === code ? " selected" : ""}>${name}</option>`).join("");
   const capture = state.capture;
   const captureButtons = capture.running
     ? `<button type="button" class="tonal" data-act="capture-stop">${t("cap.stop", { n: capture.frames ?? 0 })}</button>`
@@ -160,7 +154,7 @@ function viewSettings(state) {
       ${sitesCard(state)}
       <section class="card"><h2>${t("set.look")}</h2>
         <label class="form-field">${t("set.language")}<select id="language">${languages}</select></label>
-        <label class="form-field">${t("set.theme")}<select id="theme">${themes}</select></label></section>
+        ${lookHtml()}</section>
       <section class="card"><h2>${t("set.writing")}</h2><p>${state.unlocked ? t("set.unlocked") : t("set.locked")}</p>
         <div class="actions">${state.unlocked ? `<button type="button" class="tonal" data-act="lock">${t("set.lock")}</button>` : ""}</div></section>
       <section class="card"><h2>${t("cap.title")}</h2><p>${t("cap.lead")}</p><p class="hint">${t("cap.rtuHint")}</p><div class="actions">${captureButtons}</div></section>
