@@ -107,6 +107,7 @@ export default {
     "rec.interval": "Every", "rec.start": "Start recording", "rec.stop": "Stop recording", "rec.clear": "Clear values", "rec.remove": "Remove",
     "rec.last": "Last", "rec.samples": "Values", "rec.emptyTitle": "Nothing recorded", "rec.emptyLead": "Open a device's point and choose Record.",
     "rec.noUnit": "without unit", "rec.noValues": "No values yet.", "rec.chartLabel": "Chart of the points in {unit}",
+    "chart.figures": "low {low} · high {high} · mean {mean}", "chart.span": "From {from} to {to}", "chart.whole": "Show everything", "chart.dragHint": "Draw a span over a chart to look closer.", "chart.noAnswer": "no answer",
     "log.lead": "Every write, with the value before it.", "log.leadStanding": "{n} values written are not put back yet.",
     "log.count": "{n} writes", "log.countOne": "1 write", "log.leadStandingOne": "1 value written is not put back yet.", "log.restoreOne": "Put it back", "log.restoreOneAsk": "Put back the old value of this write?", "log.restoreAll": "Put back all {n}", "log.restore": "Put back", "log.number": "No.", "log.time": "Time",
     "log.where": "Where", "log.change": "Before → written", "log.refused": "refused", "log.keptOther": "device kept another value",

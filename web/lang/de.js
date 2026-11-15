@@ -108,6 +108,7 @@ export default {
     "rec.interval": "Alle", "rec.start": "Aufzeichnung starten", "rec.stop": "Aufzeichnung stoppen", "rec.clear": "Werte löschen", "rec.remove": "Entfernen",
     "rec.last": "Zuletzt", "rec.samples": "Werte", "rec.emptyTitle": "Nichts aufgezeichnet", "rec.emptyLead": "Einen Datenpunkt eines Geräts öffnen und «Aufzeichnen» wählen.",
     "rec.noUnit": "ohne Einheit", "rec.noValues": "Noch keine Werte.", "rec.chartLabel": "Diagramm der Datenpunkte in {unit}",
+    "chart.figures": "min. {low} · max. {high} · Mittel {mean}", "chart.span": "Von {from} bis {to}", "chart.whole": "Alles zeigen", "chart.dragHint": "Im Diagramm einen Bereich aufziehen, um ihn genauer zu sehen.", "chart.noAnswer": "keine Antwort",
     "log.lead": "Jeder Schreibvorgang, mit dem Wert davor.", "log.leadStanding": "{n} geschriebene Werte sind noch nicht zurückgeschrieben.",
     "log.count": "{n} Schreibvorgänge", "log.countOne": "1 Schreibvorgang", "log.leadStandingOne": "1 geschriebener Wert ist noch nicht zurückgeschrieben.", "log.restoreOne": "Zurückschreiben", "log.restoreOneAsk": "Den alten Wert dieses Schreibvorgangs zurückschreiben?", "log.restoreAll": "Alle {n} zurückschreiben", "log.restore": "Zurückschreiben", "log.number": "Nr.", "log.time": "Zeit",
     "log.where": "Wo", "log.change": "Vorher → geschrieben", "log.refused": "abgelehnt", "log.keptOther": "Gerät hält einen anderen Wert",

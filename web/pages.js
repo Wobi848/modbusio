@@ -57,7 +57,7 @@ function viewRecording(state) {
     <button type="button" class="quiet" data-act="record-clear">${t("rec.clear")}</button>
     <a class="button quiet" href="/api/recording.csv?offset=${-new Date().getTimezoneOffset()}" download>CSV</a><a class="button quiet" href="/api/recording.xlsx?offset=${-new Date().getTimezoneOffset()}" download>Excel</a></div></div>`;
   const body = recording.series.length
-    ? `${chartHtml(recording.series)}<div class="rows" data-keep="recording"><div class="row mrecord head"><span>${t("col.name")}</span><span class="num">${t("rec.last")}</span><span class="num">${t("rec.samples")}</span><span></span></div>${series}</div>`
+    ? `${chartHtml(recording.series, "recording")}<div class="rows" data-keep="recording"><div class="row mrecord head"><span>${t("col.name")}</span><span class="num">${t("rec.last")}</span><span class="num">${t("rec.samples")}</span><span></span></div>${series}</div>`
     : `<div class="empty"><h2>${t("rec.emptyTitle")}</h2><p>${t("rec.emptyLead")}</p></div>`;
   return {
     title: t("tab.recording"),

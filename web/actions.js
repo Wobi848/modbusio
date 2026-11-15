@@ -3,6 +3,7 @@
 
 import { loadSearchChoices } from "./adapter-actions.js";
 import { api } from "./api.js";
+import { showWhole } from "./chart.js";
 import { setAccent, setBackground, setTheme } from "./look.js";
 import { codeText, setLanguage, t } from "./i18n.js";
 import { attempt, deviceName, go, pickFile, remember, render, selectedDevice, state, toast } from "./store.js";
@@ -228,6 +229,7 @@ export const actions = {
     else toast(t("dev.added", { name: named }));
     render();
   },
+  "chart-whole": (element) => { showWhole(element.dataset.chart); render(); },
   theme: (element) => { setTheme(element.dataset.theme); render(); },
   accent: (element) => { setAccent(element.dataset.accent); render(); },
   background: (element) => { setBackground(element.dataset.scheme, element.dataset.background); render(); },

@@ -115,7 +115,7 @@ export function registerDetail(state) {
   const history = analyser.history?.place === analyser.register ? analyser.history.values : [];
   const until = analyser.heard.started_ms + analyser.heard.elapsed_ms;
   const chart = history.length
-    ? chartHtml([{ label: `${areaShort(row.area)} ${reading.address}`, unit: point ? "" : t("an.raw"), samples: stepSamples(history, analyser.heard.started_ms, until) }])
+    ? chartHtml([{ label: `${areaShort(row.area)} ${reading.address}`, unit: point ? "" : t("an.raw"), samples: stepSamples(history, analyser.heard.started_ms, until) }], "register")
     : "";
   const facts = bits
     ? `<dt>${t("an.last")}</dt><dd class="mono">${reading.value ? t("on") : t("off")}</dd>`
@@ -132,7 +132,7 @@ export function answerChart(state, unit) {
   const data = state.analyser.unitData;
   if (data?.unit !== unit || !data.answer_times.length) return "";
   const started = state.analyser.heard.started_ms;
-  return chartHtml([{ label: t("an.answerTime"), unit: "ms", samples: data.answer_times.map(([at, micros]) => [started + at / 1000, micros / 1000]) }]);
+  return chartHtml([{ label: t("an.answerTime"), unit: "ms", samples: data.answer_times.map(([at, micros]) => [started + at / 1000, micros / 1000]) }], "answer-times");
 }
 
 export function framesHtml(state) {

@@ -110,6 +110,7 @@ export default {
     "rec.interval": "Cada", "rec.start": "Iniciar registro", "rec.stop": "Detener registro", "rec.clear": "Borrar valores", "rec.remove": "Quitar",
     "rec.last": "Último", "rec.samples": "Valores", "rec.emptyTitle": "Nada registrado", "rec.emptyLead": "Abrir un punto de un equipo y elegir «Registrar».",
     "rec.noUnit": "sin unidad", "rec.noValues": "Aún no hay valores.", "rec.chartLabel": "Gráfico de los puntos en {unit}",
+    "chart.figures": "mín. {low} · máx. {high} · media {mean}", "chart.span": "De {from} a {to}", "chart.whole": "Mostrar todo", "chart.dragHint": "Arrastra un intervalo sobre un gráfico para verlo más de cerca.", "chart.noAnswer": "sin respuesta",
     "log.lead": "Cada escritura, con el valor anterior.", "log.leadStanding": "{n} valores escritos aún no se han restablecido.",
     "log.count": "{n} escrituras", "log.countOne": "1 escritura", "log.leadStandingOne": "1 valor escrito aún no se ha restablecido.",
     "log.restoreOne": "Restablecerlo", "log.restoreOneAsk": "¿Restablecer el valor anterior de esta escritura?",
