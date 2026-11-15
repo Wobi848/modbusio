@@ -110,6 +110,7 @@ export default {
     "rec.interval": "Toutes les", "rec.start": "Démarrer l'enregistrement", "rec.stop": "Arrêter l'enregistrement", "rec.clear": "Effacer les valeurs", "rec.remove": "Retirer",
     "rec.last": "Dernière", "rec.samples": "Valeurs", "rec.emptyTitle": "Rien d'enregistré", "rec.emptyLead": "Ouvrir un point d'un appareil et choisir « Enregistrer ».",
     "rec.noUnit": "sans unité", "rec.noValues": "Pas encore de valeurs.", "rec.chartLabel": "Graphique des points en {unit}",
+    "chart.figures": "min. {low} · max. {high} · moyenne {mean}", "chart.span": "De {from} à {to}", "chart.whole": "Tout afficher", "chart.dragHint": "Tracez une plage sur un graphique pour la voir de plus près.", "chart.noAnswer": "pas de réponse",
     "log.lead": "Chaque écriture, avec la valeur d'avant.", "log.leadStanding": "{n} valeurs écrites ne sont pas encore rétablies.",
     "log.count": "{n} écritures", "log.countOne": "1 écriture", "log.leadStandingOne": "1 valeur écrite n'est pas encore rétablie.",
     "log.restoreOne": "La rétablir", "log.restoreOneAsk": "Rétablir l'ancienne valeur de cette écriture ?",

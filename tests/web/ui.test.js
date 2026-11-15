@@ -185,6 +185,21 @@ test("charts group by unit, leave gaps and give a flat line room", () => {
   assert.equal(bounds([series[2]]), null);
 });
 
+test("key figures weigh by time; thinning keeps spikes and gaps; a window cuts", async () => {
+  const { figures, inWindow, thinned } = await import("../../web/analysis.js");
+  // 10 held for 3 s, 20 for 1 s: the mean leans to what held longer
+  const found = figures([[0, 10], [3000, 20], [4000, 20], [5000, null]]);
+  assert.deepEqual([found.low, found.high, found.mean, found.gaps], [10, 20, 12.5, 1]);
+  assert.equal(figures([[0, null]]).low, null);
+  const long = Array.from({ length: 5000 }, (_, index) => [index, index === 2500 ? 99 : index === 100 ? null : 1]);
+  const drawn = thinned(long, 100);
+  assert.ok(drawn.length <= 300);
+  assert.ok(drawn.some(([, value]) => value === 99), "the spike stays");
+  assert.ok(drawn.some(([, value]) => value === null), "the gap stays");
+  assert.equal(thinned(long.slice(0, 50), 100).length, 50);
+  assert.deepEqual(inWindow([[0, 1], [5, 2], [9, 3]], { from: 4, to: 6 }), [[5, 2]]);
+});
+
 test("the workspace offers the search first, then exploring, then reading", () => {
   Object.assign(state, { scan: { finished: true, notes: [] }, site: { name: "S", devices: [] }, selected: null, readings: {}, watch: [], recording: { series: [] }, menu: null, asking: null, profiles: [] });
   assert.equal(viewWorkspace(state).next.act, "search-dialog");

@@ -112,6 +112,7 @@ row. Rust tests in `tests/` and next to the code, interface logic in `tests/web/
 | Log as CSV and Excel | *Changed by you* | `export.rs` |
 | Watch list across devices | *Watch list* | `ui/06-live` |
 | Recording with charts, CSV and Excel, backed up | *Recording* | `record.rs`, `export.rs` (one row per time), `api.rs` (stopped and started again), `api.rs` (only the new samples for a page that holds the rest), `ui/06-live`, `tests/web/ui.test.js` (charts, new samples taken up) |
+| Charts: the values of every line at the time under the pointer, a span drawn with the pointer looked at closer and *Show everything* back, lowest, highest and mean of each line, fewer samples drawn where there are more than can show (`docs/concept-bacnetio-sync.md`) | *Recording*, the bus analyser's charts | `tests/web/ui.test.js`, `ui/06-live` |
 | Capture for Wireshark (TCP as IPv4, RTU as user link type 147) | *Settings* | `pcap.rs` |
 | Sites: several, named, opened, deleted, as a file | sidebar, *Settings* | `site.rs`, `api.rs` (a site file checked whole), `ui/07-settings` |
 | Exports: device list, a device's points, the whole site | workspace, *Export* | `export.rs`, `workbook.rs` |

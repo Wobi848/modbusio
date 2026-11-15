@@ -61,6 +61,8 @@ First version.
   menu; Enter opens a marked device or profile; Tab stays inside a dialog.
 - Toolbar menus stay inside the window; network adapters and serial ports are read again while
   the search settings are open.
+- Charts name every line's value at the time under the pointer, show a span drawn with the pointer
+  closer (*Show everything* goes back) and give each line's lowest, highest and mean.
 - Accent colour (blue, crimson, violet, teal) and a background for the light and for the dark theme,
   chosen in the settings and kept in this browser.
 - Interface in English and German; French, Italian and Spanish as drafts for review (`?lang=`).

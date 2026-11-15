@@ -17,6 +17,7 @@ import { installPanels } from "./panels.js";
 import { installColumns } from "./columns.js";
 import { watchSearchChoices } from "./adapter-actions.js";
 import "./keys.js";
+import "./chart-pointer.js";
 
 state.areas = AREAS;
 

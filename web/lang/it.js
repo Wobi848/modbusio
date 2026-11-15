@@ -110,6 +110,7 @@ export default {
     "rec.interval": "Ogni", "rec.start": "Avvia registrazione", "rec.stop": "Ferma registrazione", "rec.clear": "Cancella valori", "rec.remove": "Rimuovi",
     "rec.last": "Ultimo", "rec.samples": "Valori", "rec.emptyTitle": "Nulla registrato", "rec.emptyLead": "Aprire un punto di un apparecchio e scegliere «Registra».",
     "rec.noUnit": "senza unità", "rec.noValues": "Ancora nessun valore.", "rec.chartLabel": "Grafico dei punti in {unit}",
+    "chart.figures": "min {low} · max {high} · media {mean}", "chart.span": "Da {from} a {to}", "chart.whole": "Mostra tutto", "chart.dragHint": "Trascina un intervallo su un grafico per vederlo più da vicino.", "chart.noAnswer": "nessuna risposta",
     "log.lead": "Ogni scrittura, con il valore precedente.", "log.leadStanding": "{n} valori scritti non sono ancora ripristinati.",
     "log.count": "{n} scritture", "log.countOne": "1 scrittura", "log.leadStandingOne": "1 valore scritto non è ancora ripristinato.",
     "log.restoreOne": "Ripristinalo", "log.restoreOneAsk": "Ripristinare il valore precedente di questa scrittura?",

@@ -9,6 +9,10 @@ Step 4 (keyboard, menus, adapters) built on `bacnetio-keyboard`. Other than bacn
 or a profile opens when its row is chosen, so the arrows mark such a row and Enter opens it; the
 adapters (and the serial ports) are read again only while the search settings are open, the one
 place that shows them.
+Step 5 (charts) built on `bacnetio-charts`. modbusio keeps its own drawing (one chart per unit,
+several lines, the axis texts beside a stretched SVG), so `analysis.js` is copied and the crosshair
+and the span are written anew on it: laid over the drawing as HTML, drawn again after every
+drawing of the page.
 
 ## Why
 
@@ -71,6 +75,7 @@ Each step adds its rows to `docs/concept.md` section 3.2 when built; nothing mov
 | Arrows through lists and menus, Enter opens a marked row, Tab inside a dialog | every list | `ui/10-keyboard` |
 | Menus placed against the window | workspace | `ui/10-keyboard` |
 | Adapters and ports read again | search settings | `ui/10-keyboard` |
+| Charts: values under the pointer, a span looked at closer, key figures | recording, bus analyser | `ui/06-live` |
 
 ## Compatibility
 
