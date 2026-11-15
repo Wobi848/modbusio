@@ -126,6 +126,7 @@ export default {
     "prob.lead": "{n} choses dans ce site méritent un regard.", "prob.leadOne": "1 chose dans ce site mérite un regard.", "prob.leadNone": "Rien dans ce site ne mérite un regard.", "prob.unread": "{n} appareils ne sont pas encore lus : on ne sait rien de leurs points.", "prob.unreadOne": "1 appareil n’est pas encore lu : on ne sait rien de ses points.", "prob.allRead": "Chaque appareil avec profil est lu.",
     "prob.readAll": "Lire tous les appareils", "prob.reading": "Lecture {done} sur {total} …", "prob.noneTitle": "Aucun problème", "prob.none": "Aucun appareil muet, chaque point lu, rien d’écrit par vous ne subsiste.", "prob.noProfile": "Aucun appareil n’a encore de profil : donnez-en un et lisez-le.",
     "quick.watch": "Surveiller ce point", "quick.record": "Enregistrer ce point",
+    "an.notes": "{n} remarques", "an.notesOne": "1 remarque", "an.notesResize": "Faites glisser pour donner plus de place aux remarques ou au tableau ; double-clic pour la hauteur automatique",
     "log.lead": "Chaque écriture, avec la valeur d'avant.", "log.leadStanding": "{n} valeurs écrites ne sont pas encore rétablies.",
     "log.count": "{n} écritures", "log.countOne": "1 écriture", "log.leadStandingOne": "1 valeur écrite n'est pas encore rétablie.",
     "log.restoreOne": "La rétablir", "log.restoreOneAsk": "Rétablir l'ancienne valeur de cette écriture ?",

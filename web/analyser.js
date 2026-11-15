@@ -6,6 +6,7 @@ import { h } from "./html.js";
 import { detailBorder } from "./panels.js";
 import { sortHead, sortRows } from "./sorting.js";
 import { codeText, localNumber, noteText, t } from "./i18n.js";
+import { notesHtml } from "./analyser-notes.js";
 import { excelHref } from "./excel.js";
 import { answerChart, framesHtml, heardTime, registerDetail, registersHtml } from "./analyser-registers.js";
 import { deviceName, registerView } from "./store.js";
@@ -289,9 +290,10 @@ function heardHtml(state) {
     `<button type="button" data-act="analyser-view" data-view="${view}" aria-pressed="${analyser.view === view}">${label}</button>`).join("");
   const ended = !analyser.heard.running && analyser.heard.ended !== "stopped"
     ? `<div class="strip err">${t("an.endedBy", { reason: h(analyser.heard.ended) })}</div>` : "";
-  const notes = (analyser.heard.notes ?? []).map((note) =>
+  const heardNotes = analyser.heard.notes ?? [];
+  const notes = heardNotes.map((note) =>
     `<div class="strip ${INFO_NOTES.includes(note.code) ? "info" : "warn"}">${h(noteText(note))}</div>`).join("");
-  const strips = ended || notes ? `<div class="strips analyser-notes">${ended}${notes}</div>` : "";
+  const strips = notesHtml(ended + notes, heardNotes.length + (ended ? 1 : 0));
   const toolbar = `<div class="toolbar"><span class="seg" role="group" aria-label="${t("an.views")}">${views}</span>
     <div class="end">${analyser.heard.running ? `<button type="button" class="quiet" data-act="analyser-pause">${analyser.paused ? t("an.resume") : t("an.pause")}</button>` : ""}
     <button type="button" class="quiet" data-act="analyser-clear">${t("an.clear")}</button>

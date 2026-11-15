@@ -126,6 +126,7 @@ export default {
     "prob.lead": "{n} cose in questo sito meritano uno sguardo.", "prob.leadOne": "1 cosa in questo sito merita uno sguardo.", "prob.leadNone": "Niente in questo sito merita uno sguardo.", "prob.unread": "{n} dispositivi non sono ancora letti: dei loro punti non si sa nulla.", "prob.unreadOne": "1 dispositivo non è ancora letto: dei suoi punti non si sa nulla.", "prob.allRead": "Ogni dispositivo con profilo è letto.",
     "prob.readAll": "Leggi tutti i dispositivi", "prob.reading": "Lettura {done} di {total} …", "prob.noneTitle": "Nessun problema", "prob.none": "Nessun dispositivo tace, ogni punto è letto, nulla di scritto da te resta.", "prob.noProfile": "Nessun dispositivo ha ancora un profilo: assegnane uno e leggilo.",
     "quick.watch": "Osserva questo punto", "quick.record": "Registra questo punto",
+    "an.notes": "{n} note", "an.notesOne": "1 nota", "an.notesResize": "Trascina per dare più spazio alle note o alla tabella; doppio clic per l’altezza automatica",
     "log.lead": "Ogni scrittura, con il valore precedente.", "log.leadStanding": "{n} valori scritti non sono ancora ripristinati.",
     "log.count": "{n} scritture", "log.countOne": "1 scrittura", "log.leadStandingOne": "1 valore scritto non è ancora ripristinato.",
     "log.restoreOne": "Ripristinalo", "log.restoreOneAsk": "Ripristinare il valore precedente di questa scrittura?",
