@@ -3,8 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::protocol::Area;
 use crate::values::{self, DataType, Raw, Scale, WordOrder};
+use modbusio_protocol::Area;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Profile {

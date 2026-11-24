@@ -7,11 +7,13 @@ license = "MIT"
 edition = "2024"
 
 [workspace]
-members = ["crates/modbusio-protocol"]
+members = ["crates/modbusio-protocol", "crates/modbusio-profile"]
 
 [dependencies]
 # The Modbus protocol, shared with iecio (concept section 14, answer 6).
 modbusio-protocol = { path = "crates/modbusio-protocol" }
+# Profiles and the values of registers, shared with iecio as descriptions of modules.
+modbusio-profile = { path = "crates/modbusio-profile" }
 anyhow = "1.0.104"
 # reading vendor register lists from Excel (profile_import.rs)
 calamine = "0.38"
