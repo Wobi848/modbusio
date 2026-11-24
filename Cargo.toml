@@ -6,7 +6,12 @@ repository = "https://github.com/Wobi848/modbusio"
 license = "MIT"
 edition = "2024"
 
+[workspace]
+members = ["crates/modbusio-protocol"]
+
 [dependencies]
+# The Modbus protocol, shared with iecio (concept section 14, answer 6).
+modbusio-protocol = { path = "crates/modbusio-protocol" }
 anyhow = "1.0.104"
 # reading vendor register lists from Excel (profile_import.rs)
 calamine = "0.38"
