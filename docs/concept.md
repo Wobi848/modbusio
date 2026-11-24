@@ -396,5 +396,11 @@ Answered by the maintainer on 2026-11-08:
    moved unchanged into `crates/modbusio-protocol/`, which iecio, the controller runtime, uses
    for its Modbus I/O; modbusio takes it as `crate::protocol` as before. It has no I/O and no
    release cycle of its own, so sharing it couples nothing but the bytes of Modbus.
+   **Profiles are the second shared crate (decided 2026-11-24):** `src/profile.rs` and
+   `src/values.rs` moved unchanged into `crates/modbusio-profile/`; iecio reads a profile as the
+   description of a module, so a profile made here (by hand, imported from a vendor's list, or
+   drafted from the bus analyser) binds the variables of a controller program by its points'
+   names. modbusio takes them as `crate::profile` and `crate::values` as before. The profile's
+   JSON becomes a format two programs read: a field is added, never renamed or taken away.
 
 Open: nothing yet.
