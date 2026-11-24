@@ -20,7 +20,7 @@ pub mod pcap_read;
 pub mod plan;
 pub mod profile;
 pub mod profile_import;
-pub mod protocol;
+pub use modbusio_protocol as protocol;
 pub mod read;
 pub mod record;
 pub mod scan;

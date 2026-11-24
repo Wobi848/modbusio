@@ -1,0 +1,11 @@
+[package]
+name = "modbusio-protocol"
+version = "0.1.0"
+description = "The Modbus protocol without I/O: PDUs, TCP and RTU framing"
+repository = "https://github.com/Wobi848/modbusio"
+license = "MIT"
+edition = "2024"
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }

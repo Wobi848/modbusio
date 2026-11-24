@@ -718,6 +718,7 @@ dependencies = [
  "if-addrs",
  "libc",
  "mime_guess",
+ "modbusio-protocol",
  "rust-embed",
  "rust_xlsxwriter",
  "rustls",
@@ -730,6 +731,13 @@ dependencies = [
  "tower",
  "webpki-roots",
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "modbusio-protocol"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
