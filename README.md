@@ -151,10 +151,11 @@ Modbus TCP only (Android gives a program no serial port).
 
 ## Protocol
 
-The Modbus framing (PDU, MBAP, RTU with CRC) is modbusio's own, in `src/protocol/` without I/O, so
-the capture, the CRC counts, listening to a line and RTU over TCP see the bytes. The simulators and
-tests use [tokio-modbus](https://github.com/slowtec/tokio-modbus) (MIT/Apache-2.0) as the other
-side, an implementation independent of modbusio's.
+The Modbus framing (PDU, MBAP, RTU with CRC) is modbusio's own, in `crates/modbusio-protocol/`
+without I/O (shared with iecio), so the capture, the CRC counts, listening to a line and RTU over
+TCP see the bytes. The simulators and tests use
+[tokio-modbus](https://github.com/slowtec/tokio-modbus) (MIT/Apache-2.0) as the other side, an
+implementation independent of modbusio's.
 
 ## Contributing
 

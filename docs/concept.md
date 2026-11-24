@@ -286,7 +286,7 @@ Taken over from bacnetio (its section 5), the reasons are the same:
 - **Rust**, one binary, local web server with the UI embedded, Android as a WebView shell.
 - **UI** in `web/`: plain HTML, CSS and JavaScript modules, no build step, bacnetio's tokens and
   components copied.
-- **Protocol (decided in M0, 2026-11-08):** modbusio's own framing in `src/protocol/` (PDU, MBAP,
+- **Protocol (decided in M0, 2026-11-08):** modbusio's own framing in `crates/modbusio-protocol/` (PDU, MBAP,
   RTU with CRC), without I/O, about 600 lines with the spec's examples as tests. tokio-modbus
   0.17 would have hidden what modbusio needs: the raw bytes for the capture, CRC errors to count,
   frames heard while listening, RTU over TCP on one code path with the serial line, late answers
@@ -392,5 +392,9 @@ Answered by the maintainer on 2026-11-08:
    shared crate only what stayed the same in both (likely: server guard, write journal, UI shell
    and tokens, languages). A shared crate now would couple two release cycles before it is known
    what really means the same.
+   **The protocol is the first shared crate (decided 2026-11-24, after M2):** `src/protocol/`
+   moved unchanged into `crates/modbusio-protocol/`, which iecio, the controller runtime, uses
+   for its Modbus I/O; modbusio takes it as `crate::protocol` as before. It has no I/O and no
+   release cycle of its own, so sharing it couples nothing but the bytes of Modbus.
 
 Open: nothing yet.

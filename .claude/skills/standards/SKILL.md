@@ -18,7 +18,7 @@ sentence or table of the source.
 
 1. **Read the source, do not recall it.** `pdftotext -layout` for PDFs.
 2. **Name the chapter** beside the rule in the code (`spec 6.3`, `Serial Line 2.5.1.1`), as
-   `src/protocol/` does.
+   `crates/modbusio-protocol/` does.
 3. **Test the source's own examples**: the spec's request and answer bytes (`pdu.rs`), the CRC
    example (`rtu.rs`).
 4. **Only what the source demands**: devices deviate (8N1 instead of 8E1, fewer registers per
